@@ -1,0 +1,31 @@
+nextflow_process {
+
+    name "Test Process MAKE_MGRM"
+    script "../modules/local/gcta/make_mgrm.nf"
+    process "MAKE_MGRM"
+
+    test("Should create an MGRM file with all GRM prefixes") {
+
+        when {
+            process {
+                """
+                // List of GRM prefixes
+                input[0] = ['gcta_grm_1', 'gcta_grm_2']
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            with(process.out) {
+                assert mgrm_file
+                assert mgrm_file.size() == 1
+                assert path(mgrm_file.get(0)).name == "gcta_grm.mgrm"
+                // We expect two lines in the file (one for each input prefix)
+                assert path(mgrm_file.get(0)).readLines().size() == 2
+                assert path(mgrm_file.get(0)).readLines().contains("gcta_grm_1")
+                assert path(mgrm_file.get(0)).readLines().contains("gcta_grm_2")
+            }
+        }
+    }
+}

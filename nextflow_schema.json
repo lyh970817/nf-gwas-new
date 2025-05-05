@@ -1,10 +1,10 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/nf-gwas/master/nextflow_schema.json",
   "title": "nf-gwas pipeline parameters",
   "description": "A Nextflow GWAS pipeline.",
   "type": "object",
-  "definitions": {
+  "$defs": {
     "required_input_output_options": {
       "title": "Input/output options",
       "type": "object",
@@ -33,12 +33,12 @@
         },
         "genotypes_association": {
           "type": "string",
-          "description": "Genotypes for association testing (in VCF or BGEN format).",
+          "description": "Genotypes for association testing (in VCF format).",
           "fa_icon": "fas fa-project-diagram"
         },
         "genotypes_association_format": {
           "type": "string",
-          "description": "Format of genotypes for association testing (BGEN vs VCF).",
+          "description": "Format of genotypes for association testing (only VCF is supported).",
           "fa_icon": "fas fa-project-diagram"
         },
         "association_build": {
@@ -118,7 +118,7 @@
         "regenie_gene_masks": {
           "type": "string",
           "format": "file-path",
-          "description": "File with mask definitions using the annotations defined in regenie_gene_anno",
+          "description": "File with mask $defs using the annotations defined in regenie_gene_anno",
           "fa_icon": "fas fa-project-diagram"
         }
       },
@@ -206,7 +206,7 @@
           "default": 0,
           "description": "Number of chunks for prediction files",
           "fa_icon": "fas fa-project-diagram"
-        },        
+        },
         "genotypes_association_chunk_size": {
           "type": "integer",
           "default": 0,
@@ -227,11 +227,6 @@
         "regenie_step2_optional": {
           "type": "string",
           "description": "Optional REGENIE Step2 parameters.",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "validate_params": {
-          "type": "boolean",
-          "description": "Validate input parameters.",
           "fa_icon": "fas fa-project-diagram"
         }
       },
@@ -351,12 +346,18 @@
           "description": "Size of the genotype blocks",
           "fa_icon": "fas fa-project-diagram"
         },
+        "nparts_gcta": {
+          "type": "integer",
+          "default": 10,
+          "description": "Number of parts to split the GCTA GRM calculation",
+          "fa_icon": "fas fa-project-diagram"
+        },
         "regenie_low_mem": {
           "type": "boolean",
           "default": true,
           "description": "Run regenie step 1 with low_mem option",
           "fa_icon": "fas fa-project-diagram"
-        }        
+        }
       },
       "fa_icon": "fas fa-project-diagram"
     },
@@ -396,7 +397,7 @@
         "regenie_sample_file": {
           "type": "string",
           "format": "file-path",
-          "description": "Sample file corresponding to input BGEN file",
+          "description": "Sample file (not used as BGEN format is no longer supported)",
           "fa_icon": "fas fa-project-diagram"
         },
         "regenie_min_imputation_score": {
@@ -573,55 +574,55 @@
   },
   "allOf": [
     {
-      "$ref": "#/definitions/required_input_output_options"
+      "$ref": "#/$defs/required_input_output_options"
     },
     {
-      "$ref": "#/definitions/required_all_tests"
+      "$ref": "#/$defs/required_all_tests"
     },
     {
-      "$ref": "#/definitions/required_single_variant_tests_only"
+      "$ref": "#/$defs/required_single_variant_tests_only"
     },
     {
-      "$ref": "#/definitions/required_gene_based_tests_only"
+      "$ref": "#/$defs/required_gene_based_tests_only"
     },
     {
-      "$ref": "#/definitions/required_interaction_tests"
+      "$ref": "#/$defs/required_interaction_tests"
     },
     {
-      "$ref": "#/definitions/required_conditional_analyses"
+      "$ref": "#/$defs/required_conditional_analyses"
     },
     {
-      "$ref": "#/definitions/optional_general_options"
+      "$ref": "#/$defs/optional_general_options"
     },
     {
-      "$ref": "#/definitions/optional_pruning_step"
+      "$ref": "#/$defs/optional_pruning_step"
     },
     {
-      "$ref": "#/definitions/optional_quality_control_of_predictions"
+      "$ref": "#/$defs/optional_quality_control_of_predictions"
     },
     {
-      "$ref": "#/definitions/optional_vcf_to_plink_conversion"
+      "$ref": "#/$defs/optional_vcf_to_plink_conversion"
     },
     {
-      "$ref": "#/definitions/optional_prediction_step_regenie_step_1"
+      "$ref": "#/$defs/optional_prediction_step_regenie_step_1"
     },
     {
-      "$ref": "#/definitions/optional_single_variant_and_gene_based_tests_regenie_step_2"
+      "$ref": "#/$defs/optional_single_variant_and_gene_based_tests_regenie_step_2"
     },
     {
-      "$ref": "#/definitions/optional_single_variant_tests_only"
+      "$ref": "#/$defs/optional_single_variant_tests_only"
     },
     {
-      "$ref": "#/definitions/optional_gene_based_tests_only"
+      "$ref": "#/$defs/optional_gene_based_tests_only"
     },
     {
-      "$ref": "#/definitions/optional_interaction_tests_only"
+      "$ref": "#/$defs/optional_interaction_tests_only"
     },
     {
-      "$ref": "#/definitions/optional_r_report"
+      "$ref": "#/$defs/optional_r_report"
     },
     {
-      "$ref": "#/definitions/optional_other_options"
+      "$ref": "#/$defs/optional_other_options"
     }
   ]
 }

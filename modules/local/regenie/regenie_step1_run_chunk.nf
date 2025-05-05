@@ -3,7 +3,7 @@ process REGENIE_STEP1_RUN_CHUNK {
     publishDir "${params.pubDir}/logs", mode: 'copy', pattern: "chunks_job_${chunk}.log"
 
     input:
-    tuple val(chunk), path(master), path(chunk_snpllist), val(genotyped_plink_filename), path(genotyped_plink_bim_file), path(genotyped_plink_bed_file), path(genotyped_plink_fam_file),  path(snplist), path(id), path(phenotypes_file), path(covariates_file), path(condition_list_file)
+    tuple val(chunk), path(master), path(chunk_snpllist), val(genotyped_plink_filename), path(genotyped_plink_file), path(phenotypes_file), path(covariates_file), path(condition_list_file)
 
     output:
     path "chunks_job${chunk}*", emit: regenie_step1_out
@@ -19,15 +19,17 @@ process REGENIE_STEP1_RUN_CHUNK {
     def refFirst = params.regenie_ref_first  ? "--ref-first" : ''
     def condition_list = params.regenie_condition_list ? "--condition-list $condition_list_file" : ''
     def lowMemory = params.regenie_low_mem ? "--lowmem --lowmem-prefix tmp_rg" : ""
-    def step1_optional = params.regenie_step1_optional  ? "$params.regenie_step1_optional":'' 
+    def step1_optional = params.regenie_step1_optional  ? "$params.regenie_step1_optional":''
+
+    // Create symbolic links to the PLINK files
+    // def plink_base = genotyped_plink_filename
+    // def plink_files = "$projectDir/tests/input/pipeline/${plink_base}"
 
     """
     # qcfiles path required for keep and extract (but not actually set below)
     regenie \
         --step 1 \
         --bed ${genotyped_plink_filename} \
-        --extract ${snplist} \
-        --keep ${id} \
         --phenoFile ${phenotypes_file} \
         --phenoColList  ${params.phenotypes_columns} \
         $covariants \

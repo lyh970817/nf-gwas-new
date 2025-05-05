@@ -21,9 +21,9 @@ process REGENIE_STEP2_RUN_GENE_TESTS {
     path "${filename}_masks*"
 
     script:
-    def format = assoc_format == 'bgen' ? "--bgen" : '--pgen'
-    def extension = assoc_format == 'bgen' ? ".bgen" : ''
-    def bgen_sample = sample_file ? "--sample $sample_file" : ''
+    def format = '--pgen'
+    def extension = ''
+    def bgen_sample = ''
     def firthApprox = params.regenie_firth_approx ? "--approx" : ""
     def firth = params.regenie_firth ? "--firth $firthApprox" : ""
     def binaryTrait =  params.phenotypes_binary_trait ? "--bt $firth " : ""
@@ -41,7 +41,7 @@ process REGENIE_STEP2_RUN_GENE_TESTS {
     def writeMasks = params.regenie_write_bed_masks  ? "--write-mask" : ''
     def joint = params.regenie_gene_joint ? "--joint ${params.regenie_gene_joint}":''
     def condition_list = params.regenie_condition_list ? "--condition-list $condition_list_file" : ''
-    def step2_optional = params.regenie_step2_optional  ? "$params.regenie_step2_optional":'' 
+    def step2_optional = params.regenie_step2_optional  ? "$params.regenie_step2_optional":''
 
     """
     regenie \
@@ -65,6 +65,7 @@ process REGENIE_STEP2_RUN_GENE_TESTS {
         $cat_covariants \
         $condition_list \
         $predictions \
+        $refFirst \
         $apply_rint \
         $geneTest \
         $bgen_sample \

@@ -17,9 +17,9 @@ nextflow_process {
             process {
                 """
                 input[0] = Channel.fromPath("$projectDir/tests/input/regenie_step2/regenie_step1_out*")
-                input[1] = Channel.fromPath("$projectDir/tests/input/pipeline/example.bgen")
+                input[1] = Channel.fromPath("$projectDir/tests/input/pipeline/example.vcf.gz")
                 .map { tuple(it.baseName, it, file('dummy_a'), file('dummy_b'), -1) }
-                input[2] = 'bgen'
+                input[2] = 'vcf'
                 input[3] = file("$projectDir/tests/input/pipeline/phenotype.txt")
                 input[4] = []
                 input[5] = []
@@ -36,7 +36,7 @@ nextflow_process {
 
             with(process.out) {
                 with(regenie_step2_out.get(0)){
-                
+
                     // access second element of first tuple
                     def lines = path(get(1)).readLinesGzip()
 
@@ -52,7 +52,7 @@ nextflow_process {
 
                     //Find all variants with LOG10P > 1 and check with expected number
                     def significantY1 = rows.findAll { (it[12] as Double) > 1}
-                    def significantY2 = rows.findAll { (it[16] as Double) > 1} 
+                    def significantY2 = rows.findAll { (it[16] as Double) > 1}
 
                     assert significantY1.size() == 116
                     assert significantY2.size() == 127
@@ -62,7 +62,7 @@ nextflow_process {
                 with(regenie_step2_out_log){
                     assert path(get(0)).text.contains("--step 2")
                     assert path(get(0)).text.contains("--phenoColList Y1,Y2")
-                    assert path(get(0)).text.contains("--bgen example.bgen")
+                    assert path(get(0)).text.contains("--pgen example")
                     assert path(get(0)).text.contains("--ignore-pred")
                     assert path(get(0)).text.contains("--test additive ")
                 }

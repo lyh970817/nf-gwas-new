@@ -7,6 +7,8 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-py39_23.9.0-0-Li
   /bin/bash ~/miniconda.sh -b -p /opt/conda
 ENV PATH=/opt/conda/bin:${PATH}
 
+RUN conda config --set channel_priority strict
+
 RUN conda update -y conda && \
     conda env update -n root -f environment.yml && \
     conda clean --all

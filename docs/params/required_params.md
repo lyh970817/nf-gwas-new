@@ -14,8 +14,8 @@ Our pipeline supports single-variant and gene-based tests. Depending on the use-
 | ------------- |-----------------| -------------|
 | `project`     | my-project-name | Name of the project |
 | `genotypes_prediction (deprecated: genotypes_array)`     |  /path/to/allChrs.{bim,bed,fam} | Path to the array genotypes (single merged file in plink format).  |
-| `genotypes_association (deprecated: genotypes_imputed)`     |  /path/to/vcf/\*vcf.gz or /path/to/bgen/\*bgen | Path to imputed genotypes in VCF or BGEN format) |
-| `genotypes_association_format (deprecated: genotypes_imputed_format)`     | VCF *or* BGEN | Input file format of imputed genotypes   |
+| `genotypes_association (deprecated: genotypes_imputed)`     |  /path/to/vcf/\*vcf.gz | Path to imputed genotypes in VCF format) |
+| `genotypes_association_format (deprecated: genotypes_imputed_format)`     | VCF | Input file format of imputed genotypes   |
 | `association_build (deprecated:genotypes_build)`     | hg19 *or* hg38 | Imputed genotypes build format |
 | `phenotypes_filename `     | /path/to/phenotype.txt | Path to phenotype file |
 | `phenotypes_columns`     | 'phenoColumn1,phenoColumn2,phenoColumn3' | List of phenotypes |

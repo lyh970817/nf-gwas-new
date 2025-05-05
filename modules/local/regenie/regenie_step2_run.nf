@@ -12,7 +12,6 @@ process REGENIE_STEP2_RUN {
     path sample_file
     path covariates_file
     path condition_list_file
-    val(run_interaction)
 
     output:
     tuple val(filename), path("*regenie.gz"), path("*regenie.Ydict"), emit: regenie_step2_out, optional: true
@@ -20,9 +19,9 @@ process REGENIE_STEP2_RUN {
     path "${filename}*.log", emit: regenie_step2_out_log
 
     script:
-    def format = assoc_format == 'bgen' ? "--bgen" : '--pgen'
-    def extension = assoc_format == 'bgen' ? ".bgen" : ''
-    def bgen_sample = sample_file ? "--sample $sample_file" : ''
+    def format = '--pgen'
+    def extension = ''
+    def bgen_sample = ''
     def test = "--test $params.regenie_test"
     def firthApprox = params.regenie_firth_approx ? "--approx" : ""
     def firth = params.regenie_firth ? "--firth $firthApprox" : ""
@@ -42,9 +41,9 @@ process REGENIE_STEP2_RUN {
     def condition_list = params.regenie_condition_list ? "--condition-list $condition_list_file" : ''
     def range_output = (range != -1) ? range.replaceAll(":", "-"):''
     def regenie_range = (range != -1)  ? "--range ${range}":''
-    def output_name = (range != -1)  ? "${filename}-${range_output}":"$filename" 
-    def phenotype_split = run_interaction  ? "":"--no-split" 
-    def step2_optional = params.regenie_step2_optional  ? "$params.regenie_step2_optional":'' 
+    def output_name = (range != -1)  ? "${filename}-${range_output}":"$filename"
+    def phenotype_split = "--no-split"
+    def step2_optional = params.regenie_step2_optional  ? "$params.regenie_step2_optional":''
 
     """
     regenie \

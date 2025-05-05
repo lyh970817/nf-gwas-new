@@ -6,9 +6,9 @@ nav_order: 2
 
 ## Getting Started
 
-1. Install [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html#installation) (>=22.10.4) 
+1. Install [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html#installation) (>=22.10.4)
 
-2. Install [Docker](https://docs.docker.com/get-docker/) or [Singularity](https://sylabs.io/). 
+2. Install [Docker](https://docs.docker.com/get-docker/) or [Singularity](https://sylabs.io/).
 
 **Note for Windows users**: This [step-by-step tutorial](https://www.nextflow.io/blog/2021/setup-nextflow-on-windows.html) helps you to set up Nextflow on your local machine.
 
@@ -17,7 +17,7 @@ nav_order: 2
     ```
     nextflow run genepi/nf-gwas -r <latest-tag> -profile test,docker
     ```
-**Note:** Click [here](https://github.com/genepi/nf-gwas/tags) to replace the `<latest-tag>` with the actual version you want to run (e.g. `-r v1.0.0`). 
+**Note:** Click [here](https://github.com/genepi/nf-gwas/tags) to replace the `<latest-tag>` with the actual version you want to run (e.g. `-r v1.0.0`).
 
 ### Run the pipeline on your data
 
@@ -27,9 +27,9 @@ nav_order: 2
     params {
         project                       = 'test-gwas'
         genotypes_prediction          = 'tests/input/example.{bim,bed,fam}'
-        genotypes_association         = 'tests/input/example.bgen'
+        genotypes_association         = 'tests/input/example.vcf.gz'
         genotypes_build               = 'hg19'
-        genotypes_association_format  = 'bgen'
+        genotypes_association_format  = 'vcf'
         phenotypes_filename           = 'tests/input/phenotype.txt'
         phenotypes_columns            = 'Y1,Y2'
         phenotypes_binary_trait       = false

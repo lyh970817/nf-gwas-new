@@ -1,16 +1,14 @@
-include { REGENIE_STEP2_RUN        } from '../../modules/local/regenie/regenie_step2_run' 
-include { REGENIE_LOG_PARSER_STEP2 } from '../../modules/local/regenie/regenie_log_parser_step2'  
+include { REGENIE_STEP2_RUN        } from '../../modules/local/regenie/regenie_step2_run'
 
 workflow REGENIE_STEP2 {
 
-    take: 
+    take:
     regenie_step1_out_ch
     imputed_plink2_ch
     genotypes_association_format
-    phenotypes_file_validated
+    phenotypes_file
     covariates_file_validated
     condition_list_file
-    run_interaction_tests
 
     main:
     if (!params.regenie_sample_file) {
@@ -23,32 +21,15 @@ workflow REGENIE_STEP2 {
         regenie_step1_out_ch.collect(),
         imputed_plink2_ch,
         genotypes_association_format,
-        phenotypes_file_validated,
+        phenotypes_file,
         sample_file,
         covariates_file_validated,
-        condition_list_file,
-        run_interaction_tests
+        condition_list_file
     )
 
-    if (run_interaction_tests){
-        REGENIE_STEP2_RUN.out.regenie_step2_out_interaction
-            .transpose()
-            .map { prefix, fl -> tuple(RegenieUtil.getPhenotype(prefix, fl), fl) }
-            .set { regenie_step2_out }
-        } else {
-            regenie_step2_out = REGENIE_STEP2_RUN.out.regenie_step2_out
-    }
+    regenie_step2_out = REGENIE_STEP2_RUN.out.regenie_step2_out
 
-    regenie_step2_out_log = REGENIE_STEP2_RUN.out.regenie_step2_out_log
-    
-    REGENIE_LOG_PARSER_STEP2 (
-        regenie_step2_out_log.collect()
-    )
-
-    regenie_step2_parsed_logs = REGENIE_LOG_PARSER_STEP2.out.regenie_step2_parsed_logs
-   
-    emit: 
-    regenie_step2_parsed_logs
+    emit:
     regenie_step2_out
 
 }

@@ -3,39 +3,8 @@ nextflow_pipeline {
     name "Test Workflow main.nf"
     script "main.nf"
 
-    test("Should execute gene-based test pipeline with bgen files") {
-
-        when {
-
-            params {
-                project                       = 'test-gene-based-test'
-                association_build             = 'hg19'
-                regenie_skip_predictions      = true
-                genotypes_association         = "$projectDir/tests/input/pipeline/gene_based_tests_regenie/example_3chr.bgen"
-                regenie_sample_file           = "$projectDir/tests/input/pipeline/gene_based_tests_regenie/example_3chr.sample"
-                genotypes_association_format  = 'bgen'
-                phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
-                phenotypes_binary_trait       = true
-                phenotypes_columns            = 'Y1,Y2'
-                regenie_run_gene_based_tests  = true
-                regenie_gene_anno             = "$projectDir/tests/input/pipeline/gene_based_tests_regenie/example_3chr.annotations"
-                regenie_gene_setlist          = "$projectDir/tests/input/pipeline/gene_based_tests_regenie/example_3chr.setlist"
-                regenie_gene_masks            = "$projectDir/tests/input/pipeline/gene_based_tests_regenie/example_3chr.masks"
-                regenie_gene_test             = 'skat'
-                regenie_gene_aaf              = 0.01
-                regenie_gene_vc_max_aaf       = 100
-                regenie_gene_vc_mac_thr       = 10
-                regenie_gene_build_mask       = 'max'
-                regenie_write_bed_masks       = true
-                rsids_filename                = "$projectDir/tests/input/pipeline/rsids.tsv.gz"
-            }
-        }
-
-        then {
-            assert workflow.success
-        }
-
-    }
+    // BGEN format is no longer supported, so this test has been removed
+    // test("Should execute gene-based test pipeline with bgen files")
 
 
    test("Should execute gene-based test pipeline with specified parameters with sum") {
@@ -283,9 +252,9 @@ test("Should execute GWAS with additive test and RSIDs") {
             params {
                 project                       = "test-gwas-binary"
                 genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-                genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
+                genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
                 genotypes_build               = 'hg19'
-                genotypes_imputed_format      = 'bgen'
+                genotypes_imputed_format      = 'vcf'
                 phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
                 phenotypes_columns            = 'Y1,Y2'
                 phenotypes_binary_trait       = true
@@ -303,7 +272,7 @@ test("Should execute GWAS with additive test and RSIDs") {
         }
 
     }
-    
+
 test("Should execute GWAS with binary trait (no Firth approximation)") {
     when {
         params {
@@ -332,9 +301,9 @@ test("Should execute GWAS with binary trait (no Firth)") {
         params {
             project                       = "test-gwas-binary-no-firth"
             genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
+            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
             genotypes_build               = 'hg19'
-            genotypes_association_format  = 'bgen'
+            genotypes_association_format  = 'vcf'
             phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
             phenotypes_columns            = 'Y1,Y2'
             phenotypes_binary_trait       = true
@@ -355,9 +324,9 @@ test("Should execute GWAS with binary trait (with missing data)") {
         params {
             project                       = "test-gwas-binary-with-NA"
             genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
+            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
             genotypes_build               = 'hg19'
-            genotypes_association_format  = 'bgen'
+            genotypes_association_format  = 'vcf'
             phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin_wNA.txt"
             phenotypes_columns            = 'Y1,Y2'
             phenotypes_binary_trait       = true
@@ -377,13 +346,13 @@ test("Should execute GWAS with additive test on 2 chromosomes") {
         params {
             project                       = 'test-gwas-additive-2chromosomes'
             genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example*.bgen"
+            genotypes_association         = "$projectDir/tests/input/pipeline/chr*.vcf.gz"
             genotypes_build               = 'hg19'
-            genotypes_association_format  = 'bgen'
+            genotypes_association_format  = 'vcf'
             phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
             phenotypes_binary_trait       = false
             phenotypes_columns            = 'Y1,Y2'
-            genotypes_association_chunk_size = 500000
+            // Chunking is no longer supported as BGEN format has been removed
             regenie_test                  = 'additive'
             rsids_filename                = "$projectDir/tests/input/pipeline/rsids.tsv.gz"
             annotation_min_log10p         = 2
@@ -404,11 +373,12 @@ test("Should execute GWAS with header in phenotype file with chunking") {
         params {
             project                       = 'test-gwas-header'
             genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
+            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
             genotypes_build               = 'hg19'
-            genotypes_association_chunk_size = 100
-            genotypes_association_chunk_strategy = 'VARIANTS'
-            genotypes_association_format  = 'bgen'
+            // Chunking is no longer supported as BGEN format has been removed
+            // genotypes_association_chunk_size = 100
+            // genotypes_association_chunk_strategy = 'VARIANTS'
+            genotypes_association_format  = 'vcf'
             phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_header.txt"
             phenotypes_columns            = 'PHENO1,PHENO2'
             phenotypes_binary_trait       = false
@@ -428,12 +398,13 @@ test("Should execute GWAS with header in phenotype file (custom batch size)") {
         params {
             project                       = 'test-gwas-header'
             genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
+            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
             genotypes_build               = 'hg19'
-            genotypes_association_chunk_size = 100
+            // Chunking is no longer supported as BGEN format has been removed
+            // genotypes_association_chunk_size = 100
             genotypes_prediction_chunks   = 5
             regenie_bsize_step1           = 100
-            genotypes_association_format  = 'bgen'
+            genotypes_association_format  = 'vcf'
             phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_header.txt"
             phenotypes_columns            = 'PHENO1,PHENO2'
             phenotypes_binary_trait       = false
@@ -453,10 +424,11 @@ test("Should execute GWAS with header in phenotype file (default batch size)") {
         params {
             project                       = 'test-gwas-header'
             genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
+            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
             genotypes_build               = 'hg19'
-            genotypes_association_chunk_size = 100
-            genotypes_association_format  = 'bgen'
+            // Chunking is no longer supported as BGEN format has been removed
+            // genotypes_association_chunk_size = 100
+            genotypes_association_format  = 'vcf'
             phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_header.txt"
             phenotypes_columns            = 'PHENO1,PHENO2'
             phenotypes_binary_trait       = false
@@ -593,9 +565,9 @@ test("Should execute GWAS with header in phenotype file") {
         params {
             project                       = 'test-gwas-header'
             genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
+            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
             genotypes_build               = 'hg19'
-            genotypes_association_format  = 'bgen'
+            genotypes_association_format  = 'vcf'
             phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_header.txt"
             phenotypes_columns            = 'PHENO1,PHENO2'
             phenotypes_binary_trait       = false
@@ -826,9 +798,9 @@ test("Should execute pipeline for binary trait with optional regenie params") {
             params {
                 project                       = "test-gwas-binary"
                 genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-                genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
+                genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
                 genotypes_build               = 'hg19'
-                genotypes_imputed_format      = 'bgen'
+                genotypes_imputed_format      = 'vcf'
                 phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
                 phenotypes_columns            = 'Y1,Y2'
                 phenotypes_binary_trait       = true
@@ -853,9 +825,9 @@ test("Should execute pipeline for binary trait with optional regenie step1 param
             params {
                 project                       = "test-gwas-binary"
                 genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-                genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
+                genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
                 genotypes_build               = 'hg19'
-                genotypes_imputed_format      = 'bgen'
+                genotypes_imputed_format      = 'vcf'
                 phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
                 phenotypes_columns            = 'Y1,Y2'
                 phenotypes_binary_trait       = true
@@ -878,12 +850,13 @@ test("Should GWAS with chunking and optional step 1 param") {
         params {
             project                       = 'test-gwas-header'
             genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
+            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
             genotypes_build               = 'hg19'
-            genotypes_association_chunk_size = 100
+            // Chunking is no longer supported as BGEN format has been removed
+            // genotypes_association_chunk_size = 100
             genotypes_prediction_chunks   = 5
             regenie_bsize_step1           = 100
-            genotypes_association_format  = 'bgen'
+            genotypes_association_format  = 'vcf'
             phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_header.txt"
             phenotypes_columns            = 'PHENO1,PHENO2'
             phenotypes_binary_trait       = false
@@ -971,7 +944,7 @@ test("Should GWAS with chunking and optional step 1 param") {
         assert workflow.failed
         snapshot(workflow.trace).match()
     }
-    
+
     }
 
 
@@ -982,9 +955,9 @@ test("Should GWAS with chunking and optional step 1 param") {
             params {
                 project                       = "test-gwas-binary"
                 genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-                genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
+                genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
                 genotypes_build               = 'hg19'
-                genotypes_imputed_format      = 'bgen'
+                genotypes_imputed_format      = 'vcf'
                 phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
                 phenotypes_columns            = 'Y1,Y2'
                 phenotypes_binary_trait       = true
@@ -1010,9 +983,9 @@ test("Should GWAS with chunking and optional step 1 param") {
             params {
                 project                       = "test-gwas-binary"
                 genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-                genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
+                genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
                 genotypes_build               = 'hg19'
-                genotypes_imputed_format      = 'bgen'
+                genotypes_imputed_format      = 'vcf'
                 phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
                 phenotypes_columns            = 'Y1,Y2'
                 phenotypes_binary_trait       = false
@@ -1035,9 +1008,9 @@ test("Should GWAS with chunking and optional step 1 param") {
             params {
                 project                       = "test-gwas-binary"
                 genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-                genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
+                genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
                 genotypes_build               = 'hg19'
-                genotypes_imputed_format      = 'bgen'
+                genotypes_imputed_format      = 'vcf'
                 phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_stratified.txt"
                 phenotypes_columns            = 'Y1,Y2'
                 phenotypes_binary_trait       = false

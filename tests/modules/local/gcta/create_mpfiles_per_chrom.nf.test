@@ -1,0 +1,33 @@
+nextflow_process {
+
+    name "Test Process CREATE_MPFILES_PER_CHROM"
+    script "modules/local/gcta/create_mpfiles_per_chrom.nf"
+    process "CREATE_MPFILES_PER_CHROM"
+
+    test("Should create a chromosome-specific mpfile from PLINK2 files") {
+
+        when {
+            process {
+                """
+                input[0] = tuple("example.vcf", file("$projectDir/tests/input/pipeline/example.vcf.pgen"), file("$projectDir/tests/input/pipeline/example.vcf.psam"), file("$projectDir/tests/input/pipeline/example.vcf.pvar"), -1)
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            with(process.out) {
+                assert mpfile_part
+                assert mpfile_part.size() == 1
+                assert path(mpfile_part.get(0)).name == "example.vcf.mpfile"
+                // We expect at least one line in the file
+                assert path(mpfile_part.get(0)).readLines().size() >= 1
+                def line = path(mpfile_part.get(0)).readLines()[0]
+                assert line.startsWith("example.vcf ")
+                assert line.contains("example.vcf.pgen")
+                assert line.contains("example.vcf.psam")
+                assert line.contains("example.vcf.pvar")
+            }
+        }
+    }
+}

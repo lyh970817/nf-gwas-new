@@ -64,8 +64,8 @@ class WorkflowMain {
        Nextflow.error("Parameter association_build is required.")
     }
 
-    if(params.genotypes_association_chunk_size > 0 && genotypes_association_format != 'bgen' ) {
-        Nextflow.error("Chunking is currently only available for association files in bgen format (param: genotypes_association_chunk_size).")
+    if(params.genotypes_association_chunk_size > 0) {
+        Nextflow.error("Chunking is no longer supported as BGEN format has been removed from the pipeline.")
     }
 
     if (params.regenie_run_gene_based_tests) {
@@ -79,8 +79,8 @@ class WorkflowMain {
         }
 
         //Check association file format for gene-based tests
-        if (genotypes_association_format != 'vcf' && genotypes_association_format != "bgen"){
-            Nextflow.error("File format " + genotypes_association_format + " currently not supported for gene-based tests. Please use 'vcf' or 'bgen' input instead. ")
+        if (genotypes_association_format != 'vcf'){
+            Nextflow.error("File format " + genotypes_association_format + " currently not supported for gene-based tests. Please use 'vcf' input instead. ")
         }
         } else {
             //Check if tests exists
@@ -90,10 +90,10 @@ class WorkflowMain {
             }
 
             //Check association file format
-            if (genotypes_association_format != 'vcf' && genotypes_association_format != 'bgen'){
-                Nextflow.error("File format " + genotypes_association_format + " not supported.")
+            if (genotypes_association_format != 'vcf'){
+                Nextflow.error("File format " + genotypes_association_format + " not supported. Only VCF format is supported.")
             }
-        }    
+        }
 
     }
 }

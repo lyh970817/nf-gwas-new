@@ -1,0 +1,32 @@
+nextflow_process {
+
+    name "Test Process IMPUTED_TO_PLINK"
+    script "modules/local/imputed_to_plink.nf"
+    process "IMPUTED_TO_PLINK"
+
+    test("Should create a bed, bim and fam file with 500 samples") {
+
+        when {
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/pipeline/example.vcf.gz")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            with(process.out){
+                assert imputed_plink
+                assert imputed_plink.size() == 1
+                with(imputed_plink.get(0)){
+                    assert get(0) == "example.vcf"
+                    assert get(1) ==~ ".*/example.vcf.bed"
+                    assert get(2) ==~ ".*/example.vcf.bim"
+                    assert get(3) ==~ ".*/example.vcf.fam"
+                    assert file(get(3)).readLines().size() == 500
+                }
+            }
+        }
+    }
+}

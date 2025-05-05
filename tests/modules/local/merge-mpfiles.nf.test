@@ -1,0 +1,35 @@
+nextflow_process {
+
+    name "Test Process MERGE_MPFILES"
+    script "modules/local/gcta-grm.nf"
+    process "MERGE_MPFILES"
+
+    test("Should merge multiple mpfiles into a single file") {
+
+        when {
+            process {
+                """
+                // Create test mpfiles
+                file('chr1.mpfile').text = 'chr1 path/to/chr1.pgen path/to/chr1.psam path/to/chr1.pvar'
+                file('chr2.mpfile').text = 'chr2 path/to/chr2.pgen path/to/chr2.psam path/to/chr2.pvar'
+                
+                input[0] = [file('chr1.mpfile'), file('chr2.mpfile')]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            with(process.out) {
+                assert mpfile
+                assert mpfile.size() == 1
+                assert path(mpfile.get(0)).name == "gcta_grm.mpfile"
+                // We expect two lines in the file (one for each input file)
+                assert path(mpfile.get(0)).readLines().size() == 2
+                def lines = path(mpfile.get(0)).readLines()
+                assert lines[0].startsWith("chr1 ")
+                assert lines[1].startsWith("chr2 ")
+            }
+        }
+    }
+}

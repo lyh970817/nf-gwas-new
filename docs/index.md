@@ -21,7 +21,7 @@ A Nextflow pipeline to perform genome-wide association studies (GWAS).
 ---
 This cloud-ready GWAS pipeline allows you to run **single variant tests**, **gene-based tests**  and **interaction testing** using [REGENIE](https://github.com/rgcgithub/regenie) in an automated and reproducible way.
 
-For single variant tests, the pipeline works with BGEN (e.g. from UK Biobank) or VCF files (e.g. from [Michigan Imputation Server](https://imputationserver.sph.umich.edu/)). For gene-based tests, we currently support BED files as an input.
+For single variant tests, the pipeline works with VCF files (e.g. from [Michigan Imputation Server](https://imputationserver.sph.umich.edu/)). For gene-based tests, we also support VCF files as input.
 The output files of the pipeline include results of the association tests (in tabix indexed format, which works with e.g. LocusZoom out of the box), annotated loci tophits and an interactive HTML report with summary statistics and plots.
 
 The single-variant pipeline currently includes the following steps:

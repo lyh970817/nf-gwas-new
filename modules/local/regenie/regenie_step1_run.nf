@@ -3,9 +3,7 @@ process REGENIE_STEP1_RUN {
     publishDir "${params.pubDir}/logs", mode: 'copy', pattern: 'regenie_step1_out.log'
 
     input:
-    tuple val(genotyped_plink_filename), path(genotyped_plink_bim_file), path(genotyped_plink_bed_file), path(genotyped_plink_fam_file)
-    path snplist
-    path id
+    tuple val(genotyped_plink_filename), path(genotyped_plink_file)
     path phenotypes_file
     path covariates_file
     path condition_list_file
@@ -31,8 +29,6 @@ process REGENIE_STEP1_RUN {
     regenie \
         --step 1 \
         --bed ${genotyped_plink_filename} \
-        --extract ${snplist} \
-        --keep ${id} \
         --phenoFile ${phenotypes_file} \
         --phenoColList  ${params.phenotypes_columns} \
         $covariants \

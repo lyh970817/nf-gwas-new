@@ -1,0 +1,108 @@
+nextflow_process {
+
+    name "Test Process PREPARE_PHENOCOV"
+    script "modules/local/gcta_greml/prepare_phenocov.nf"
+    process "PREPARE_PHENOCOV"
+
+    test("Should create phenotypes and covariates files without headers") {
+
+        when {
+            params {
+                // Set required parameters
+                covariates_columns = 'V1,V2'
+                covariates_cat_columns = 'V3'
+                pubDir = "$outputDir"
+            }
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[1] = file("$projectDir/tests/input/pipeline/covariates.txt")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert phenotypes_noheader
+                assert covariates_quant_noheader
+                assert covariates_cat_noheader
+
+                // Check that headers are removed
+                assert !path(phenotypes_noheader.get(0)).text.contains("FID IID")
+                assert !path(covariates_quant_noheader.get(0)).text.contains("FID IID")
+                assert !path(covariates_cat_noheader.get(0)).text.contains("FID IID")
+
+                // Check that the first line contains data
+                assert path(phenotypes_noheader.get(0)).readLines().get(0).split().size() >= 3 // FID, IID, at least one phenotype
+                assert path(covariates_quant_noheader.get(0)).readLines().get(0).split().size() >= 4 // FID, IID, V1, V2
+                assert path(covariates_cat_noheader.get(0)).readLines().get(0).split().size() >= 3 // FID, IID, V3
+            }
+        }
+    }
+
+    test("Should handle missing covariates file") {
+
+        when {
+            params {
+                // Set required parameters
+                pubDir = "$outputDir"
+            }
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[1] = file("NO_COVARIATES")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert phenotypes_noheader
+                assert !path(phenotypes_noheader.get(0)).text.contains("FID IID")
+                assert phenotypes_noheader.get(0).readLines().size() > 0
+            }
+        }
+    }
+
+    test("Should exclude categorical covariates from quantitative covariates") {
+
+        when {
+            params {
+                // Set overlapping covariates to test exclusion
+                covariates_columns = 'V1,V2,V3'
+                covariates_cat_columns = 'V3'
+                pubDir = "$outputDir"
+            }
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[1] = file("$projectDir/tests/input/pipeline/covariates.txt")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert phenotypes_noheader
+                assert covariates_quant_noheader
+                assert covariates_cat_noheader
+
+                // Check that the quantitative covariates file has the right columns
+                def quant_line = path(covariates_quant_noheader.get(0)).readLines().get(0)
+                def quant_cols = quant_line.split()
+                assert quant_cols.size() == 4 // FID, IID, V1, V2 (not V3)
+
+                // Check that the categorical covariates file has the right columns
+                def cat_line = path(covariates_cat_noheader.get(0)).readLines().get(0)
+                def cat_cols = cat_line.split()
+                assert cat_cols.size() == 3 // FID, IID, V3
+            }
+        }
+    }
+}
