@@ -76,14 +76,14 @@ workflow GCTA_GREML_LDMS {
 
     // // Run REML analysis using the unrelated subjects GRM
     RUN_REML(
-        GCTA_GRM.out.grm_adj_unrel_files,
+        GCTA_GRM.out.grm_files,
         PREPARE_PHENOCOV.out.phenotypes_noheader,
         quant_covariates,
         cat_covariates
     )
 
-    // emit:
-    // ld_scores = CALCULATE_LD_SCORES.out.ld_scores
+    emit:
+    ld_scores = CALCULATE_LD_SCORES.out.ld_scores
     // snp_groups = MERGE_SNP_GROUPS.out.merged_snp_groups
-    // reml_results = RUN_REML.out.reml_results
+    reml_results = RUN_REML.out.reml_results
 }

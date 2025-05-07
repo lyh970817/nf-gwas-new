@@ -7,11 +7,14 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-py39_23.9.0-0-Li
   /bin/bash ~/miniconda.sh -b -p /opt/conda
 ENV PATH=/opt/conda/bin:${PATH}
 
-RUN conda config --set channel_priority strict
+RUN conda install -n root -y -c conda-forge mamba && \
+    mamba update -n base -y conda && \
+    mamba env update -n base -f environment.yml && \
+    mamba clean --all -y
 
-RUN conda update -y conda && \
-    conda env update -n root -f environment.yml && \
-    conda clean --all
+# RUN conda update -y conda && \
+#     conda env update -n root -f environment.yml && \
+#     conda clean --all
 
 # Install software
 RUN apt-get update && \

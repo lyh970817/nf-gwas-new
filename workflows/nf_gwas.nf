@@ -6,6 +6,8 @@ include { GCTA_GREML } from './gcta/gcta_greml'
 include { GCTA_GREML_LDMS } from './gcta/gcta_greml_ldms'
 include { GCTA_FASTGWA } from './gcta/gcta_fastgwa'
 include { LDAK } from './ldak/ldak'
+// include { BOLT_LMM } from './bolt_lmm/bolt_lmm'
+include { BOLT_LMM_REML } from './bolt_lmm/bolt_lmm_reml'
 include { SINGLE_VARIANT_TESTS } from './single_variant_tests'
 
 workflow NF_GWAS {
@@ -79,22 +81,22 @@ workflow NF_GWAS {
     )
 
 
-    imputed_plink_ch = IMPUTED_TO_PLINK.out.imputed_plink
     imputed_plink2_ch = IMPUTED_TO_PLINK2.out.imputed_plink2
+    imputed_plink_ch = IMPUTED_TO_PLINK.out.imputed_plink
 
     // // Run GCTA GREML workflow which includes GCTA GRM calculation and REML analysis
-    GCTA_GREML (
-        phenotypes_file,
-        covariates_file,
-        imputed_plink2_ch,
-        params.nparts_gcta
-    )
+    // GCTA_GREML (
+    //     phenotypes_file,
+    //     covariates_file,
+    //     imputed_plink2_ch,
+    //     params.nparts_gcta
+    // )
 
-    LDAK (
-        imputed_plink_ch,
-        phenotypes_file,
-        covariates_file
-    )
+    // LDAK (
+    //     imputed_plink_ch,
+    //     phenotypes_file,
+    //     covariates_file
+    // )
 
     // Run GCTA FastGWA workflow for mixed linear model GWAS
     GCTA_FASTGWA (
@@ -113,6 +115,19 @@ workflow NF_GWAS {
     //     params.nparts_gcta
     // )
 
+    // Run BOLT-LMM REML workflow for variance components analysis
+    // BOLT_LMM (
+    //     phenotypes_file,
+    //     covariates_file,
+    //     imputed_plink2_ch
+    // )
+
+    BOLT_LMM_REML (
+        imputed_plink_ch,
+        phenotypes_file,
+        covariates_file,
+    )
+
     // SINGLE_VARIANT_TESTS(
     //     imputed_plink2_ch,
     //     phenotypes_file,
@@ -130,5 +145,7 @@ workflow NF_GWAS {
     // ldms_results = GCTA_GREML_LDMS.out.reml_results
     // ld_scores = GCTA_GREML_LDMS.out.ld_scores
     // snp_groups = GCTA_GREML_LDMS.out.snp_groups
+    // bolt_reml_results = BOLT_LMM.out.reml_results
+    // bolt_log_file = BOLT_LMM.out.log_file
 }
 

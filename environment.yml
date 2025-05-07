@@ -4,7 +4,7 @@ name: nf-gwas
 channels:
   - conda-forge
   - genomedk
-  # - bioconda
+  - bioconda
   - defaults
 dependencies:
   - r-base
@@ -12,10 +12,12 @@ dependencies:
   - plink=1.90b6.21
   - gcta
   - ldak6
-  - genomedk::bolt-lmm
-  - conda-forge::openjdk=17.0.3
+  - libboost=1.84.* 
+  - boost-cpp=1.84.* 
+  - bolt-lmm
+  - openjdk
   - unzip=6.0
   - bedtools=2.30.0
-  - htslib=1.15.1
-  - conda-forge::csvtk
+  - htslib
+  - csvtk
   - curl
