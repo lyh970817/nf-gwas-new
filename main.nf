@@ -10,7 +10,7 @@
 
 
 
-include { paramsSummaryLog } from 'plugin/nf-schema'
+// include { paramsSummaryLog } from 'plugin/nf-schema'
 
 
 
@@ -38,7 +38,7 @@ workflow {
 // }
 
 // Print summary of supplied parameters
-log.info paramsSummaryLog(workflow)
+// log.info paramsSummaryLog(workflow)
     NF_GWAS ()
 
 workflow.onComplete = {
