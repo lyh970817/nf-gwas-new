@@ -105,12 +105,13 @@ workflow NF_GWAS {
     imputed_plink_ch = IMPUTED_TO_PLINK.out.imputed_plink
 
     // // Run GCTA GREML workflow which includes GCTA GRM calculation and REML analysis
-    // GCTA_GREML (
-    //     phenotypes_file,
-    //     covariates_file,
-    //     imputed_plink2_ch,
-    //     params.nparts_gcta
-    // )
+    GCTA_GREML_LDMS (
+        phenotypes_file,
+        covariates_file,
+        imputed_plink2_ch,
+        imputed_plink_ch,
+        params.nparts_gcta
+    )
 
     // LDAK (
     //     imputed_plink_ch,

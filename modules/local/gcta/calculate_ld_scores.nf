@@ -13,7 +13,7 @@ process CALCULATE_LD_SCORES {
     """
     # Calculate LD scores using GCTA
     gcta \\
-        --pfile ${filename} \\
+        --bfile ${filename} \\
         --ld-score-region 200 \\
         --out ${filename}_gcta_ld \\
         --thread-num ${task.cpus}

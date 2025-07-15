@@ -16,13 +16,14 @@ workflow GCTA_GREML_LDMS {
     phenotypes_file     // Path to phenotypes file
     covariates_file     // Path to covariates file (optional)
     imputed_plink2_ch   // Channel with imputed PLINK2 files
+    imputed_plink_ch   // Channel with imputed PLINK files
     nparts_gcta         // Number of parts for GCTA GRM calculation
 
     main:
 
     // Calculate LD scores for each chromosome and segment SNPs into groups
     CALCULATE_LD_SCORES(
-        imputed_plink2_ch
+        imputed_plink_ch
     )
 
     // Extract group number from the SNP group files
