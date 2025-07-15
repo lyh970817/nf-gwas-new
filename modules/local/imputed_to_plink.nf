@@ -1,10 +1,10 @@
 process IMPUTED_TO_PLINK {
 
     input:
-    path imputed_vcf_file
+    tuple val(chr_num), path(imputed_vcf_file)
     
     output:
-    tuple val("${imputed_vcf_file.baseName}"), path("${imputed_vcf_file.baseName}.bed"), path("${imputed_vcf_file.baseName}.bim"), path("${imputed_vcf_file.baseName}.fam"), val(-1), emit: imputed_plink
+    tuple val(chr_num), val("${imputed_vcf_file.baseName}"), path("${imputed_vcf_file.baseName}.bed"), path("${imputed_vcf_file.baseName}.bim"), path("${imputed_vcf_file.baseName}.fam"), val(-1), emit: imputed_plink
 
     script:
     def delimiter = params.vcf_conversion_split_id ? "--id-delim" : '--double-id'

@@ -6,6 +6,9 @@ include { GCTA_GREML } from './gcta/gcta_greml'
 include { GCTA_GREML_LDMS } from './gcta/gcta_greml_ldms'
 include { GCTA_FASTGWA } from './gcta/gcta_fastgwa'
 include { LDAK } from './ldak/ldak'
+include { LDAK_QC } from './ldak/ldak_qc'
+include { THIN_PREDICTORS } from '../modules/local/ldak/thin_predictors'
+
 // include { BOLT_LMM } from './bolt_lmm/bolt_lmm'
 include { BOLT_LMM_REML } from './bolt_lmm/bolt_lmm_reml'
 include { SINGLE_VARIANT_TESTS } from './single_variant_tests'
@@ -51,7 +54,24 @@ workflow NF_GWAS {
 
     def skip_predictions = params.regenie_skip_predictions
 
+    // Validate that all files contain double digit numbers and sort them
     imputed_files_ch = channel.fromPath(genotypes_association, checkIfExists: true)
+        .toList()
+        .flatMap { files ->
+            // Check that all files contain double digit numbers
+            def invalid_files = files.findAll { file ->
+                !(file.name =~ /\d{2}/)
+            }
+            if (invalid_files) {
+                error "Files without double digit numbers found: ${invalid_files.collect { it.name }.join(', ')}"
+            }
+
+            // Sort files by name and attach sequential chromosome numbers
+            return files.sort { it.name }
+                .withIndex(1)
+                .collect { file, index -> [index, file] }
+        }
+
     phenotypes_file = file(params.phenotypes_filename, checkIfExists: true)
 
     covariates_file = []
@@ -95,38 +115,48 @@ workflow NF_GWAS {
     // LDAK (
     //     imputed_plink_ch,
     //     phenotypes_file,
-    //     covariates_file
+    //     covariates_file,
+    //     "human_default"
     // )
 
-    // Run GCTA FastGWA workflow for mixed linear model GWAS
-    GCTA_FASTGWA (
-        imputed_plink2_ch,
-        phenotypes_file,
-        covariates_file,
-        params.nparts_gcta,
-        params.sparse_cutoff
-    )
-
-    // Run GCTA GREML-LDMS workflow for stratified heritability analysis
-    // GCTA_GREML_LDMS (
+    // LDAK (
+    //     imputed_plink_ch,
     //     phenotypes_file,
     //     covariates_file,
-    //     imputed_plink2_ch,
-    //     params.nparts_gcta
+    //     "uniform"
     // )
 
-    // Run BOLT-LMM REML workflow for variance components analysis
-    // BOLT_LMM (
-    //     phenotypes_file,
-    //     covariates_file,
-    //     imputed_plink2_ch
-    // )
-
-    BOLT_LMM_REML (
+    LDAK (
         imputed_plink_ch,
         phenotypes_file,
         covariates_file,
+        "ldak-thin"
     )
+
+    // Run LDAK QC workflow for inflation testing
+    // LDAK_QC (
+    //     imputed_plink_ch,
+    //     phenotypes_file,
+    //     covariates_file
+    // )
+    
+    
+    
+
+    // Run GCTA FastGWA workflow for mixed linear model GWAS
+    // GCTA_FASTGWA (
+    //     imputed_plink2_ch,
+    //     phenotypes_file,
+    //     covariates_file,
+    //     params.nparts_gcta,
+    //     params.sparse_cutoff
+    // )
+
+    // BOLT_LMM_REML (
+    //     imputed_plink_ch,
+    //     phenotypes_file,
+    //     covariates_file,
+    // )
 
     // SINGLE_VARIANT_TESTS(
     //     imputed_plink2_ch,

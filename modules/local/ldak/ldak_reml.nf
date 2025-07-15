@@ -10,14 +10,23 @@ process LDAK_REML {
     path cat_covariates_file
 
     output:
-    path "reml_ldak*", emit: reml_results
+    path "reml_${combined_grm_name}.coeff"
+    path "reml_${combined_grm_name}.combined"
+    path "reml_${combined_grm_name}.cross"
+    path "reml_${combined_grm_name}.indi.blp"
+    path "reml_${combined_grm_name}.indi.res"
+    path "reml_${combined_grm_name}.progress"
+    path "reml_${combined_grm_name}.reml", emit: reml_results
+    path "reml_${combined_grm_name}.share"
+    path "reml_${combined_grm_name}.vars"
 
     script:
     def quant_covar_param = quant_covariates_file ? "--covar ${quant_covariates_file}" : ''
     def cat_covar_param = cat_covariates_file ? "--factors ${cat_covariates_file}" : ''
+    def keep_param = filtered_keep ? "--keep ${filtered_keep}" : ''
 
     """
     # Run LDAK REML analysis
-    ldak6 --reml reml_ldak --pheno ${phenotype_file} --keep ${filtered_keep} --grm ${combined_grm_name} ${quant_covar_param} ${cat_covar_param} --max-threads ${task.cpus}
+    ldak6 --reml reml_${combined_grm_name} --pheno ${phenotype_file} ${keep_param} --grm ${combined_grm_name} ${quant_covar_param} ${cat_covar_param} --max-threads ${task.cpus}
     """
 }

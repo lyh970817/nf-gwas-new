@@ -3,7 +3,7 @@ process CALCULATE_LD_SCORES {
     publishDir "${params.pubDir}/gcta_ldms", mode: 'copy', pattern: "*_gcta_ld.score.ld"
 
     input:
-    tuple val(filename), path(plink2_pgen_file), path(plink2_psam_file), path(plink2_pvar_file), val(range)
+    tuple val(chr_num), val(filename), path(plink2_pgen_file), path(plink2_psam_file), path(plink2_pvar_file), val(range)
 
     output:
     tuple val(filename), path("${filename}_gcta_ld.score.ld"), emit: ld_scores
@@ -11,12 +11,9 @@ process CALCULATE_LD_SCORES {
 
     script:
     """
-    # Convert PLINK2 files to PLINK1 format for GCTA
-    plink2 --pfile ${filename} --make-bed --out ${filename}
-
     # Calculate LD scores using GCTA
     gcta \\
-        --bfile ${filename} \\
+        --pfile ${filename} \\
         --ld-score-region 200 \\
         --out ${filename}_gcta_ld \\
         --thread-num ${task.cpus}

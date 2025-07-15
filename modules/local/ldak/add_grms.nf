@@ -5,13 +5,14 @@ process ADD_GRMS {
     input:
     path mgrm_file
     path grm_files  // All GRM files collected
+    val output_name
 
     output:
-    tuple val("ldak_grm"), path("ldak_grm.grm.bin"), path("ldak_grm.grm.id"), path("ldak_grm.grm.details"), path("ldak_grm.grm.adjust"), emit: combined_grm
+    tuple val("${output_name}"), path("${output_name}.grm.bin"), path("${output_name}.grm.id"), path("${output_name}.grm.details"), path("${output_name}.grm.adjust"), emit: combined_grm
 
     script:
     """
     # Run LDAK to add multiple GRMs
-    ldak6 --add-grm ldak_grm --mgrm ${mgrm_file} --max-threads ${task.cpus}
+    ldak6 --add-grm ${output_name} --mgrm ${mgrm_file} --max-threads ${task.cpus}
     """
 }

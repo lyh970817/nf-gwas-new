@@ -15,23 +15,20 @@ workflow BOLT_LMM_REML {
     covariates_file     // Path to covariates file (optional)
 
     main:
-    // Prepare phenotypes and covariates files (remove headers and split covariates)
-
-    // Convert VCF files to PLINK1 format using the IMPUTED_TO_PLINK process
     bed_plink_files = imputed_plink_ch
-        .map { _filename, bed, _bim, _fam, _range ->
+        .map { _chr_num, _filename, bed, _bim, _fam, _range ->
             bed
         }
         .collect()
 
     bim_plink_files = imputed_plink_ch
-        .map { _filename, _bed, bim, _fam, _range ->
+        .map { _chr_num, _filename, _bed, bim, _fam, _range ->
             bim
         }
         .collect()
 
     fam_plink_file = imputed_plink_ch
-        .map { _filename, _bed, _bim, fam, _range ->
+        .map { _chr_num, _filename, _bed, _bim, fam, _range ->
             fam
         }
         .first()
@@ -45,7 +42,6 @@ workflow BOLT_LMM_REML {
         covariates_file
     )
 
-    // emit:
-    // reml_results = RUN_BOLT_REML.out.reml_results
-    // log_file = RUN_BOLT_REML.out.log_file
+    emit:
+    log_file = RUN_BOLT_REML.out.log_file
 }

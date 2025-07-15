@@ -37,7 +37,7 @@ workflow GCTA_GRM {
 
     // Collect all PLINK2 files for use in MAKE_GRM_PART
     plink2_files = imputed_plink2_ch
-        .map { _filename, pgen, psam, pvar, _range ->
+        .map { _chr_num, _filename, pgen, psam, pvar, _range ->
             [pgen, psam, pvar]
         }
         .flatten()

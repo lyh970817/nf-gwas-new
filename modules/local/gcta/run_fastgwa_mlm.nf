@@ -3,7 +3,7 @@ process RUN_FASTGWA_MLM {
     publishDir "${params.pubDir}/gcta_fastgwa", mode: 'copy', pattern: "*.fastGWA"
 
     input:
-    tuple val(filename), path(plink_pgen), path(plink_psam), path(plink_pvar), val(range)
+    tuple val(chr_num), val(filename), path(plink_pgen), path(plink_psam), path(plink_pvar), val(range)
     tuple path(sparse_grm_id), path(sparse_grm_sp)
     path phenotypes_file
     path qcovariates_file

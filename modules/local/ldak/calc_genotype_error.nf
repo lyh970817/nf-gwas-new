@@ -1,29 +1,28 @@
 /*
 ========================================================================================
-    LDAK Workflow
+    CALC_GENOTYPE_ERROR Workflow - Calculate genotype error using LDAK HE
 ========================================================================================
 */
 
-include { CALC_KINS } from './calc_kins'
-include { MAKE_MGRM_LDAK } from '../../modules/local/ldak/make_mgrm_ldak'
-include { ADD_GRMS } from '../../modules/local/ldak/add_grms'
-include { FILTER_RELATEDNESS } from '../../modules/local/ldak/filter_relatedness'
-include { LDAK_REML } from '../../modules/local/ldak/ldak_reml'
-include { PREPARE_PHENOCOV } from '../../modules/local/gcta/prepare_phenocov'
+include { CALC_KINS } from '../../../workflows/ldak/calc_kins'
+include { MAKE_MGRM_LDAK } from './make_mgrm_ldak'
+include { ADD_GRMS } from './add_grms'
+include { FILTER_RELATEDNESS } from './filter_relatedness'
+include { LDAK_HE } from './ldak_he'
+include { PREPARE_PHENOCOV } from '../gcta/prepare_phenocov'
 
-// Main workflow
-workflow LDAK {
+workflow CALC_GENOTYPE_ERROR {
     take:
     imputed_plink_ch   // Channel with imputed PLINK files (bed, bim, fam)
     phenotype_file     // Path to phenotype file
     covariates_file    // Path to covariates file (optional)
-    heritability_model // Heritability model parameter (optional)
+    batch_subsets      // Tuple: [batch_subset_prefix, batch_subset_number, list_of_paths]
 
     main:
     // Run LDAK to calculate kinship matrix
     CALC_KINS(
         imputed_plink_ch,
-        heritability_model
+        "human_default"
     )
 
     // Extract GRM prefixes from CALC_KINS output
@@ -36,7 +35,7 @@ workflow LDAK {
     // Create MGRM file containing all GRM root names
     MAKE_MGRM_LDAK(
         grm_prefixes,
-        "ldak_grm"
+        "batch_grm"
     )
 
     // Collect all GRM files for use in ADD_GRMS
@@ -51,7 +50,7 @@ workflow LDAK {
     ADD_GRMS(
         MAKE_MGRM_LDAK.out.mgrm_file,
         grm_files,
-        "ldak_grm"
+        "batch_grm"
     )
 
     // Filter related individuals from the combined GRM
@@ -72,13 +71,19 @@ workflow LDAK {
     def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader
         .ifEmpty { Channel.of([]) }
 
-    // Run LDAK REML analysis
-    LDAK_REML(
+    // Extract batch subset parameters from the tuple
+    def batch_subset_prefix = batch_subsets[0]
+    def batch_subset_number = batch_subsets[1]
+
+    // Run LDAK HE analysis with batch subset parameters
+    LDAK_HE(
         ADD_GRMS.out.combined_grm,
         FILTER_RELATEDNESS.out.filtered_list,
         PREPARE_PHENOCOV.out.phenotypes_noheader,
         quant_covariates,
-        cat_covariates
+        cat_covariates,
+        batch_subset_prefix,
+        batch_subset_number
     )
 
     emit:
@@ -86,5 +91,5 @@ workflow LDAK {
     mgrm_file = MAKE_MGRM_LDAK.out.mgrm_file
     combined_grm = ADD_GRMS.out.combined_grm
     filtered_list = FILTER_RELATEDNESS.out.filtered_list
-    reml_results = LDAK_REML.out.reml_results
+    he_results = LDAK_HE.out.he_results
 }

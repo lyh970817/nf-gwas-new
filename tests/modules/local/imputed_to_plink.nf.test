@@ -9,7 +9,7 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = file("$projectDir/tests/input/pipeline/example.vcf.gz")
+                input[0] = [1, file("$projectDir/tests/input/pipeline/example.vcf.gz")]
                 """
             }
         }
@@ -20,11 +20,12 @@ nextflow_process {
                 assert imputed_plink
                 assert imputed_plink.size() == 1
                 with(imputed_plink.get(0)){
-                    assert get(0) == "example.vcf"
-                    assert get(1) ==~ ".*/example.vcf.bed"
-                    assert get(2) ==~ ".*/example.vcf.bim"
-                    assert get(3) ==~ ".*/example.vcf.fam"
-                    assert file(get(3)).readLines().size() == 500
+                    assert get(0) == 1
+                    assert get(1) == "example.vcf"
+                    assert get(2) ==~ ".*/example.vcf.bed"
+                    assert get(3) ==~ ".*/example.vcf.bim"
+                    assert get(4) ==~ ".*/example.vcf.fam"
+                    assert file(get(4)).readLines().size() == 500
                 }
             }
         }

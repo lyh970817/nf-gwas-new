@@ -6,7 +6,7 @@ process REGENIE_STEP2_RUN {
 
     input:
 	  path step1_out
-    tuple val(filename), path(plink2_pgen_file), path(plink2_psam_file), path(plink2_pvar_file), val(range)
+    tuple val(chr_num), val(filename), path(plink2_pgen_file), path(plink2_psam_file), path(plink2_pvar_file), val(range)
     val assoc_format
     path phenotypes_file
     path sample_file
@@ -39,9 +39,9 @@ process REGENIE_STEP2_RUN {
     def no_condtl = params.regenie_no_condtl ? "--no-condtl" : ''
     def force_condtl = params.regenie_force_condtl ? "--force-condtl" : ''
     def condition_list = params.regenie_condition_list ? "--condition-list $condition_list_file" : ''
-    def range_output = (range != -1) ? range.replaceAll(":", "-"):''
-    def regenie_range = (range != -1)  ? "--range ${range}":''
-    def output_name = (range != -1)  ? "${filename}-${range_output}":"$filename"
+    def range_output = (chr_num != -1) ? chr_num.toString().replaceAll(":", "-"):''
+    def regenie_range = (chr_num != -1)  ? "--range ${chr_num}":''
+    def output_name = (chr_num != -1)  ? "${filename}-${range_output}":"$filename"
     def phenotype_split = "--no-split"
     def step2_optional = params.regenie_step2_optional  ? "$params.regenie_step2_optional":''
 

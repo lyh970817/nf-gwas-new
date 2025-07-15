@@ -4,17 +4,18 @@ process MAKE_MGRM_LDAK {
 
     input:
     val grm_prefixes
+    val output_path
 
     output:
-    path "ldak_grm.mgrm", emit: mgrm_file
+    path "${output_path}.mgrm", emit: mgrm_file
 
     script:
     """
     # Create a text file with the root names of all LDAK GRM files
     # Each line contains one GRM file root name
-    touch ldak_grm.mgrm
+    touch ${output_path}.mgrm
     for prefix in ${grm_prefixes.join(' ')}; do
-        echo "\$prefix" >> ldak_grm.mgrm
+        echo "\$prefix" >> ${output_path}.mgrm
     done
     """
 }
