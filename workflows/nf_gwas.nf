@@ -74,10 +74,7 @@ workflow NF_GWAS {
 
     phenotypes_file = file(params.phenotypes_filename, checkIfExists: true)
 
-    covariates_file = []
-    if(params.covariates_filename) {
-        covariates_file = file(params.covariates_filename, checkIfExists: true)
-    }
+    covariates_file = params.covariates_filename ? file(params.covariates_filename, checkIfExists: true) : file("NO_FILE")
 
     genotyped_plink_ch = Channel.empty()
     if(!skip_predictions) {

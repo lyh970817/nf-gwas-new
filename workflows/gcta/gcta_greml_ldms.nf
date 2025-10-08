@@ -68,12 +68,9 @@ workflow GCTA_GREML_LDMS {
         covariates_file
     )
 
-    // // Get the covariates files or use empty channel if not available
+    // Get the covariates files or use empty channel if not available
     def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader
-        .ifEmpty { Channel.of([]) }
-
     def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader
-        .ifEmpty { Channel.of([]) }
 
     // // Run REML analysis using the unrelated subjects GRM
     RUN_REML(

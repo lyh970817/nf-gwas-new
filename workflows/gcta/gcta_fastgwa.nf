@@ -42,10 +42,7 @@ workflow GCTA_FASTGWA {
 
     // Get the covariates files or use empty channel if not available
     def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader
-        .ifEmpty { Channel.of([]) }
-
     def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader
-        .ifEmpty { Channel.of([]) }
 
     // Run FastGWA-MLM analysis for each PLINK file without combining inputs
     RUN_FASTGWA_MLM(

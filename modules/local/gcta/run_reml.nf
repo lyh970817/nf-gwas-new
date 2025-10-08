@@ -13,8 +13,8 @@ process RUN_REML {
 
     script:
     def out = phenotypes_file.baseName
-    def qcovar_param = qcovariates_file ? "--qcovar ${qcovariates_file}" : ''
-    def covar_param = covariates_file ? "--covar ${covariates_file}" : ''
+    def qcovar_param = (qcovariates_file && qcovariates_file.name != 'NO_FILE' && qcovariates_file.size() > 0) ? "--qcovar ${qcovariates_file}" : ''
+    def covar_param = (covariates_file && covariates_file.name != 'NO_FILE' && covariates_file.size() > 0) ? "--covar ${covariates_file}" : ''
 
     """
     # Run GCTA REML analysis
