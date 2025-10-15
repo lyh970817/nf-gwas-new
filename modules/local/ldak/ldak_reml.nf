@@ -10,15 +10,15 @@ process LDAK_REML {
     path cat_covariates_file
 
     output:
-    path "reml_${combined_grm_name}.coeff"
-    path "reml_${combined_grm_name}.combined"
-    path "reml_${combined_grm_name}.cross"
-    path "reml_${combined_grm_name}.indi.blp"
-    path "reml_${combined_grm_name}.indi.res"
-    path "reml_${combined_grm_name}.progress"
+    path "reml_${combined_grm_name}.coeff", optional: true
+    path "reml_${combined_grm_name}.combined", optional: true
+    path "reml_${combined_grm_name}.cross", optional: true
+    path "reml_${combined_grm_name}.indi.blp", optional: true
+    path "reml_${combined_grm_name}.indi.res", optional: true
+    path "reml_${combined_grm_name}.progress", optional: true
     path "reml_${combined_grm_name}.reml", emit: reml_results
-    path "reml_${combined_grm_name}.share"
-    path "reml_${combined_grm_name}.vars"
+    path "reml_${combined_grm_name}.share", optional: true
+    path "reml_${combined_grm_name}.vars", optional: true
 
     script:
     def quant_covar_param = quant_covariates_file ? "--covar ${quant_covariates_file}" : ''

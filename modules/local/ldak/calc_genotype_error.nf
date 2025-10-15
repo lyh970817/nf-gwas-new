@@ -65,11 +65,8 @@ workflow CALC_GENOTYPE_ERROR {
     )
 
     // Get the covariates files or use empty channel if not available
-    def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader
-        .ifEmpty { Channel.of([]) }
-
-    def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader
-        .ifEmpty { Channel.of([]) }
+    def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader.ifEmpty([])
+    def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader.ifEmpty([])
 
     // Extract batch subset parameters from the tuple
     def batch_subset_prefix = batch_subsets[0]

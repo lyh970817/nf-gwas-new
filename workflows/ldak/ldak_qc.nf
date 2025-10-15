@@ -79,12 +79,10 @@ workflow LDAK_QC {
         covariates_file
     )
 
-    // Get the covariates files or use empty channel if not available
-    def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader
-        .ifEmpty { Channel.of([]) }
-
-    def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader
-        .ifEmpty { Channel.of([]) }
+    // Get the covariates files (optional outputs from PREPARE_PHENOCOV)
+    // Use ifEmpty to provide empty list if no covariates exist
+    def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader.ifEmpty([])
+    def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader.ifEmpty([])
 
     // Group GRMs by quarter
     quarter_grms = CALC_KINS.out.ldak_grm
@@ -147,22 +145,18 @@ workflow LDAK_QC {
     )
 
     // Run REML analysis for each quarter
-    quarter_reml_input = combined_quarters
+    // Format GRM tuple for each quarter
+    quarter_grm_tuples = combined_quarters
         .map { _quarter, filename, bin, id, details, adjust ->
-            [filename, bin, id, details, adjust]
+            tuple(filename, bin, id, details, adjust)
         }
-        .combine(LDAK.out.filtered_list)
-        .combine(PREPARE_PHENOCOV.out.phenotypes_noheader)
-        .combine(quant_covariates)
-        .combine(cat_covariates)
-
 
     LDAK_REML(
-        quarter_reml_input.map { it[0] },
-        quarter_reml_input.map { it[1] },
-        quarter_reml_input.map { it[2] },
-        quarter_reml_input.map { it[3] },
-        quarter_reml_input.map { it[4] }
+        quarter_grm_tuples,
+        LDAK.out.filtered_list,
+        PREPARE_PHENOCOV.out.phenotypes_noheader,
+        quant_covariates,
+        cat_covariates
     )
     
 

@@ -65,12 +65,10 @@ workflow LDAK {
         covariates_file
     )
 
-    // Get the covariates files or use empty channel if not available
-    def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader
-        .ifEmpty { Channel.of([]) }
-
-    def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader
-        .ifEmpty { Channel.of([]) }
+    // Get the covariates files (optional outputs from PREPARE_PHENOCOV)
+    // Use ifEmpty to provide empty list if no covariates exist
+    def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader.ifEmpty([])
+    def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader.ifEmpty([])
 
     // Run LDAK REML analysis
     LDAK_REML(

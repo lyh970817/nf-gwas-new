@@ -14,6 +14,7 @@ include { BOLT_LMM_REML } from './bolt_lmm/bolt_lmm_reml'
 include { SINGLE_VARIANT_TESTS } from './single_variant_tests'
 
 workflow NF_GWAS {
+    main:
     // pubDir is now defined in nextflow.config
     println "Output directory: ${params.pubDir}"
 
@@ -102,13 +103,13 @@ workflow NF_GWAS {
     imputed_plink_ch = IMPUTED_TO_PLINK.out.imputed_plink
 
     // // Run GCTA GREML workflow which includes GCTA GRM calculation and REML analysis
-    GCTA_GREML_LDMS (
-        phenotypes_file,
-        covariates_file,
-        imputed_plink2_ch,
-        imputed_plink_ch,
-        params.nparts_gcta
-    )
+    // GCTA_GREML_LDMS (
+    //     phenotypes_file,
+    //     covariates_file,
+    //     imputed_plink2_ch,
+    //     imputed_plink_ch,
+    //     params.nparts_gcta
+    // )
 
     // LDAK (
     //     imputed_plink_ch,
@@ -124,19 +125,19 @@ workflow NF_GWAS {
     //     "uniform"
     // )
 
-    LDAK (
-        imputed_plink_ch,
-        phenotypes_file,
-        covariates_file,
-        "ldak-thin"
-    )
-
-    // Run LDAK QC workflow for inflation testing
-    // LDAK_QC (
+    // LDAK (
     //     imputed_plink_ch,
     //     phenotypes_file,
-    //     covariates_file
+    //     covariates_file,
+    //     "ldak-thin"
     // )
+
+    // Run LDAK QC workflow for inflation testing
+    LDAK_QC (
+        imputed_plink_ch,
+        phenotypes_file,
+        covariates_file
+    )
     
     
     
@@ -167,12 +168,14 @@ workflow NF_GWAS {
     //     skip_predictions,
     // )
 
-    // emit:
+    emit:
     // greml_results = GCTA_GREML.out.reml_results
     // fastgwa_results = GCTA_FASTGWA.out.fastgwa_results
     // ldms_results = GCTA_GREML_LDMS.out.reml_results
     // ld_scores = GCTA_GREML_LDMS.out.ld_scores
-    // snp_groups = GCTA_GREML_LDMS.out.snp_groups
+    ldak_qc_quarter_reml = LDAK_QC.out.quarter_reml_results
+    ldak_qc_inflation = LDAK_QC.out.inflation_results
+    ldak_qc_genotype_error = LDAK_QC.out.genotype_error_results
     // bolt_reml_results = BOLT_LMM.out.reml_results
     // bolt_log_file = BOLT_LMM.out.log_file
 }

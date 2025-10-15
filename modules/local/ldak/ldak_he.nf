@@ -12,15 +12,7 @@ process LDAK_HE {
     val subset_number
 
     output:
-    path "he_${combined_grm_name}.coeff"
-    path "he_${combined_grm_name}.combined"
-    path "he_${combined_grm_name}.cross"
-    path "he_${combined_grm_name}.indi.blp"
-    path "he_${combined_grm_name}.indi.res"
-    path "he_${combined_grm_name}.progress"
-    path "he_${combined_grm_name}.reml", emit: he_results
-    path "he_${combined_grm_name}.share"
-    path "he_${combined_grm_name}.vars"
+    path "he_${combined_grm_name}.*", emit: he_results
 
     script:
     def quant_covar_param = quant_covariates_file ? "--covar ${quant_covariates_file}" : ''
