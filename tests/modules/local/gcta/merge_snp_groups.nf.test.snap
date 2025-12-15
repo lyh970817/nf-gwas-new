@@ -1,0 +1,17 @@
+{
+    "Should handle different group numbers": {
+        "content": [
+            [
+                [
+                    3,
+                    "snp_group3.txt:md5,76cf8462af71d2a5615db4fd47647c7f"
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T03:23:25.332739"
+    }
+}

@@ -13,8 +13,6 @@
 // include { paramsSummaryLog } from 'plugin/nf-schema'
 
 
-
-
 include { NF_GWAS } from './workflows/nf_gwas'
 
 /*

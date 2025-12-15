@@ -1,0 +1,53 @@
+nextflow_process {
+
+    name "Test Process ADD_GRMS"
+    script "modules/local/ldak/add_grms.nf"
+    process "ADD_GRMS"
+
+    test("Should combine multiple kinship matrices") {
+
+        when {
+            process {
+                """
+                // ADD_GRMS expects 3 inputs:
+                // 1. mgrm_file - path to file listing GRM prefixes
+                // 2. grm_files - all GRM files collected
+                // 3. output_name - val for output prefix
+                input[0] = file("$projectDir/tests/input/ldak/per_chr_grm/ldak_test.mgrm")
+                input[1] = [
+                    file("$projectDir/tests/input/ldak/per_chr_grm/chr01.vcf.grm.bin"),
+                    file("$projectDir/tests/input/ldak/per_chr_grm/chr01.vcf.grm.id"),
+                    file("$projectDir/tests/input/ldak/per_chr_grm/chr01.vcf.grm.details"),
+                    file("$projectDir/tests/input/ldak/per_chr_grm/chr01.vcf.grm.adjust"),
+                    file("$projectDir/tests/input/ldak/per_chr_grm/chr02.vcf.grm.bin"),
+                    file("$projectDir/tests/input/ldak/per_chr_grm/chr02.vcf.grm.id"),
+                    file("$projectDir/tests/input/ldak/per_chr_grm/chr02.vcf.grm.details"),
+                    file("$projectDir/tests/input/ldak/per_chr_grm/chr02.vcf.grm.adjust")
+                ]
+                input[2] = "ldak_grm"
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert combined_grm
+                def combinedTuple = combined_grm.get(0)
+
+                // Should have: grm_name, grm.bin, grm.id, grm.details, grm.adjust
+                assert combinedTuple.size() == 5
+
+                def grmName = combinedTuple.get(0)
+                assert grmName == "ldak_grm"
+
+                def grmBin = path(combinedTuple.get(1))
+                def grmId = path(combinedTuple.get(2))
+
+                assert grmBin.size() > 0
+                assert grmId.size() > 0
+            }
+        }
+    }
+}

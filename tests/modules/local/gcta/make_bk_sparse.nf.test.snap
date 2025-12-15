@@ -1,0 +1,17 @@
+{
+    "Should create sparse GRM with different cutoff": {
+        "content": [
+            [
+                [
+                    "gcta_grm_0_sp.grm.id:md5,cf62b27fc06fbabf367a8b177bc0830c",
+                    "gcta_grm_0_sp.grm.sp:md5,c24df8621a131ade9c13bf8f79d501a2"
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T12:27:43.245733"
+    }
+}

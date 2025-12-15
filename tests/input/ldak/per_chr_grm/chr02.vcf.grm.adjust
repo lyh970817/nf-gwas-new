@@ -1,0 +1,6 @@
+Datafile chr02.vcf.bed
+Power -0.250000
+Num_Preds 999
+Sum_Weights 999.0000
+Denominator 349.0618
+Off_Diag_Variance 1.044160e-03

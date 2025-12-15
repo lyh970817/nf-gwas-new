@@ -1,0 +1,91 @@
+nextflow_process {
+
+    name "Test Process RUN_FASTGWA_MLM"
+    script "modules/local/gcta/run_fastgwa_mlm.nf"
+    process "RUN_FASTGWA_MLM"
+
+    test("Should execute FastGWA mixed model association test") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+            }
+            process {
+                """
+                input[0] = tuple(
+                    1,
+                    "chr01.vcf",
+                    file("$projectDir/tests/input/chr01.vcf.pgen"),
+                    file("$projectDir/tests/input/chr01.vcf.psam"),
+                    file("$projectDir/tests/input/chr01.vcf.pvar"),
+                    null
+                )
+                input[1] = tuple(
+                    file("$projectDir/tests/input/gcta/run_fastgwa_mlm/gcta_grm_0_sp.grm.id"),
+                    file("$projectDir/tests/input/gcta/run_fastgwa_mlm/gcta_grm_0_sp.grm.sp")
+                )
+                input[2] = file("$projectDir/tests/input/gcta/run_fastgwa_mlm/phenotype.noheader.txt")
+                input[3] = []  // no qcovariates
+                input[4] = []  // no covariates
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert fastgwa_results
+                def fastgwaFile = path(fastgwa_results.get(0))
+
+                assert fastgwaFile.exists()
+                assert fastgwaFile.fileName.toString() == "chr01.vcf_phenotype.noheader.fastGWA"
+                assert fastgwaFile.size() > 0
+
+                // Check for association results format
+                def content = fastgwaFile.text
+                assert content.contains("CHR") || content.contains("SNP")
+            }
+        }
+    }
+
+    test("Should execute FastGWA with covariates") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+                covariates_columns = 'V1,V2'
+            }
+            process {
+                """
+                input[0] = tuple(
+                    1,
+                    "chr01.vcf",
+                    file("$projectDir/tests/input/chr01.vcf.pgen"),
+                    file("$projectDir/tests/input/chr01.vcf.psam"),
+                    file("$projectDir/tests/input/chr01.vcf.pvar"),
+                    null
+                )
+                input[1] = tuple(
+                    file("$projectDir/tests/input/gcta/run_fastgwa_mlm/gcta_grm_0_sp.grm.id"),
+                    file("$projectDir/tests/input/gcta/run_fastgwa_mlm/gcta_grm_0_sp.grm.sp")
+                )
+                input[2] = file("$projectDir/tests/input/gcta/run_fastgwa_mlm/phenotype.noheader.txt")
+                input[3] = file("$projectDir/tests/input/gcta/run_fastgwa_mlm/covariates.quant.noheader.txt")
+                input[4] = file("$projectDir/tests/input/gcta/run_fastgwa_mlm/covariates.cat.noheader.txt")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert fastgwa_results
+
+                // Snapshot the output
+                assert snapshot(fastgwa_results).match()
+            }
+        }
+    }
+}

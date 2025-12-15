@@ -1,0 +1,94 @@
+nextflow_process {
+
+    name "Test Process REGENIE_STEP1_SPLIT"
+    script "modules/local/regenie/regenie_step1_split.nf"
+    process "REGENIE_STEP1_SPLIT"
+
+    test("Should split genotypes into chunks for parallel Step 1 execution") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1,Y2'
+                genotypes_prediction_chunks = 5
+                regenie_bsize_step1 = 1000
+            }
+            process {
+                """
+                input[0] = Channel.fromFilePairs("$projectDir/tests/input/regenie_step1/example.qc.{bim,bed,fam}", size: 3, flat:true)
+                input[1] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[2] = []  // no covariates
+                input[3] = []  // no condition list
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                // Check chunks output
+                assert chunks
+                def chunkTuple = chunks.get(0)
+
+                // Should have: master file, snplist files, genotype files, pheno, covar, cond
+                assert chunkTuple.size() >= 2
+
+                // Check master file exists
+                def masterFile = chunkTuple.get(0)
+                assert masterFile instanceof java.nio.file.Path
+                assert masterFile.fileName.toString() == "chunks.master"
+                assert masterFile.text.contains("chunks")
+
+                // Check that multiple snplist files were created
+                def snplistFiles = chunkTuple.get(1)
+                if (snplistFiles instanceof java.util.List) {
+                    assert snplistFiles.size() == 5  // Should have 5 chunks
+                    snplistFiles.each { file ->
+                        assert file.fileName.toString().matches("chunks\\d+\\.snplist")
+                        assert file.size() > 0
+                    }
+                }
+
+                // Check separate master emit
+                assert master
+                assert path(master.get(0)).fileName.toString() == "chunks.master"
+            }
+        }
+    }
+
+    test("Should handle different chunk numbers") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+                genotypes_prediction_chunks = 3
+                regenie_bsize_step1 = 1000
+            }
+            process {
+                """
+                input[0] = Channel.fromFilePairs("$projectDir/tests/input/regenie_step1/example.qc.{bim,bed,fam}", size: 3, flat:true)
+                input[1] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[2] = file("$projectDir/tests/input/pipeline/covariates.txt")
+                input[3] = []
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert chunks
+                def chunkTuple = chunks.get(0)
+
+                // Verify master file content
+                def masterFile = path(chunkTuple.get(0))
+                def masterContent = masterFile.readLines()
+                assert masterContent.size() > 0
+
+                // Snapshot the outputs
+                assert snapshot(chunks).match()
+            }
+        }
+    }
+}

@@ -1,0 +1,106 @@
+nextflow_process {
+
+    name "Test Process MERGE_GRM_PARTS"
+    script "modules/local/gcta/merge_grm_parts.nf"
+    process "MERGE_GRM_PARTS"
+
+    test("Should merge GRM partitions into single matrix") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    3,  // nparts_gcta
+                    null,  // no snp_group
+                    [
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_0.part_3_1.grm.id"),
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_0.part_3_2.grm.id"),
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_0.part_3_3.grm.id")
+                    ],
+                    [
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_0.part_3_1.grm.bin"),
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_0.part_3_2.grm.bin"),
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_0.part_3_3.grm.bin")
+                    ],
+                    [
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_0.part_3_1.grm.N.bin"),
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_0.part_3_2.grm.N.bin"),
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_0.part_3_3.grm.N.bin")
+                    ]
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert grm_files
+                def grmTuple = grm_files.get(0)
+
+                // Should have: snp_group, prefix, grm.id, grm.bin, grm.N.bin
+                assert grmTuple.size() == 5
+                assert grmTuple.get(0) == null  // no snp_group
+
+                def prefix = grmTuple.get(1)
+                assert prefix == "gcta_grm_0"
+
+                // Check merged GRM files
+                def grmId = path(grmTuple.get(2))
+                def grmBin = path(grmTuple.get(3))
+                def grmN = path(grmTuple.get(4))
+
+                assert grmId.fileName.toString() == "gcta_grm_0.grm.id"
+                assert grmBin.fileName.toString() == "gcta_grm_0.grm.bin"
+                assert grmN.fileName.toString() == "gcta_grm_0.grm.N.bin"
+
+                assert grmId.size() > 0
+                assert grmBin.size() > 0
+                assert grmN.size() > 0
+            }
+        }
+    }
+
+    test("Should merge GRM partitions with SNP group") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    2,
+                    1,
+                    [
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_1.part_2_1.grm.id"),
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_1.part_2_2.grm.id")
+                    ],
+                    [
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_1.part_2_1.grm.bin"),
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_1.part_2_2.grm.bin")
+                    ],
+                    [
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_1.part_2_1.grm.N.bin"),
+                        file("$projectDir/tests/input/gcta/merge_grm_parts/gcta_grm_1.part_2_2.grm.N.bin")
+                    ]
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert grm_files
+                def grmTuple = grm_files.get(0)
+
+                assert grmTuple.get(0) == 1
+                def prefix = grmTuple.get(1)
+                assert prefix == "gcta_grm_1"
+
+                // Snapshot the output
+                assert snapshot(grm_files).match()
+            }
+        }
+    }
+}

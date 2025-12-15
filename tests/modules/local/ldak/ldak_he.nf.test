@@ -1,0 +1,105 @@
+nextflow_process {
+
+    name "Test Process LDAK_HE"
+    script "modules/local/ldak/ldak_he.nf"
+    process "LDAK_HE"
+
+    test("Should execute Haseman-Elston regression with adjusted GRM") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+            }
+            process {
+                """
+                // LDAK_HE requires 6-tuple with adjusted GRM including .grm.root file
+                input[0] = tuple(
+                    "ldak_grm_adj",
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.bin"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.id"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.details"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.adjust"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.root")
+                )
+                input[1] = []  // No keep file needed (GRM already filtered)
+                input[2] = file("$projectDir/tests/input/ldak/phenotype.noheader.txt")
+                input[3] = []  // No quantitative covariates (empty list)
+                input[4] = []  // No categorical covariates (empty list)
+                input[5] = ''  // no subset_prefix
+                input[6] = 0  // no subset_number
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert he_results
+                def heFiles = he_results.get(0)
+
+                // he_results contains paths matching "he_${grm_name}.*"
+                // Could be a list or single path
+                if (heFiles instanceof java.util.List) {
+                    assert heFiles.size() > 0
+                } else {
+                    // Single path - verify it exists and has content
+                    def heFile = path(heFiles)
+                    assert heFile.size() > 0
+                }
+            }
+        }
+    }
+
+    test("Should execute HE regression with covariates") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+            }
+            process {
+                """
+                input[0] = tuple(
+                    "ldak_grm_adj",
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.bin"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.id"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.details"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.adjust"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.root")
+                )
+                input[1] = []  // No keep file needed (GRM already filtered)
+                input[2] = file("$projectDir/tests/input/ldak/phenotype.noheader.txt")
+                input[3] = file("$projectDir/tests/input/ldak/covariates.quant.noheader.txt")
+                input[4] = file("$projectDir/tests/input/ldak/covariates.cat.noheader.txt")
+                input[5] = ''  // no subset_prefix
+                input[6] = 0  // no subset_number
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert he_results
+                def heFiles = he_results.get(0)
+
+                // Verify output files are generated
+                if (heFiles instanceof java.util.List) {
+                    assert heFiles.size() > 0
+                } else {
+                    def heFile = path(heFiles)
+                    assert heFile.size() > 0
+
+                    // Verify heritability estimate is present
+                    def content = heFile.text
+                    assert content.contains("Her_K1") || content.contains("Heritability") || content.contains("Num_Covariates")
+                }
+            }
+        }
+    }
+
+    // Note: The batch subset test is skipped because it requires batch files
+    // to be staged into the work directory, which is complex for unit tests.
+    // The batch functionality is verified through workflow-level tests.
+}

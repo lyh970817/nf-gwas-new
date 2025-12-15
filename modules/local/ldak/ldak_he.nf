@@ -1,10 +1,12 @@
 process LDAK_HE {
-    tag "ldak_he"
+    tag "ldak_he_${grm_name}"
     publishDir "${params.pubDir}/ldak/he", mode: 'copy'
 
     input:
-    tuple val(combined_grm_name), path(combined_grm_bin), path(combined_grm_id), path(combined_grm_details), path(combined_grm_adjust)
-    tuple val(filtered_list_name), path(filtered_keep), path(filtered_lose), path(filtered_maxrel)
+    // Adjusted GRM (must include .grm.root file for HE regression)
+    // Should already contain only unrelated individuals if derived from filtered_grm
+    tuple val(grm_name), path(grm_bin), path(grm_id), path(grm_details), path(grm_adjust), path(grm_root)
+    path keep_file  // Optional: .keep file for sample filtering (use [] if GRM is already filtered)
     path phenotype_file
     path quant_covariates_file
     path cat_covariates_file
@@ -12,17 +14,31 @@ process LDAK_HE {
     val subset_number
 
     output:
-    path "he_${combined_grm_name}.*", emit: he_results
+    path "he_*.*", emit: he_results
 
     script:
+    // Handle optional files: check if truthy (not empty list [])
     def quant_covar_param = quant_covariates_file ? "--covar ${quant_covariates_file}" : ''
     def cat_covar_param = cat_covariates_file ? "--factors ${cat_covariates_file}" : ''
-    def keep_param = filtered_keep ? "--keep ${filtered_keep}" : ''
+    def keep_param = keep_file ? "--keep ${keep_file}" : ''
     def subset_prefix_param = subset_prefix ? "--subset-prefix ${subset_prefix}" : ''
     def subset_number_param = subset_number ? "--subset-number ${subset_number}" : ''
+    // Extract basename from grm_id for output file naming (in case grm_name is a full path)
+    def grm_basename = grm_id.baseName.replace('.grm', '')
 
     """
-    # Run LDAK HE analysis
-    ldak6 --he he_${combined_grm_name} --pheno ${phenotype_file} ${keep_param} --grm ${combined_grm_name} ${quant_covar_param} ${cat_covar_param} ${subset_prefix_param} ${subset_number_param} --max-threads ${task.cpus}
+    # Run LDAK HE analysis with adjusted GRM
+    # If GRM is already filtered (unrelated individuals only), no --keep is needed
+    # Note: grm_basename is extracted from grm_id filename to handle full path grm_name values
+    ldak6 --he he_${grm_basename} \\
+        --pheno ${phenotype_file} \\
+        --mpheno 1 \\
+        --grm ${grm_bin.baseName.replace('.grm', '')} \\
+        ${keep_param} \\
+        ${quant_covar_param} \\
+        ${cat_covar_param} \\
+        ${subset_prefix_param} \\
+        ${subset_number_param} \\
+        --max-threads ${task.cpus}
     """
 }

@@ -1,0 +1,30 @@
+*******************************************************************
+* Genome-wide Complex Trait Analysis (GCTA)
+* version v1.94.1 Linux
+* Built at Nov 15 2022 21:14:25, by GCC 8.5
+* (C) 2010-present, Yang Lab, Westlake University
+* Please report bugs to Jian Yang <jian.yang@westlake.edu.cn>
+*******************************************************************
+Analysis started at 11:06:04 CST on Mon Dec 15 2025.
+Hostname: andongni
+
+Accepted options:
+--grm gcta_grm_1
+--grm-adj 0
+--make-grm
+--out gcta_grm_1_adj
+
+Note: This is a multi-thread program. You could specify the number of threads by the --thread-num option to speed up the computation if there are multiple processors in your machine.
+
+Reading IDs of the GRM from [gcta_grm_1.grm.id].
+500 IDs are read from [gcta_grm_1.grm.id].
+Reading the GRM from [gcta_grm_1.grm.bin].
+Reading the number of SNPs for the GRM from [gcta_grm_1.grm.N.bin].
+GRM for 500 individuals are included from [gcta_grm_1.grm.bin].
+Adjusting the GRM for sampling errors ...
+GRM of 500 individuals has been saved in the file [gcta_grm_1_adj.grm.bin] (in binary format).
+Number of SNPs to calculate the genetic relationship between each pair of individuals has been saved in the file [gcta_grm_1_adj.grm.N.bin] (in binary format).
+IDs for the GRM file [gcta_grm_1_adj.grm.bin] have been saved in the file [gcta_grm_1_adj.grm.id].
+
+Analysis finished at 11:06:04 CST on Mon Dec 15 2025
+Overall computational time: 0.02 sec.

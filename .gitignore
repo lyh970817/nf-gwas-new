@@ -1,11 +1,34 @@
+# Nextflow
 work
 .nextflow
 .nextflow.*
-tests/output
 /results/
 /output/
+/resources/
+
+# nf-test
 .nf-test/
 nf-test
+.nf-test.log
+.nf-test-*.nf
+tests/output
+tests/ldak_results/
+
+# IDE and local config
 .project
 .DS_Store
-.nf-test.log
+.envrc
+.env
+.vscode/
+.idea/
+
+# Local tool configuration
+.claude/
+.direnv/
+.serena/
+.spec-workflow/
+workflows/.spec-workflow/
+workflows/**/.spec-workflow/
+
+# Built containers (large binaries)
+*.sif

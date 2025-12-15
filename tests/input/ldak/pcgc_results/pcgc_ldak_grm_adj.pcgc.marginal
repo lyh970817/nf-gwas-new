@@ -1,0 +1,17 @@
+Num_Kinships 1
+Num_Regions 0
+Num_Top_Predictors 0
+Num_Covariates 4
+Num_Environments 0
+Coeffsfile pcgc_ldak_grm_adj.coeff
+Covar_Heritability 0.4738
+Total_Samples 495
+With_Phenotypes 495
+Null_Likelihood -249600.495797
+Alt_Likelihood -249599.776255
+LRT_Stat 1.4391
+LRT_P 2.3029e-01
+Component Heritability SE Size Mega_Intensity SE
+Her_K1 0.103588 0.114155 698.12 148.380844 163.516847
+Her_Top 0.000000 NA NA NA NA
+Her_All 0.103588 0.114155 698.12 148.380844 163.516847

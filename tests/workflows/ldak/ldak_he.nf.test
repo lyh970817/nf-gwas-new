@@ -1,0 +1,144 @@
+nextflow_workflow {
+
+    name "Test Workflow LDAK_HE_WORKFLOW"
+    script "workflows/ldak/ldak_he.nf"
+    workflow "LDAK_HE_WORKFLOW"
+
+    test("LDAK HE: Should execute HE regression with quantitative trait") {
+
+        when {
+            params {
+                // LDAK HE specific parameters
+                ldak_use_he_regression = true
+                ldak_heritability_model = 'human_default'
+                ldak_he_subset_prefix = null
+                ldak_he_subset_number = null
+                phenotypes_columns = 'Y1'
+            }
+            workflow {
+                """
+                // Prepare PLINK input channel: [chr_num, filename, bed, bim, fam, range]
+                input[0] = Channel.fromFilePairs(
+                    "$projectDir/tests/input/pipeline/example.{bed,bim,fam}",
+                    size: 3,
+                    flat: true
+                ).map { filename_base, bed, bim, fam ->
+                    [1, filename_base, bed, bim, fam, null]
+                }
+
+                // Phenotype file
+                input[1] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+
+                // Covariates file
+                input[2] = file("$projectDir/tests/input/pipeline/covariates.txt")
+
+                // Heritability model
+                input[3] = 'human_default'
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                // Check that HE results exist
+                assert he_results
+                assert he_results.get(0) != null
+
+                // Check kinship matrices were created
+                assert ldak_grm
+                assert ldak_grm.size() > 0
+
+                // Check combined GRM exists
+                assert combined_grm
+                assert combined_grm.get(0) != null
+
+                // Check filtered list exists
+                assert filtered_list
+                assert filtered_list.get(0) != null
+
+                // Snapshot HE results
+                assert snapshot(he_results).match()
+            }
+        }
+    }
+
+    test("LDAK HE: Should execute without covariates") {
+
+        when {
+            params {
+                ldak_use_he_regression = true
+                ldak_heritability_model = 'human_default'
+                ldak_he_subset_prefix = null
+                ldak_he_subset_number = null
+                phenotypes_columns = 'Y1'
+            }
+            workflow {
+                """
+                input[0] = Channel.fromFilePairs(
+                    "$projectDir/tests/input/pipeline/example.{bed,bim,fam}",
+                    size: 3,
+                    flat: true
+                ).map { filename_base, bed, bim, fam ->
+                    [1, filename_base, bed, bim, fam, null]
+                }
+
+                input[1] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[2] = []  // No covariates
+                input[3] = 'human_default'
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert he_results
+                assert he_results.get(0) != null
+
+                assert snapshot(he_results).match("he_no_covariates")
+            }
+        }
+    }
+
+    test("LDAK HE: Should work with uniform model") {
+
+        when {
+            params {
+                ldak_use_he_regression = true
+                ldak_heritability_model = 'uniform'
+                ldak_he_subset_prefix = null
+                ldak_he_subset_number = null
+                phenotypes_columns = 'Y1'
+            }
+            workflow {
+                """
+                input[0] = Channel.fromFilePairs(
+                    "$projectDir/tests/input/pipeline/example.{bed,bim,fam}",
+                    size: 3,
+                    flat: true
+                ).map { filename_base, bed, bim, fam ->
+                    [1, filename_base, bed, bim, fam, null]
+                }
+
+                input[1] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[2] = file("$projectDir/tests/input/pipeline/covariates.txt")
+                input[3] = 'uniform'
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert he_results
+                assert ldak_grm
+
+                assert snapshot(he_results).match("he_uniform_model")
+            }
+        }
+    }
+}

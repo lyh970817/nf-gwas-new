@@ -1,16 +1,16 @@
 process CALCULATE_LD_SCORES {
-    tag "${filename}"
-    publishDir "${params.pubDir}/gcta_ldms", mode: 'copy', pattern: "*_gcta_ld.score.ld"
+  tag "${filename}"
+  publishDir "${params.pubDir}/gcta_ldms", mode: 'copy', pattern: "*_gcta_ld.score.ld"
 
-    input:
-    tuple val(chr_num), val(filename), path(plink2_pgen_file), path(plink2_psam_file), path(plink2_pvar_file), val(range)
+  input:
+  tuple val(chr_num), val(filename), path(plink_bed_file), path(plink_fam_file), path(plink_bim_file), val(range)
 
-    output:
-    tuple val(filename), path("${filename}_gcta_ld.score.ld"), emit: ld_scores
-    tuple val(filename), path("${filename}_snp_group*.txt"), emit: snp_group_files
+  output:
+  tuple val(filename), path("${filename}_gcta_ld.score.ld"), emit: ld_scores
+  tuple val(filename), path("${filename}_snp_group*.txt"), emit: snp_group_files
 
-    script:
-    """
+  script:
+  """
     # Calculate LD scores using GCTA
     gcta \\
         --bfile ${filename} \\

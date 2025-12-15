@@ -1,0 +1,86 @@
+nextflow_process {
+
+    name "Test Process CALCULATE_LD_SCORES"
+    script "modules/local/gcta/calculate_ld_scores.nf"
+    process "CALCULATE_LD_SCORES"
+
+    test("Should calculate LD scores and segment SNPs for multiple chromosomes") {
+
+        when {
+            process {
+                """
+                input[0] = Channel.of(
+                    tuple(
+                        1,
+                        "chr01.vcf",
+                        file("$projectDir/tests/input/chr01.vcf.bed"),
+                        file("$projectDir/tests/input/chr01.vcf.bim"),
+                        file("$projectDir/tests/input/chr01.vcf.fam"),
+                        null
+                    ),
+                    tuple(
+                        2,
+                        "chr02.vcf",
+                        file("$projectDir/tests/input/chr02.vcf.bed"),
+                        file("$projectDir/tests/input/chr02.vcf.bim"),
+                        file("$projectDir/tests/input/chr02.vcf.fam"),
+                        null
+                    )
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                // Check LD score output for both chromosomes
+                assert ld_scores
+                assert ld_scores.size() == 2
+
+                // Check chr01
+                def ldTuple1 = ld_scores.get(0)
+                assert ldTuple1.size() == 2
+                assert ldTuple1.get(0) == "chr01.vcf"
+                def ldFile1 = path(ldTuple1.get(1))
+                assert ldFile1.fileName.toString() == "chr01.vcf_gcta_ld.score.ld"
+                assert ldFile1.size() > 0
+
+                // Check chr02
+                def ldTuple2 = ld_scores.get(1)
+                assert ldTuple2.size() == 2
+                assert ldTuple2.get(0) == "chr02.vcf"
+                def ldFile2 = path(ldTuple2.get(1))
+                assert ldFile2.fileName.toString() == "chr02.vcf_gcta_ld.score.ld"
+                assert ldFile2.size() > 0
+
+                // Check SNP group files for both chromosomes
+                assert snp_group_files
+                assert snp_group_files.size() == 2
+
+                // Check chr01 SNP groups
+                def snpGroupTuple1 = snp_group_files.get(0)
+                assert snpGroupTuple1.get(0) == "chr01.vcf"
+                def snpGroupPaths1 = snpGroupTuple1.get(1)
+                assert snpGroupPaths1.size() >= 1
+                snpGroupPaths1.each { groupFile ->
+                    def file = path(groupFile)
+                    assert file.fileName.toString().matches("chr01\\.vcf_snp_group\\d+\\.txt")
+                    assert file.size() > 0
+                }
+
+                // Check chr02 SNP groups
+                def snpGroupTuple2 = snp_group_files.get(1)
+                assert snpGroupTuple2.get(0) == "chr02.vcf"
+                def snpGroupPaths2 = snpGroupTuple2.get(1)
+                assert snpGroupPaths2.size() >= 1
+                snpGroupPaths2.each { groupFile ->
+                    def file = path(groupFile)
+                    assert file.fileName.toString().matches("chr02\\.vcf_snp_group\\d+\\.txt")
+                    assert file.size() > 0
+                }
+            }
+        }
+    }
+}

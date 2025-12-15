@@ -1,87 +1,59 @@
 /*
 ========================================================================================
-    GCTA GREML-LDMS Workflow
+    GCTA GREML-LDMS Workflow - Partitioned Heritability Estimation
+========================================================================================
+
+    Purpose: Run complete GREML-LDMS heritability estimation including LD-stratified GRM
+
+    This workflow computes LD scores, segments SNPs into groups, calculates separate
+    GRMs for each group, and runs multi-component REML to partition heritability
+    by LD strata.
+
+    Pipeline:
+    1. GCTA_GRM_LDMS: Compute LD scores and LD-stratified GRMs
+    2. GCTA_REML_LDMS_ANALYSIS: Run multi-component REML heritability estimation
+
+    For workflows that need to reuse GRMs, use GCTA_GRM_LDMS and
+    GCTA_REML_LDMS_ANALYSIS separately.
 ========================================================================================
 */
 
-include { CALCULATE_LD_SCORES } from '../../modules/local/gcta/calculate_ld_scores'
-include { MERGE_SNP_GROUPS } from '../../modules/local/gcta/merge_snp_groups'
-include { PREPARE_PHENOCOV } from '../../modules/local/gcta/prepare_phenocov'
-include { MAKE_MGRM } from '../../modules/local/gcta/make_mgrm'
-include { RUN_REML } from '../../modules/local/gcta/run_reml'
-include { GCTA_GRM } from './gcta_grm'
+include { GCTA_GRM_LDMS } from './gcta_grm_ldms'
+include { GCTA_REML_LDMS_ANALYSIS } from './gcta_reml_ldms_analysis'
 
 workflow GCTA_GREML_LDMS {
     take:
     phenotypes_file     // Path to phenotypes file
     covariates_file     // Path to covariates file (optional)
-    imputed_plink2_ch   // Channel with imputed PLINK2 files
-    imputed_plink_ch   // Channel with imputed PLINK files
+    imputed_plink2_ch   // Channel with imputed PLINK2 files (for GRM)
+    imputed_plink_ch    // Channel with imputed PLINK1 files (for LD scores)
     nparts_gcta         // Number of parts for GCTA GRM calculation
 
     main:
-
-    // Calculate LD scores for each chromosome and segment SNPs into groups
-    CALCULATE_LD_SCORES(
-        imputed_plink_ch
-    )
-
-    // Extract group number from the SNP group files
-    // and group them by group number
-    snp_group_ch =
-        CALCULATE_LD_SCORES.out.snp_group_files
-            .flatMap { _chr , lst ->
-                /* lst.withIndex()  gives  (Path file , int idx) */
-                lst.withIndex().collect { file, idx ->
-                    /* idx starts at 0 → add 1 so that group numbers are 1-based */
-                    tuple( idx + 1 , file )
-                }
-            }      // >>> one element per (group , chromosome)
-            .groupTuple()
-
-    // Merge SNP group files for each group
-    MERGE_SNP_GROUPS(
-        snp_group_ch
-    )
-    
-    GCTA_GRM(
+    // Compute LD scores and LD-stratified GRMs
+    GCTA_GRM_LDMS(
         imputed_plink2_ch,
-        nparts_gcta,
-        MERGE_SNP_GROUPS.out.snps_to_extract
+        imputed_plink_ch,
+        nparts_gcta
     )
-    
-    // Create MGRM file containing all GRM root names
-    grm_prefixes = GCTA_GRM.out.grm_files
-        .map { _group, prefix, _id_file, _bin_file, _n_bin_file ->
-            prefix
-        }
-        .collect()
 
-    MAKE_MGRM(
-        grm_prefixes
-    )
-    
-    
-    // Prepare phenotypes and covariates files (remove headers and split covariates)
-    PREPARE_PHENOCOV(
+    // Run multi-component REML analysis
+    GCTA_REML_LDMS_ANALYSIS(
+        GCTA_GRM_LDMS.out.mgrm_file,
+        GCTA_GRM_LDMS.out.all_grm_files,
         phenotypes_file,
-        covariates_file
-    )
-
-    // Get the covariates files or use empty channel if not available
-    def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader
-    def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader
-
-    // // Run REML analysis using the unrelated subjects GRM
-    RUN_REML(
-        GCTA_GRM.out.grm_files,
-        PREPARE_PHENOCOV.out.phenotypes_noheader,
-        quant_covariates,
-        cat_covariates
+        covariates_file,
     )
 
     emit:
-    ld_scores = CALCULATE_LD_SCORES.out.ld_scores
-    // snp_groups = MERGE_SNP_GROUPS.out.merged_snp_groups
-    reml_results = RUN_REML.out.reml_results
+    // LD scores per chromosome
+    ld_scores = GCTA_GRM_LDMS.out.ld_scores
+    // Multiple GRMs stratified by LD
+    grm_files = GCTA_GRM_LDMS.out.grm_files
+    // Multi-GRM file
+    mgrm_file = GCTA_GRM_LDMS.out.mgrm_file
+    // All GRM files collected
+    all_grm_files = GCTA_GRM_LDMS.out.all_grm_files
+    // REML heritability results (partitioned)
+    reml_results = GCTA_REML_LDMS_ANALYSIS.out.reml_results
 }

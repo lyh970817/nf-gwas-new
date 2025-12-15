@@ -1,0 +1,94 @@
+nextflow_process {
+
+    name "Test Process LDAK_PCGC"
+    script "modules/local/ldak/ldak_pcgc.nf"
+    process "LDAK_PCGC"
+
+    test("Should execute PCGC regression for binary traits with adjusted GRM") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+                ldak_pcgc_prevalence = 0.2
+            }
+            process {
+                """
+                // LDAK_PCGC requires 6-tuple with adjusted GRM including .grm.root file
+                input[0] = tuple(
+                    "ldak_grm_adj",
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.bin"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.id"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.details"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.adjust"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.root")
+                )
+                input[1] = []  // No keep file needed (GRM already filtered)
+                // Use binary phenotype for PCGC
+                input[2] = file("$projectDir/tests/input/phenotype_bin.txt")
+                input[3] = []  // No quantitative covariates (empty list)
+                input[4] = []  // No categorical covariates (empty list)
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert pcgc_results
+                def pcgcFile = path(pcgc_results.get(0))
+
+                // Check PCGC result file exists and has content
+                assert pcgcFile.fileName.toString().startsWith("pcgc_ldak_grm_adj")
+                assert pcgcFile.fileName.toString().endsWith(".pcgc")
+                assert pcgcFile.size() > 0
+
+                // Verify liability-scale heritability estimate is present
+                def content = pcgcFile.text
+                assert content.contains("Her_K1") || content.contains("Heritability")
+            }
+        }
+    }
+
+    test("Should execute PCGC with covariates") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+                ldak_pcgc_prevalence = 0.2
+            }
+            process {
+                """
+                input[0] = tuple(
+                    "ldak_grm_adj",
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.bin"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.id"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.details"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.adjust"),
+                    file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.root")
+                )
+                input[1] = []  // No keep file needed (GRM already filtered)
+                input[2] = file("$projectDir/tests/input/phenotype_bin.txt")
+                input[3] = file("$projectDir/tests/input/ldak/covariates.quant.noheader.txt")
+                input[4] = file("$projectDir/tests/input/ldak/covariates.cat.noheader.txt")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert pcgc_results
+                def pcgcFile = path(pcgc_results.get(0))
+
+                assert pcgcFile.fileName.toString().startsWith("pcgc_ldak_grm_adj")
+                assert pcgcFile.size() > 0
+
+                // Verify covariate adjustment
+                def content = pcgcFile.text
+                assert content.contains("Num_Covariates")
+            }
+        }
+    }
+}

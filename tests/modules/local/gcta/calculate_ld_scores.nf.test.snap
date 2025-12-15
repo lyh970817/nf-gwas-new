@@ -1,0 +1,28 @@
+{
+    "Should handle different chromosomes": {
+        "content": [
+            [
+                [
+                    "chr02_bed",
+                    "chr02_bed_gcta_ld.score.ld:md5,43bf22e79e04b9b0352db67f5de689d7"
+                ]
+            ],
+            [
+                [
+                    "chr02_bed",
+                    [
+                        "chr02_bed_snp_group1.txt:md5,e249439ac7f63ebaccf295b61e08cf7a",
+                        "chr02_bed_snp_group2.txt:md5,7061c4628a05c528355e9cb068b5cefb",
+                        "chr02_bed_snp_group3.txt:md5,60195886c40ab436fe623f4c7aa0e323",
+                        "chr02_bed_snp_group4.txt:md5,0f1cc15d0b496448ed0d55233a443181"
+                    ]
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T00:04:23.13026"
+    }
+}

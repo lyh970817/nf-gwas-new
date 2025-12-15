@@ -1,0 +1,20 @@
+{
+    "Should process phenotypes with both quantitative and categorical covariates": {
+        "content": [
+            [
+                "phenotype.noheader.txt:md5,ae84f81a8e0bdc6c5e347c08bdb9ab9a"
+            ],
+            [
+                "covariates.quant.noheader.txt:md5,308c115c6c84222a3748ef683e8a6f9d"
+            ],
+            [
+                "covariates.cat.noheader.txt:md5,9b75fe681c5464d1c767c575f50acbd0"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T12:00:27.774111"
+    }
+}

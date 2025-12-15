@@ -1,0 +1,20 @@
+nextflow_workflow {
+
+    name "Test Workflow CALC_GENOTYPE_ERROR"
+    script "workflows/ldak/calc_genotype_error.nf"
+    workflow "CALC_GENOTYPE_ERROR"
+
+    // Note: This workflow test is skipped because it requires:
+    // 1. Multiple PLINK files with specific naming patterns
+    // 2. Phenotype and covariate files with specific formats
+    // 3. Batch files for genotype error estimation
+    //
+    // The individual module components are tested separately:
+    // - CALC_KINS_HUMAN (kinship calculation)
+    // - ADD_GRMS (GRM combination)
+    // - FILTER_RELATEDNESS (related individual filtering)
+    // - LDAK_HE (Haseman-Elston regression)
+    // - CALC_GENOTYPE_ERROR_T2 (T2 statistic calculation)
+    //
+    // Full workflow integration is verified through end-to-end pipeline tests.
+}

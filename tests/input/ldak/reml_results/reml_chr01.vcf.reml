@@ -1,0 +1,20 @@
+Num_Kinships 1
+Num_Regions 0
+Num_Top_Predictors 0
+Num_Covariates 4
+Num_Environments 0
+Blupfile reml_chr01.vcf.indi.blp
+Regfile none
+Coeffsfile reml_chr01.vcf.coeff
+Covar_Heritability 0.5681
+Total_Samples 495
+With_Phenotypes 495
+Converged YES
+Null_Likelihood -503.9565
+Alt_Likelihood -503.8095
+LRT_Stat 0.2940
+LRT_P 2.9382e-01
+Component Heritability SE Size Mega_Intensity SE
+Her_K1 0.048669 0.090859 349.06 139.428284 260.294381
+Her_Top 0.000000 NA NA NA NA
+Her_All 0.048669 0.090859 349.06 139.428284 260.294381

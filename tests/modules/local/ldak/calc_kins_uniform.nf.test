@@ -1,0 +1,50 @@
+nextflow_process {
+
+    name "Test Process CALC_KINS_UNIFORM"
+    script "modules/local/ldak/calc_kins_uniform.nf"
+    process "CALC_KINS_UNIFORM"
+
+    test("Should calculate uniform-weighted kinship matrix") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    1,
+                    "example",
+                    file("$projectDir/tests/input/example.bed"),
+                    file("$projectDir/tests/input/example.bim"),
+                    file("$projectDir/tests/input/example.fam"),
+                    null
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert ldak_grm
+                def kinsTuple = ldak_grm.get(0)
+
+                // Output: chr_num, filename, grm.bin, grm.id, grm.details, grm.adjust
+                assert kinsTuple.size() == 6
+
+                def chrNum = kinsTuple.get(0)
+                assert chrNum == 1
+
+                def filename = kinsTuple.get(1)
+                assert filename.contains("example")
+
+                def grmBin = path(kinsTuple.get(2))
+                def grmId = path(kinsTuple.get(3))
+
+                assert grmBin.fileName.toString().endsWith(".grm.bin")
+                assert grmId.fileName.toString().endsWith(".grm.id")
+                assert grmBin.size() > 0
+                assert grmId.size() > 0
+            }
+        }
+    }
+}

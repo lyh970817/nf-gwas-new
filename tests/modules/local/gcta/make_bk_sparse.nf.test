@@ -1,0 +1,74 @@
+nextflow_process {
+
+    name "Test Process MAKE_BK_SPARSE"
+    script "modules/local/gcta/make_bk_sparse.nf"
+    process "MAKE_BK_SPARSE"
+
+    test("Should create sparse GRM from dense GRM") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    null,
+                    "gcta_grm_0",
+                    file("$projectDir/tests/input/gcta/make_bk_sparse/gcta_grm_0.grm.id"),
+                    file("$projectDir/tests/input/gcta/make_bk_sparse/gcta_grm_0.grm.bin"),
+                    file("$projectDir/tests/input/gcta/make_bk_sparse/gcta_grm_0.grm.N.bin")
+                )
+                input[1] = 0.05  // sparse_cutoff
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert sparse_grm_files
+                def sparseTuple = sparse_grm_files.get(0)
+
+                // Process outputs: grm.sp.id, grm.sp (2 items)
+                assert sparseTuple.size() == 2
+
+                def grmSpId = path(sparseTuple.get(0))
+                def grmSp = path(sparseTuple.get(1))
+
+                assert grmSpId.fileName.toString() == "gcta_grm_0_sp.grm.id"
+                assert grmSp.fileName.toString() == "gcta_grm_0_sp.grm.sp"
+
+                assert grmSpId.size() > 0
+                assert grmSp.size() > 0
+            }
+        }
+    }
+
+    test("Should create sparse GRM with different cutoff") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    null,
+                    "gcta_grm_0",
+                    file("$projectDir/tests/input/gcta/make_bk_sparse/gcta_grm_0.grm.id"),
+                    file("$projectDir/tests/input/gcta/make_bk_sparse/gcta_grm_0.grm.bin"),
+                    file("$projectDir/tests/input/gcta/make_bk_sparse/gcta_grm_0.grm.N.bin")
+                )
+                input[1] = 0.025  // stricter cutoff
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert sparse_grm_files
+
+                // Snapshot the output
+                assert snapshot(sparse_grm_files).match()
+            }
+        }
+    }
+}

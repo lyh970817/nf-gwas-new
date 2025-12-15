@@ -1,0 +1,34 @@
+nextflow_process {
+
+    name "Test Process LDAK_SUMHER"
+    script "modules/local/ldak/ldak_sumher.nf"
+    process "LDAK_SUMHER"
+
+    test("Should estimate heritability from summary statistics using thin tagging file") {
+
+        when {
+            params {
+                ldak_sumher_check_sums = false
+                ldak_sumher_prevalence = null
+                ldak_sumher_cutoff = null
+            }
+            process {
+                """
+                input[0] = Channel.of(["test_trait", file("${projectDir}/tests/input/ldak/sumher/test_gwas_summary.txt")])
+                input[1] = file("${projectDir}/tests/input/ldak/sumher/test_thin.tagging")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.trace.tasks().size() == 1
+
+            // Check heritability results file exists
+            with(process.out.heritability_results) {
+                assert size() == 1
+                assert path(get(0)).exists()
+            }
+        }
+    }
+}

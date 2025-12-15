@@ -1,0 +1,71 @@
+nextflow_process {
+
+    name "Test Process ADJUST_GRM_LDAK"
+    script "modules/local/ldak/adjust_grm.nf"
+    process "ADJUST_GRM_LDAK"
+
+    test("Should adjust kinship matrix for covariates") {
+
+        when {
+            process {
+                """
+                // Input: combined GRM (5-tuple)
+                input[0] = tuple(
+                    "ldak_grm",
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.bin"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.id"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.details"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.adjust")
+                )
+                // Phenotype file (required for adjustment)
+                input[1] = file("$projectDir/tests/input/ldak/phenotype.noheader.txt")
+                // Quantitative covariates (required by LDAK --adjust-grm)
+                input[2] = file("$projectDir/tests/input/ldak/covariates.quant.noheader.txt")
+                // Categorical covariates (not supported by --adjust-grm, use empty list)
+                input[3] = []  // No categorical covariates (empty list)
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert adjusted_grm
+                def adjustedTuple = adjusted_grm.get(0)
+
+                // Should have: grm_name_adj, grm.bin, grm.id, grm.details, grm.adjust, grm.root
+                assert adjustedTuple.size() == 6
+
+                def grmName = adjustedTuple.get(0)
+                assert grmName == "ldak_grm_adj"
+
+                def grmBin = path(adjustedTuple.get(1))
+                def grmId = path(adjustedTuple.get(2))
+                def grmDetails = path(adjustedTuple.get(3))
+                def grmAdjust = path(adjustedTuple.get(4))
+                def grmRoot = path(adjustedTuple.get(5))
+
+                // Verify all output files exist
+                assert grmBin.fileName.toString() == "ldak_grm_adj.grm.bin"
+                assert grmId.fileName.toString() == "ldak_grm_adj.grm.id"
+                assert grmDetails.fileName.toString() == "ldak_grm_adj.grm.details"
+                assert grmAdjust.fileName.toString() == "ldak_grm_adj.grm.adjust"
+                assert grmRoot.fileName.toString() == "ldak_grm_adj.grm.root"
+
+                // Verify files have content
+                assert grmBin.size() > 0
+                assert grmId.size() > 0
+                assert grmRoot.size() > 0
+
+                // Verify .grm.root file contains covariate info
+                def rootContent = grmRoot.text
+                assert rootContent.contains("Kinship") || rootContent.contains("Covariates")
+            }
+        }
+    }
+
+    // Note: A test for "phenotype only" adjustment is not included because
+    // LDAK's --adjust-grm requires covariates (--covar, --enviro, or --top-preds).
+    // The workflow handles the no-covariate case by skipping GRM adjustment entirely.
+}

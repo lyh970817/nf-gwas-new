@@ -1,0 +1,99 @@
+nextflow_process {
+
+    name "Test Process REGENIE_STEP1_MERGE_CHUNKS"
+    script "modules/local/regenie/regenie_step1_merge_chunks.nf"
+    process "REGENIE_STEP1_MERGE_CHUNKS"
+
+    test("Should merge predictions from multiple chunks") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1,Y2'
+                regenie_bsize_step1 = 1000
+            }
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/regenie_step1/chunks.master")
+                input[1] = Channel.fromFilePairs("$projectDir/tests/input/regenie_step1/example.qc.{bim,bed,fam}", size: 3, flat:true)
+                input[2] = [
+                    file("$projectDir/tests/input/regenie_step1/regenie_step1_out_1_Y1.loco.gz"),
+                    file("$projectDir/tests/input/regenie_step1/regenie_step1_out_2_Y1.loco.gz")
+                ]  // simulated chunk outputs
+                input[3] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[4] = []  // no covariates
+                input[5] = []  // no condition list
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                // Check merged Step 1 outputs
+                assert regenie_step1_out
+                def step1Files = regenie_step1_out.get(0)
+
+                // Should contain log, predictions, and LOCO files
+                assert step1Files.size() >= 3
+
+                // Verify log file
+                def logFile = step1Files.find { it.fileName.toString().endsWith('.log') }
+                assert logFile != null
+                assert path(logFile).text.contains("--step 1")
+                assert path(logFile).text.contains("--run-l1")
+
+                // Check concat output
+                assert regenie_step1_out_concat
+                def locoFiles = regenie_step1_out_concat.get(0)
+                if (locoFiles instanceof java.util.List) {
+                    locoFiles.each { file ->
+                        assert file.fileName.toString().matches("regenie_step1_out_.*\\.loco\\.gz")
+                    }
+                }
+
+                // Check log output
+                assert regenie_step1_log
+                def logOutput = path(regenie_step1_log.get(0))
+                assert logOutput.fileName.toString() == "regenie_step1_out.log"
+            }
+        }
+    }
+
+    test("Should handle merge with covariates") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+                covariates_columns = 'V1,V2'
+                regenie_bsize_step1 = 1000
+            }
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/regenie_step1/chunks.master")
+                input[1] = Channel.fromFilePairs("$projectDir/tests/input/regenie_step1/example.qc.{bim,bed,fam}", size: 3, flat:true)
+                input[2] = [file("$projectDir/tests/input/regenie_step1/regenie_step1_out_1_Y1.loco.gz")]
+                input[3] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[4] = file("$projectDir/tests/input/pipeline/covariates.txt")
+                input[5] = []
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert regenie_step1_out
+
+                // Verify covariate handling in log
+                def step1Files = regenie_step1_out.get(0)
+                def logFile = step1Files.find { it.fileName.toString().endsWith('.log') }
+                assert path(logFile).text.contains("--covarFile")
+
+                // Snapshot the outputs
+                assert snapshot(regenie_step1_out).match()
+            }
+        }
+    }
+}

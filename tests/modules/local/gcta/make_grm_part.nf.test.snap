@@ -1,0 +1,20 @@
+{
+    "Should calculate GRM partition with SNP group filtering": {
+        "content": [
+            [
+                [
+                    5,
+                    1,
+                    "gcta_grm_1.part_5_2.grm.id:md5,e8f746c9f0ae953991c66636b2133695",
+                    "gcta_grm_1.part_5_2.grm.bin:md5,75c7c9e6210959a7ad7cfb9eeda1d0f1",
+                    "gcta_grm_1.part_5_2.grm.N.bin:md5,c29d49882086a0bc19571df400787358"
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T04:22:01.80538"
+    }
+}

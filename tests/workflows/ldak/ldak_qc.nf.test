@@ -1,0 +1,116 @@
+nextflow_workflow {
+
+    name "Test Workflow LDAK_QC"
+    script "workflows/ldak/ldak_qc.nf"
+    workflow "LDAK_QC"
+
+    test("LDAK QC: Should execute QC with 2 chromosomes (2 quarters)") {
+
+        when {
+            params {
+                ldak_heritability_model = 'human_default'
+                phenotypes_columns = 'Y1'
+            }
+            workflow {
+                """
+                // Prepare PLINK input channel for 2 chromosomes
+                input[0] = Channel.fromPath("$projectDir/tests/input/pipeline/chr*.vcf.gz")
+                    .map { vcf ->
+                        def chr_match = (vcf.name =~ /chr(\d+)\.vcf\.gz/)
+                        def chr_num = chr_match ? chr_match[0][1].toInteger() : 0
+                        [chr_num, vcf.baseName.replaceAll(/\.vcf$/, ''), vcf, null, null, null]
+                    }
+                    .filter { chr_num, filename, bed, bim, fam, range ->
+                        chr_num in [1, 2]  // Only chr01 and chr02
+                    }
+                    // Convert VCF to PLINK for testing (simplified)
+                    .map { chr_num, filename, vcf, _b, _c, _d ->
+                        // Use the same PLINK files for both chromosomes (test data limitation)
+                        def plink_base = file("$projectDir/tests/input/pipeline/example")
+                        [chr_num, "chr0${chr_num}",
+                         file("${plink_base}.bed"),
+                         file("${plink_base}.bim"),
+                         file("${plink_base}.fam"),
+                         null]
+                    }
+
+                // Phenotype file
+                input[1] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+
+                // Covariates file
+                input[2] = file("$projectDir/tests/input/pipeline/covariates.txt")
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                // Check quarter REML results exist
+                assert quarter_reml_results
+                def quarter_results = quarter_reml_results.toList().get()
+                assert quarter_results.size() == 2 : "Expected 2 quarter results for 2 chromosomes"
+
+                // Check inflation results exist
+                assert inflation_results
+                assert inflation_results.get(0) != null
+
+                // Genotype error should be empty (no batch params)
+                assert genotype_error_results
+                def ge_results = genotype_error_results.toList().get()
+                assert ge_results.size() == 0 : "Expected no genotype error results without batch params"
+
+                // Snapshot results
+                assert snapshot(quarter_reml_results, inflation_results).match()
+            }
+        }
+    }
+
+
+    test("LDAK QC: Should execute without covariates") {
+
+        when {
+            params {
+                ldak_heritability_model = 'human_default'
+                phenotypes_columns = 'Y1'
+            }
+            workflow {
+                """
+                input[0] = Channel.fromPath("$projectDir/tests/input/pipeline/chr*.vcf.gz")
+                    .map { vcf ->
+                        def chr_match = (vcf.name =~ /chr(\d+)\.vcf\.gz/)
+                        def chr_num = chr_match ? chr_match[0][1].toInteger() : 0
+                        [chr_num, vcf.baseName.replaceAll(/\.vcf$/, ''), vcf, null, null, null]
+                    }
+                    .filter { chr_num, filename, bed, bim, fam, range ->
+                        chr_num in [1, 2]
+                    }
+                    .map { chr_num, filename, vcf, _b, _c, _d ->
+                        def plink_base = file("$projectDir/tests/input/pipeline/example")
+                        [chr_num, "chr0${chr_num}",
+                         file("${plink_base}.bed"),
+                         file("${plink_base}.bim"),
+                         file("${plink_base}.fam"),
+                         null]
+                    }
+
+                input[1] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[2] = []  // No covariates
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert quarter_reml_results
+                assert inflation_results
+
+                assert snapshot(inflation_results).match("qc_no_covariates")
+            }
+        }
+    }
+
+}

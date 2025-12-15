@@ -1,0 +1,106 @@
+nextflow_process {
+
+    name "Test Process REGENIE_STEP1_RUN_CHUNK"
+    script "modules/local/regenie/regenie_step1_run_chunk.nf"
+    process "REGENIE_STEP1_RUN_CHUNK"
+
+    test("Should execute Step 1 on a single chunk") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1,Y2'
+                regenie_bsize_step1 = 1000
+            }
+            process {
+                """
+                // Simulate chunk input: chunk_num, master, snplists, genotype files, pheno, covar, cond
+                input[0] = Channel.of([
+                    1,  // chunk number
+                    file("$projectDir/tests/input/regenie_step1/chunks.master"),
+                    [file("$projectDir/tests/input/regenie_step1/chunks1.snplist")],
+                    "example.qc",
+                    [
+                        file("$projectDir/tests/input/regenie_step1/example.qc.bed"),
+                        file("$projectDir/tests/input/regenie_step1/example.qc.bim"),
+                        file("$projectDir/tests/input/regenie_step1/example.qc.fam")
+                    ],
+                    file("$projectDir/tests/input/pipeline/phenotype.txt"),
+                    [],  // no covariates
+                    []   // no condition list
+                ])
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                // Check chunk outputs
+                assert chunk_out
+                def chunkFiles = chunk_out.get(0)
+
+                // Should produce LOCO files
+                if (chunkFiles instanceof java.util.List) {
+                    chunkFiles.each { file ->
+                        assert file.fileName.toString().matches("regenie_step1_out_1_.*\\.loco\\.gz")
+                    }
+                } else {
+                    assert chunkFiles.fileName.toString().contains("regenie_step1_out_1")
+                }
+
+                // Check log file
+                assert chunk_log
+                def logFile = path(chunk_log.get(0))
+                assert logFile.fileName.toString() == "regenie_step1_out_1.log"
+                assert logFile.text.contains("--step 1")
+                assert logFile.text.contains("--run-l0")
+            }
+        }
+    }
+
+    test("Should handle chunk with covariates") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+                covariates_columns = 'V1,V2'
+                regenie_bsize_step1 = 1000
+            }
+            process {
+                """
+                input[0] = Channel.of([
+                    2,  // chunk 2
+                    file("$projectDir/tests/input/regenie_step1/chunks.master"),
+                    [file("$projectDir/tests/input/regenie_step1/chunks1.snplist")],
+                    "example.qc",
+                    [
+                        file("$projectDir/tests/input/regenie_step1/example.qc.bed"),
+                        file("$projectDir/tests/input/regenie_step1/example.qc.bim"),
+                        file("$projectDir/tests/input/regenie_step1/example.qc.fam")
+                    ],
+                    file("$projectDir/tests/input/pipeline/phenotype.txt"),
+                    file("$projectDir/tests/input/pipeline/covariates.txt"),
+                    []
+                ])
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert chunk_out
+                assert chunk_log
+
+                def logFile = path(chunk_log.get(0))
+                assert logFile.text.contains("--covarFile")
+                assert logFile.text.contains("--covarColList")
+
+                // Snapshot the outputs
+                assert snapshot(chunk_out, chunk_log).match()
+            }
+        }
+    }
+}

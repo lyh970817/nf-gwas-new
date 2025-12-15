@@ -1,0 +1,17 @@
+Num_Kinships 1
+Num_Regions 0
+Num_Top_Predictors 0
+Num_Covariates 4
+Num_Environments 0
+Coeffsfile he_batch_grm.coeff
+Covar_Heritability 0.5680
+Total_Samples 495
+With_Phenotypes 495
+Null_Likelihood -173235.191885
+Alt_Likelihood -173235.049915
+LRT_Stat 0.2839
+LRT_P 5.9413e-01
+Component Heritability SE Size Mega_Intensity SE
+Her_K1 0.046998 0.126388 698.12 67.321161 181.039360
+Her_Top 0.000000 NA NA NA NA
+Her_All 0.046998 0.126388 698.12 67.321161 181.039360

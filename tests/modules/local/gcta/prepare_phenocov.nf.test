@@ -1,0 +1,181 @@
+nextflow_process {
+
+    name "Test Process PREPARE_PHENOCOV"
+    script "modules/local/gcta/prepare_phenocov.nf"
+    process "PREPARE_PHENOCOV"
+
+    test("Should remove header from phenotype file only") {
+
+        when {
+            params {
+                // No covariate parameters
+            }
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/phenotype.txt")
+                input[1] = []  // No covariates (empty list)
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                // Check phenotypes_noheader output exists
+                assert phenotypes_noheader
+                def phenoFile = path(phenotypes_noheader.get(0))
+
+                assert phenoFile.fileName.toString() == "phenotype.noheader.txt"
+                assert phenoFile.size() > 0
+
+                // Check that header is removed
+                def content = phenoFile.text
+                assert !content.contains("FID IID Y1 Y2")
+
+                // Check first line starts with sample ID
+                def firstLine = content.split("\n")[0]
+                assert firstLine.startsWith("1 1")
+
+                // No covariate files should be produced
+                assert covariates_quant_noheader.size() == 0
+                assert covariates_cat_noheader.size() == 0
+            }
+        }
+    }
+
+    test("Should process phenotypes and quantitative covariates") {
+
+        when {
+            params {
+                covariates_columns = 'V2,V3'
+                covariates_cat_columns = null
+            }
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/phenotype.txt")
+                input[1] = file("$projectDir/tests/input/covariates.txt")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                // Check phenotypes output
+                assert phenotypes_noheader
+                def phenoFile = path(phenotypes_noheader.get(0))
+                assert phenoFile.size() > 0
+
+                // Check quantitative covariates output
+                assert covariates_quant_noheader
+                def quantCovFile = path(covariates_quant_noheader.get(0))
+
+                assert quantCovFile.fileName.toString() == "covariates.quant.noheader.txt"
+                assert quantCovFile.size() > 0
+
+                // Verify no header and content
+                def content = quantCovFile.text
+                assert !content.contains("FID IID V1 V2 V3")
+
+                // Check first line has sample ID and values
+                def firstLine = content.split("\n")[0]
+                assert firstLine.startsWith("1 1")
+
+                // No categorical covariates
+                assert covariates_cat_noheader.size() == 0
+            }
+        }
+    }
+
+    test("Should process phenotypes with both quantitative and categorical covariates") {
+
+        when {
+            params {
+                covariates_columns = 'V1,V2,V3'
+                covariates_cat_columns = 'V1'
+            }
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/phenotype.txt")
+                input[1] = file("$projectDir/tests/input/covariates.txt")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                // Check phenotypes output
+                assert phenotypes_noheader
+                def phenoFile = path(phenotypes_noheader.get(0))
+                assert phenoFile.fileName.toString() == "phenotype.noheader.txt"
+                assert phenoFile.size() > 0
+
+                // Check quantitative covariates output (V2, V3 - excluding V1)
+                assert covariates_quant_noheader
+                def quantCovFile = path(covariates_quant_noheader.get(0))
+                assert quantCovFile.fileName.toString() == "covariates.quant.noheader.txt"
+                assert quantCovFile.size() > 0
+
+                // Check categorical covariates output (V1 only)
+                assert covariates_cat_noheader
+                def catCovFile = path(covariates_cat_noheader.get(0))
+                assert catCovFile.fileName.toString() == "covariates.cat.noheader.txt"
+                assert catCovFile.size() > 0
+
+                // Verify content structure
+                def quantContent = quantCovFile.text
+                assert !quantContent.contains("FID IID")
+                def quantFirstLine = quantContent.split("\n")[0]
+                assert quantFirstLine.startsWith("1 1")
+
+                def catContent = catCovFile.text
+                assert !catContent.contains("FID IID")
+                def catFirstLine = catContent.split("\n")[0]
+                assert catFirstLine.startsWith("1 1")
+
+                // Snapshot all outputs for regression testing
+                assert snapshot(
+                    phenotypes_noheader,
+                    covariates_quant_noheader,
+                    covariates_cat_noheader
+                ).match()
+            }
+        }
+    }
+
+    test("Should handle single phenotype file") {
+
+        when {
+            params {
+                covariates_columns = 'V2,V3'
+                covariates_cat_columns = null
+            }
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/phenotype_single.txt")
+                input[1] = file("$projectDir/tests/input/covariates.txt")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert phenotypes_noheader
+                def phenoFile = path(phenotypes_noheader.get(0))
+
+                assert phenoFile.fileName.toString() == "phenotype_single.noheader.txt"
+                assert phenoFile.size() > 0
+
+                // Check quantitative covariates
+                assert covariates_quant_noheader
+                assert covariates_quant_noheader.size() == 1
+            }
+        }
+    }
+}

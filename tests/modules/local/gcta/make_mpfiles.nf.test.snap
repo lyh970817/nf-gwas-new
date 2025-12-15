@@ -1,0 +1,14 @@
+{
+    "Should handle different chromosomes": {
+        "content": [
+            [
+                "chr02.vcf.mpfile:md5,78ded82a1305d4af9f262b1b0a9f9ab7"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T03:48:17.197182"
+    }
+}

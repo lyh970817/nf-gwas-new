@@ -1,0 +1,14 @@
+{
+    "Should execute REML with covariates": {
+        "content": [
+            [
+                "phenotype.noheader.hsq:md5,0b0c3ecb2ddec4b09297ac619361235a"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T12:24:38.484046"
+    }
+}

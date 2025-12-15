@@ -1,0 +1,20 @@
+{
+    "Should adjust GRM with SNP group": {
+        "content": [
+            [
+                [
+                    "group1",
+                    "gcta_grm_1_adj",
+                    "gcta_grm_1_adj.grm.id:md5,cf62b27fc06fbabf367a8b177bc0830c",
+                    "gcta_grm_1_adj.grm.bin:md5,4a347bd73d4a3a0352c6b7876375deb3",
+                    "gcta_grm_1_adj.grm.N.bin:md5,2fd9555140d672f369733387dbfa4275"
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T11:06:04.26504"
+    }
+}

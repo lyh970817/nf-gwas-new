@@ -1,0 +1,76 @@
+nextflow_process {
+    name "Test PREPARE_PHENOCOV_BIVARIATE process"
+    script "modules/local/gcta/prepare_phenocov_bivariate.nf"
+    process "PREPARE_PHENOCOV_BIVARIATE"
+
+    test("Should prepare bivariate phenotypes from file with two phenotype columns") {
+        when {
+            params {
+                covariates_columns = ''
+                covariates_cat_columns = ''
+            }
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/phenotype.txt")
+                input[1] = []
+                input[2] = "Y1"
+                input[3] = "Y2"
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            with(process.out) {
+                // Check phenotype output file exists
+                assert phenotypes_file
+                def phenoFile = path(phenotypes_file.get(0))
+                assert phenoFile.fileName.toString() == "phenotypes_bivariate.txt"
+                assert phenoFile.size() > 0
+
+                // Check mpheno indices file exists
+                assert mpheno_indices
+                def mphenoFile = path(mpheno_indices.get(0))
+                assert mphenoFile.fileName.toString() == "mpheno_indices.txt"
+
+                // Verify mpheno indices content is "1\n2\n"
+                def mphenoContent = mphenoFile.text.trim().split('\n')
+                assert mphenoContent.size() == 2
+                assert mphenoContent[0] == "1"
+                assert mphenoContent[1] == "2"
+            }
+        }
+    }
+
+    test("Should prepare bivariate phenotypes with covariates") {
+        when {
+            params {
+                covariates_columns = 'V1,V2'
+                covariates_cat_columns = ''
+            }
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/phenotype.txt")
+                input[1] = file("$projectDir/tests/input/covariates.txt")
+                input[2] = "Y1"
+                input[3] = "Y2"
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            with(process.out) {
+                // Check phenotype output
+                assert phenotypes_file
+                def phenoFile = path(phenotypes_file.get(0))
+                assert phenoFile.fileName.toString() == "phenotypes_bivariate.txt"
+
+                // Check quantitative covariates output
+                assert covariates_quant_noheader
+                def qcovarFile = path(covariates_quant_noheader.get(0))
+                assert qcovarFile.fileName.toString().contains(".quant.noheader.txt")
+            }
+        }
+    }
+}

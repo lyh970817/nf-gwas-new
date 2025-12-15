@@ -1,0 +1,38 @@
+{
+    "Should perform FastGWA with quantitative and categorical covariates": {
+        "content": [
+            [
+                "chr01.vcf_phenotype_single.noheader.fastGWA:md5,49c65037f8c62d4dcf90b007b82c9399"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T13:48:58.499262"
+    },
+    "Should perform FastGWA association testing without covariates": {
+        "content": [
+            [
+
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T13:36:33.31602"
+    },
+    "Should perform FastGWA with different sparse cutoff": {
+        "content": [
+            [
+
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T13:53:14.515704"
+    }
+}

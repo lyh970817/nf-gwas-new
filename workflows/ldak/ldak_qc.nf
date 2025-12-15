@@ -7,11 +7,11 @@
 include { CALC_KINS } from './calc_kins'
 include { MAKE_MGRM_LDAK } from '../../modules/local/ldak/make_mgrm_ldak'
 include { ADD_GRMS } from '../../modules/local/ldak/add_grms'
-include { LDAK_REML } from '../../modules/local/ldak/ldak_reml'
-include { LDAK } from './ldak'
+include { LDAK_REML as LDAK_REML_PROCESS } from '../../modules/local/ldak/ldak_reml'
+include { LDAK_REML_WORKFLOW as LDAK_REML } from './ldak_reml'
 include { PREPARE_PHENOCOV } from '../../modules/local/gcta/prepare_phenocov'
 include { CALC_INFLATION } from '../../modules/local/ldak/calc_inflation'
-include { CALC_GENOTYPE_ERROR } from '../../modules/local/ldak/calc_genotype_error'
+include { CALC_GENOTYPE_ERROR } from './calc_genotype_error'
 
 workflow LDAK_QC {
     take:
@@ -137,7 +137,7 @@ workflow LDAK_QC {
                 }
         )
 
-    LDAK(
+    LDAK_REML(
         imputed_plink_ch,
         phenotype_file,
         covariates_file,
@@ -151,9 +151,9 @@ workflow LDAK_QC {
             tuple(filename, bin, id, details, adjust)
         }
 
-    LDAK_REML(
+    LDAK_REML_PROCESS(
         quarter_grm_tuples,
-        LDAK.out.filtered_list,
+        LDAK_REML.out.filtered_list,
         PREPARE_PHENOCOV.out.phenotypes_noheader,
         quant_covariates,
         cat_covariates
@@ -162,8 +162,8 @@ workflow LDAK_QC {
 
     // Calculate inflation using quarter REML results and LDAK REML results
     CALC_INFLATION(
-        LDAK.out.reml_results,
-        LDAK_REML.out.reml_results.collect()
+        LDAK_REML.out.reml_results,
+        LDAK_REML_PROCESS.out.reml_results.collect()
     )
 
     // Calculate genotype error if batch subset parameters are provided
@@ -180,8 +180,8 @@ workflow LDAK_QC {
     }
 
     emit:
-    quarter_reml_results = LDAK_REML.out.reml_results
+    quarter_reml_results = LDAK_REML_PROCESS.out.reml_results
     inflation_results = CALC_INFLATION.out.inflation_results
-    genotype_error_results = (params.batch_subset_prefix && params.batch_subset_number) ? CALC_GENOTYPE_ERROR.out.he_results : Channel.empty()
+    genotype_error_results = (params.batch_subset_prefix && params.batch_subset_number) ? CALC_GENOTYPE_ERROR.out.genotype_error_results : Channel.empty()
     // quarter_info = quarter_grms
 }

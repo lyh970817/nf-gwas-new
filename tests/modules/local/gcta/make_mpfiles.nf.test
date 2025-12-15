@@ -1,0 +1,81 @@
+nextflow_process {
+
+    name "Test Process MAKE_MPFILES"
+    script "modules/local/gcta/make_mpfiles.nf"
+    process "MAKE_MPFILES"
+
+    test("Should create mpfile from PLINK2 files") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    1,
+                    "chr01.vcf",
+                    file("$projectDir/tests/input/chr01.vcf.pgen"),
+                    file("$projectDir/tests/input/chr01.vcf.psam"),
+                    file("$projectDir/tests/input/chr01.vcf.pvar"),
+                    null
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert mpfile_part
+                def mpfile = path(mpfile_part.get(0))
+
+                assert mpfile.fileName.toString() == "chr01.vcf.mpfile"
+                assert mpfile.size() > 0
+
+                // Check mpfile format: filename pgen psam pvar
+                def content = mpfile.text.trim()
+                assert content.contains("chr01.vcf")
+                assert content.contains(".pgen")
+                assert content.contains(".psam")
+                assert content.contains(".pvar")
+
+                def parts = content.split()
+                assert parts.size() == 4
+                assert parts[0] == "chr01.vcf"
+            }
+        }
+    }
+
+    test("Should handle different chromosomes") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    2,
+                    "chr02.vcf",
+                    file("$projectDir/tests/input/chr02.vcf.pgen"),
+                    file("$projectDir/tests/input/chr02.vcf.psam"),
+                    file("$projectDir/tests/input/chr02.vcf.pvar"),
+                    null
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert mpfile_part
+                def mpfile = path(mpfile_part.get(0))
+
+                assert mpfile.fileName.toString() == "chr02.vcf.mpfile"
+                def content = mpfile.text.trim()
+                assert content.startsWith("chr02.vcf")
+
+                // Snapshot the output
+                assert snapshot(mpfile_part).match()
+            }
+        }
+    }
+}

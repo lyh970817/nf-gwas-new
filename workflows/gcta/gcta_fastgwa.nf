@@ -1,59 +1,61 @@
 /*
 ========================================================================================
-    GCTA FastGWA Workflow
+    GCTA FastGWA Workflow - Fast Association Testing with GRM
+========================================================================================
+
+    Purpose: Run complete FastGWA-MLM association testing including GRM computation
+
+    This workflow computes the GRM, creates a sparse version for efficiency,
+    and runs FastGWA-MLM association testing. FastGWA is orders of magnitude
+    faster than standard GWAS for large samples (>50k).
+
+    Pipeline:
+    1. GCTA_GRM: Compute genetic relationship matrix (with sparse output)
+    2. GCTA_FASTGWA_ANALYSIS: Run FastGWA-MLM association testing
+
+    For workflows that need to reuse GRMs, use GCTA_GRM (with create_sparse_grm=true)
+    and GCTA_FASTGWA_ANALYSIS separately.
 ========================================================================================
 */
 
 include { GCTA_GRM } from './gcta_grm'
-include { MAKE_BK_SPARSE } from '../../modules/local/gcta/make_bk_sparse'
-include { RUN_FASTGWA_MLM } from '../../modules/local/gcta/run_fastgwa_mlm'
-include { PREPARE_PHENOCOV } from '../../modules/local/gcta/prepare_phenocov'
+include { GCTA_FASTGWA_ANALYSIS } from './gcta_fastgwa_analysis'
 
 workflow GCTA_FASTGWA {
     take:
-    imputed_plink2_ch   // Channel with imputed PLINK2 files for GRM calculation and association testing
+    imputed_plink2_ch   // Channel with imputed PLINK2 files for GRM and association
     phenotypes_file     // Path to phenotypes file
     covariates_file     // Path to covariates file (optional)
     nparts_gcta         // Number of parts for GCTA GRM calculation
     sparse_cutoff       // Cutoff for sparse GRM (default: 0.05)
 
     main:
-    // Create a default channel for snps_to_extract (with a single snp group "0" and no snp group files)
+    // Create a default channel for snps_to_extract (single group "0")
     def snps_to_extract_ch = Channel.of(["0", []])
 
-    // Run GCTA GRM workflow to calculate genetic relationship matrix
+    // Run GCTA GRM workflow with sparse GRM creation enabled
     GCTA_GRM(
         imputed_plink2_ch,
         nparts_gcta,
-        snps_to_extract_ch
+        snps_to_extract_ch,
+        true,           // create_sparse_grm
+        sparse_cutoff,  // sparse_cutoff
+        false           // skip_relatedness_filter
     )
 
-    // Create a sparse GRM using the adjusted unrelated GRM
-    MAKE_BK_SPARSE(
-        GCTA_GRM.out.grm_files,
-        sparse_cutoff
-    )
-
-    // Prepare phenotypes and covariates files (remove headers and split covariates)
-    PREPARE_PHENOCOV(
-        phenotypes_file,
-        covariates_file
-    )
-
-    // Get the covariates files or use empty channel if not available
-    def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader
-    def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader
-
-    // Run FastGWA-MLM analysis for each PLINK file without combining inputs
-    RUN_FASTGWA_MLM(
+    // Run FastGWA-MLM analysis using the sparse GRM
+    GCTA_FASTGWA_ANALYSIS(
         imputed_plink2_ch,
-        MAKE_BK_SPARSE.out.sparse_grm_files,
-        PREPARE_PHENOCOV.out.phenotypes_noheader,
-        quant_covariates,
-        cat_covariates
+        GCTA_GRM.out.sparse_grm_files,
+        phenotypes_file,
+        covariates_file,
     )
 
     emit:
-    fastgwa_results = RUN_FASTGWA_MLM.out.fastgwa_results
-
+    // Dense GRM files (for potential reuse)
+    grm_files = GCTA_GRM.out.grm_files
+    // Sparse GRM files
+    sparse_grm_files = GCTA_GRM.out.sparse_grm_files
+    // FastGWA association results
+    fastgwa_results = GCTA_FASTGWA_ANALYSIS.out.fastgwa_results
 }

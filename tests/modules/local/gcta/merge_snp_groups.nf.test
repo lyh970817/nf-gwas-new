@@ -1,0 +1,77 @@
+nextflow_process {
+
+    name "Test Process MERGE_SNP_GROUPS"
+    script "modules/local/gcta/merge_snp_groups.nf"
+    process "MERGE_SNP_GROUPS"
+
+    test("Should merge SNP group files across chromosomes") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    1,  // group_num
+                    [
+                        file("$projectDir/tests/input/gcta/merge_snp_groups/chr01.vcf_snp_group1.txt"),
+                        file("$projectDir/tests/input/gcta/merge_snp_groups/chr02.vcf_snp_group1.txt")
+                    ]
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert snps_to_extract
+                def groupTuple = snps_to_extract.get(0)
+
+                // Should have: group_num, merged_file
+                assert groupTuple.size() == 2
+                assert groupTuple.get(0) == 1
+
+                def mergedFile = path(groupTuple.get(1))
+                assert mergedFile.fileName.toString() == "snp_group1.txt"
+                assert mergedFile.size() > 0
+
+                // File should contain SNPs from both chromosomes
+                def lines = mergedFile.readLines()
+                assert lines.size() > 0
+            }
+        }
+    }
+
+    test("Should handle different group numbers") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    3,
+                    [
+                        file("$projectDir/tests/input/gcta/merge_snp_groups/chr01.vcf_snp_group3.txt"),
+                        file("$projectDir/tests/input/gcta/merge_snp_groups/chr02.vcf_snp_group3.txt")
+                    ]
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert snps_to_extract
+                def groupTuple = snps_to_extract.get(0)
+
+                assert groupTuple.get(0) == 3
+                def mergedFile = path(groupTuple.get(1))
+                assert mergedFile.fileName.toString() == "snp_group3.txt"
+
+                // Snapshot the output
+                assert snapshot(snps_to_extract).match()
+            }
+        }
+    }
+}

@@ -31,14 +31,19 @@
           "description": "Name of the project",
           "fa_icon": "fas fa-project-diagram"
         },
-        "genotypes_association": {
+        "genotypes_association_vcf": {
           "type": "string",
-          "description": "Genotypes for association testing (in VCF format).",
+          "description": "VCF files for analysis (e.g., 'data/chr*.vcf.gz'). Converted to PLINK formats if genotypes_association_plink1/plink2 not provided.",
           "fa_icon": "fas fa-project-diagram"
         },
-        "genotypes_association_format": {
+        "genotypes_association_plink1": {
           "type": "string",
-          "description": "Format of genotypes for association testing (only VCF is supported).",
+          "description": "PLINK1 files (bed/bim/fam) for analysis (e.g., 'data/chr*.{bed,bim,fam}'). Used directly, skipping VCF conversion.",
+          "fa_icon": "fas fa-project-diagram"
+        },
+        "genotypes_association_plink2": {
+          "type": "string",
+          "description": "PLINK2 files (pgen/psam/pvar) for analysis (e.g., 'data/chr*.{pgen,psam,pvar}'). Used directly, skipping VCF conversion.",
           "fa_icon": "fas fa-project-diagram"
         },
         "association_build": {
@@ -72,7 +77,6 @@
       },
       "required": [
         "project",
-        "genotypes_association",
         "phenotypes_filename",
         "phenotypes_columns"
       ],
@@ -560,12 +564,61 @@
         },
         "genotypes_imputed": {
           "type": "string",
-          "description": "[DEPRECATED] Please use --genotypes_association instead.",
+          "description": "[DEPRECATED] Please use --genotypes_association_vcf instead.",
           "fa_icon": "fas fa-project-diagram"
         },
         "genotypes_imputed_format": {
           "type": "string",
-          "description": "[DEPRECATED] Please use --genotypes_association_format instead.",
+          "description": "[DEPRECATED] No longer needed - supply files directly via genotypes_association_vcf/plink1/plink2.",
+          "fa_icon": "fas fa-project-diagram"
+        },
+        "genotypes_association": {
+          "type": "string",
+          "description": "[DEPRECATED] Please use --genotypes_association_vcf instead.",
+          "fa_icon": "fas fa-project-diagram"
+        },
+        "genotypes_association_format": {
+          "type": "string",
+          "description": "[DEPRECATED] No longer needed - supply files directly via genotypes_association_vcf/plink1/plink2.",
+          "fa_icon": "fas fa-project-diagram"
+        },
+        "batch_subset_prefix": {
+          "type": "string",
+          "description": "Prefix for batch subset files used in LDAK genotype error estimation. Each batch file should be named as '<prefix><batch_number>' (e.g., 'Batch_1', 'Batch_2'). Required for genotype error QC with LDAK.",
+          "fa_icon": "fas fa-project-diagram"
+        },
+        "batch_subset_number": {
+          "type": "integer",
+          "description": "Number of genotyping batches for LDAK genotype error estimation. Used with --batch_subset_prefix to test for batch-specific genotyping errors. Values typically range from 2-20 batches.",
+          "fa_icon": "fas fa-project-diagram"
+        },
+        "ldak_use_he_regression": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use Haseman-Elston regression instead of REML for LDAK heritability estimation. Faster for large datasets (N > 100k) but less precise. Useful for initial QC and genotype error estimation.",
+          "fa_icon": "fas fa-project-diagram"
+        },
+        "ldak_he_subset_prefix": {
+          "type": "string",
+          "description": "Prefix for batch subset files used in LDAK HE genotype error estimation. Only used with --ldak_use_he_regression=true. Format: '<prefix><batch_number>' (e.g., 'Batch_1').",
+          "fa_icon": "fas fa-project-diagram"
+        },
+        "ldak_he_subset_number": {
+          "type": "integer",
+          "description": "Number of batches for LDAK HE genotype error estimation. Only used with --ldak_use_he_regression=true and --ldak_he_subset_prefix.",
+          "fa_icon": "fas fa-project-diagram"
+        },
+        "ldak_run_pcgc": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use PCGC regression for binary trait heritability estimation on liability scale instead of standard REML. Critical for case-control studies.",
+          "fa_icon": "fas fa-project-diagram"
+        },
+        "ldak_pcgc_prevalence": {
+          "type": "number",
+          "description": "Disease prevalence (0-1) for PCGC regression. Required when --ldak_run_pcgc=true. Example: 0.05 for 5% prevalence.",
+          "minimum": 0,
+          "maximum": 1,
           "fa_icon": "fas fa-project-diagram"
         }
       },

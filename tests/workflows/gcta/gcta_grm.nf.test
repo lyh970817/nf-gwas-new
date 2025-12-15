@@ -1,0 +1,93 @@
+nextflow_workflow {
+
+    name "Test Workflow GCTA_GRM"
+    script "workflows/gcta/gcta_grm.nf"
+    workflow "GCTA_GRM"
+
+    test("Should calculate GRM without SNP group filtering") {
+
+        when {
+            params {
+                nparts_gcta = 2
+            }
+            workflow {
+                """
+                // Create PLINK2 channel input
+                input[0] = Channel.of(
+                    tuple(
+                        1,
+                        "chr01.vcf",
+                        file("$projectDir/tests/input/chr01.vcf.pgen"),
+                        file("$projectDir/tests/input/chr01.vcf.psam"),
+                        file("$projectDir/tests/input/chr01.vcf.pvar"),
+                        null
+                    ),
+                    tuple(
+                        2,
+                        "chr02.vcf",
+                        file("$projectDir/tests/input/chr02.vcf.pgen"),
+                        file("$projectDir/tests/input/chr02.vcf.psam"),
+                        file("$projectDir/tests/input/chr02.vcf.pvar"),
+                        null
+                    )
+                )
+
+                // nparts_gcta parameter
+                input[1] = 2
+
+                // SNP group channel (empty - no filtering)
+                input[2] = Channel.of(["0", []])
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert grm_files
+                assert snapshot(grm_files).match()
+            }
+        }
+    }
+
+    test("Should calculate GRM with reduced parallelization") {
+
+        when {
+            params {
+                nparts_gcta = 1
+            }
+            workflow {
+                """
+                input[0] = Channel.of(
+                    tuple(
+                        1,
+                        "chr01.vcf",
+                        file("$projectDir/tests/input/chr01.vcf.pgen"),
+                        file("$projectDir/tests/input/chr01.vcf.psam"),
+                        file("$projectDir/tests/input/chr01.vcf.pvar"),
+                        null
+                    ),
+                    tuple(
+                        2,
+                        "chr02.vcf",
+                        file("$projectDir/tests/input/chr02.vcf.pgen"),
+                        file("$projectDir/tests/input/chr02.vcf.psam"),
+                        file("$projectDir/tests/input/chr02.vcf.pvar"),
+                        null
+                    )
+                )
+
+                input[1] = 1
+
+                input[2] = Channel.of(["0", []])
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out.grm_files).match()
+        }
+    }
+}

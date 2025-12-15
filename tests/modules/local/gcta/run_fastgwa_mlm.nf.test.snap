@@ -1,0 +1,14 @@
+{
+    "Should execute FastGWA with covariates": {
+        "content": [
+            [
+                "chr01.vcf_phenotype.noheader.fastGWA:md5,68568e6663d82cedc2304f39e1462754"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T12:43:00.695775"
+    }
+}

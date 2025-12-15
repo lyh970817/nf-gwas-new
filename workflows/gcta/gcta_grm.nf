@@ -1,3 +1,24 @@
+/*
+========================================================================================
+    GCTA GRM Workflow - Genetic Relationship Matrix Computation
+========================================================================================
+
+    Purpose: Calculate genetic relationship matrix (GRM) with optional sparse output
+
+    Pipeline:
+    1. MAKE_MPFILES: Create mpfiles for each chromosome
+    2. MERGE_MPFILES: Merge chromosome mpfiles
+    3. MAKE_GRM_PART: Calculate GRM parts (parallelized)
+    4. MERGE_GRM_PARTS: Merge GRM parts
+    5. ADJUST_GRM: Adjust for incomplete tagging
+    6. REMOVE_RELATED_SUBJECTS: Filter related individuals
+    7. [Optional] MAKE_BK_SPARSE: Create sparse GRM for FastGWA
+
+    This workflow can be used standalone for GRM-only computation,
+    or as a subworkflow within GCTA_GREML/GCTA_FASTGWA.
+========================================================================================
+*/
+
 // Import processes
 include { MAKE_MPFILES } from '../../modules/local/gcta/make_mpfiles'
 include { MERGE_MPFILES } from '../../modules/local/gcta/merge_mpfiles'
@@ -6,6 +27,7 @@ include { MERGE_GRM_PARTS } from '../../modules/local/gcta/merge_grm_parts'
 include { ADJUST_GRM } from '../../modules/local/gcta/adjust_grm'
 include { REMOVE_RELATED_SUBJECTS } from '../../modules/local/gcta/remove_related_subjects'
 include { MAKE_MGRM } from '../../modules/local/gcta/make_mgrm'
+include { MAKE_BK_SPARSE } from '../../modules/local/gcta/make_bk_sparse'
 
 // Function to create a channel with part numbers based on nparts_gcta
 def create_part_channel(nparts_gcta) {
@@ -15,9 +37,12 @@ def create_part_channel(nparts_gcta) {
 // Main workflow for GCTA GRM calculation
 workflow GCTA_GRM {
     take:
-    imputed_plink2_ch  // Channel with imputed PLINK2 files
-    nparts_gcta        // Number of parts for GCTA GRM calculation
-    snps_to_extract_ch    // Optional channel with SNPs to extract (default: empty channel)j
+    imputed_plink2_ch     // Channel with imputed PLINK2 files
+    nparts_gcta           // Number of parts for GCTA GRM calculation
+    snps_to_extract_ch    // Optional channel with SNPs to extract (default: [["0", []]])
+    create_sparse_grm     // Boolean: whether to create sparse GRM for FastGWA
+    sparse_cutoff         // Cutoff for sparse GRM (default: 0.05)
+    skip_relatedness_filter  // Boolean: skip REMOVE_RELATED_SUBJECTS (for LDMS centralized filtering)
 
     main:
     // Create mpfiles for each chromosome
@@ -32,7 +57,7 @@ workflow GCTA_GRM {
     // Combine part_channel with nparts_gcta
     parts_with_nparts = part_channel.combine(Channel.value(nparts_gcta))
     parts_with_nparts
-        .combine(snps_to_extract_ch).view()
+        .combine(snps_to_extract_ch)
         .set{ parts_and_snps_ch }
 
     // Collect all PLINK2 files for use in MAKE_GRM_PART
@@ -64,14 +89,40 @@ workflow GCTA_GRM {
         MERGE_GRM_PARTS.out.grm_files
     )
 
-    // // Remove related subjects using grm-cutoff 0.05
-    // // NOTE: This step forbids per chromosome operation
-    REMOVE_RELATED_SUBJECTS(
-        ADJUST_GRM.out.grm_files
-    )
+    // Conditionally remove related subjects
+    // Skip this step for LDMS workflow (centralized filtering will be done later)
+    if (skip_relatedness_filter) {
+        // Output adjusted GRM without relatedness filtering
+        grm_out = ADJUST_GRM.out.grm_files
+        keep_file_out = Channel.empty()
+    } else {
+        // Remove related subjects using grm-cutoff 0.05
+        REMOVE_RELATED_SUBJECTS(
+            ADJUST_GRM.out.grm_files
+        )
+        grm_out = REMOVE_RELATED_SUBJECTS.out.grm_files
+        keep_file_out = REMOVE_RELATED_SUBJECTS.out.keep_file
+    }
+
+    // Optionally create sparse GRM for FastGWA
+    if (create_sparse_grm) {
+        MAKE_BK_SPARSE(
+            grm_out,
+            sparse_cutoff
+        )
+        sparse_grm_out = MAKE_BK_SPARSE.out.sparse_grm_files
+    } else {
+        // Create empty channel if sparse GRM not requested
+        sparse_grm_out = Channel.empty()
+    }
 
     emit:
-
-    // Unrelated subjects GRM as tuple
-    grm_files = REMOVE_RELATED_SUBJECTS.out.grm_files
+    // Dense GRM files (always emitted)
+    grm_files = grm_out
+    // Sparse GRM files (only if create_sparse_grm=true)
+    sparse_grm_files = sparse_grm_out
+    // Adjusted GRM files (before relatedness filtering)
+    adjusted_grm_files = ADJUST_GRM.out.grm_files
+    // Keep file (only if skip_relatedness_filter=false)
+    keep_file = keep_file_out
 }

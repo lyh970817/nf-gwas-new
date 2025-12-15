@@ -1,0 +1,143 @@
+nextflow_workflow {
+
+    name "Test Workflow GCTA_FASTGWA"
+    script "workflows/gcta/gcta_fastgwa.nf"
+    workflow "GCTA_FASTGWA"
+
+    test("Should perform FastGWA association testing without covariates") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+                nparts_gcta = 2
+            }
+            workflow {
+                """
+                // PLINK2 files channel
+                input[0] = Channel.of(
+                    tuple(
+                        1,
+                        "chr01.vcf",
+                        file("$projectDir/tests/input/chr01.vcf.pgen"),
+                        file("$projectDir/tests/input/chr01.vcf.psam"),
+                        file("$projectDir/tests/input/chr01.vcf.pvar"),
+                        null
+                    ),
+                    tuple(
+                        2,
+                        "chr02.vcf",
+                        file("$projectDir/tests/input/chr02.vcf.pgen"),
+                        file("$projectDir/tests/input/chr02.vcf.psam"),
+                        file("$projectDir/tests/input/chr02.vcf.pvar"),
+                        null
+                    )
+                )
+
+                // Phenotype file
+                input[1] = file("$projectDir/tests/input/phenotype_single.txt")
+
+                // Covariate file
+                input[2] = ""
+
+                // nparts_gcta
+                input[3] = 2
+
+                // sparse cutoff
+                input[4] = 0.05
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out.fastgwa_results).match()
+        }
+    }
+
+    test("Should perform FastGWA with quantitative and categorical covariates") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+                covariates_columns = 'V1,V2,V3'
+                covariates_cat_columns = 'V1'
+                nparts_gcta = 2
+            }
+            workflow {
+                """
+                input[0] = Channel.of(
+                    tuple(
+                        1,
+                        "chr01.vcf",
+                        file("$projectDir/tests/input/chr01.vcf.pgen"),
+                        file("$projectDir/tests/input/chr01.vcf.psam"),
+                        file("$projectDir/tests/input/chr01.vcf.pvar"),
+                        null
+                    ),
+                    tuple(
+                        2,
+                        "chr02.vcf",
+                        file("$projectDir/tests/input/chr02.vcf.pgen"),
+                        file("$projectDir/tests/input/chr02.vcf.psam"),
+                        file("$projectDir/tests/input/chr02.vcf.pvar"),
+                        null
+                    )
+                )
+
+                input[1] = file("$projectDir/tests/input/phenotype_single.txt")
+                input[2] = file("$projectDir/tests/input/covariates.txt")
+                input[3] = 2
+                input[4] = 0.05
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out.fastgwa_results).match()
+        }
+    }
+
+    test("Should perform FastGWA with different sparse cutoff") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+                nparts_gcta = 2
+            }
+            workflow {
+                """
+                input[0] = Channel.of(
+                    tuple(
+                        1,
+                        "chr01.vcf",
+                        file("$projectDir/tests/input/chr01.vcf.pgen"),
+                        file("$projectDir/tests/input/chr01.vcf.psam"),
+                        file("$projectDir/tests/input/chr01.vcf.pvar"),
+                        null
+                    ),
+                    tuple(
+                        2,
+                        "chr02.vcf",
+                        file("$projectDir/tests/input/chr02.vcf.pgen"),
+                        file("$projectDir/tests/input/chr02.vcf.psam"),
+                        file("$projectDir/tests/input/chr02.vcf.pvar"),
+                        null
+                    )
+                )
+
+                input[1] = file("$projectDir/tests/input/phenotype_single.txt")
+                input[2] = ""
+                input[3] = 2
+                // Use stricter sparse cutoff (0.02)
+                input[4] = 0.02
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out.fastgwa_results).match()
+        }
+    }
+}

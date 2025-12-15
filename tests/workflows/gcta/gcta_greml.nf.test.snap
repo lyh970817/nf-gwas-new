@@ -1,0 +1,38 @@
+{
+    "Should handle single phenotype with different nparts value": {
+        "content": [
+            [
+                "phenotype_single.noheader.hsq:md5,ada22ba2ba9202834bf2819463757e94"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T14:00:29.502809"
+    },
+    "Should perform GREML with quantitative and categorical covariates": {
+        "content": [
+            [
+                "phenotype_single.noheader.hsq:md5,3234bc24affdc05855a8e51b3dd690ab"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T13:48:33.741915"
+    },
+    "Should perform GREML heritability estimation without covariates": {
+        "content": [
+            [
+                "phenotype_single.noheader.hsq:md5,6bd3fdd1ed3f5cbac479486906650ac7"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T14:00:19.630079"
+    }
+}

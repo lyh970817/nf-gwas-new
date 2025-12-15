@@ -1,0 +1,49 @@
+nextflow_process {
+    name "Test RUN_BIVARIATE_REML_LDMS process"
+    script "modules/local/gcta/run_bivariate_reml_ldms.nf"
+    process "RUN_BIVARIATE_REML_LDMS"
+
+    // Note: Full LDMS testing requires multiple LD-stratified GRMs with larger datasets
+    // This test validates the mgrm input mechanism with a single GRM for basic functionality
+    // Complete LDMS workflow testing should be done at the workflow level with real data
+
+    test("Should run bivariate REML with mgrm input") {
+        when {
+            params {
+                pubDir = "results"
+            }
+            process {
+                """
+                // mgrm file listing the GRM prefix
+                input[0] = file("$projectDir/tests/input/gcta/run_bivariate_reml_ldms/gcta_grm.mgrm")
+                // All GRM files
+                input[1] = [
+                    file("$projectDir/tests/input/gcta/run_bivariate_reml_ldms/gcta_grm.grm.id"),
+                    file("$projectDir/tests/input/gcta/run_bivariate_reml_ldms/gcta_grm.grm.bin"),
+                    file("$projectDir/tests/input/gcta/run_bivariate_reml_ldms/gcta_grm.grm.N.bin")
+                ]
+                // Phenotypes file (bivariate format)
+                input[2] = file("$projectDir/tests/input/gcta/run_bivariate_reml_ldms/phenotype.noheader.txt")
+                // No covariates
+                input[3] = []
+                input[4] = []
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            with(process.out) {
+                // Check bivariate results file
+                assert bivariate_results
+                def resultsFile = path(bivariate_results.get(0))
+                assert resultsFile.fileName.toString().endsWith(".hsq")
+                assert resultsFile.size() > 0
+
+                // Verify output contains genetic correlation estimates
+                def content = resultsFile.text
+                assert content.contains("V(G)") || content.contains("Variance") || content.contains("rG")
+            }
+        }
+    }
+}

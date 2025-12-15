@@ -1,0 +1,20 @@
+{
+    "Should merge GRM partitions with SNP group": {
+        "content": [
+            [
+                [
+                    1,
+                    "gcta_grm_1",
+                    "gcta_grm_1.grm.id:md5,27b4e2dab70d819411a6ce4509ae2509",
+                    "gcta_grm_1.grm.bin:md5,a38b3745013a9ad9b2db831be8fafd1d",
+                    "gcta_grm_1.grm.N.bin:md5,7d8ceee533a9282fc58d70d4275349ac"
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2025-12-15T10:51:04.58172"
+    }
+}

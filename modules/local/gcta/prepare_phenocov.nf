@@ -15,14 +15,15 @@ process PREPARE_PHENOCOV {
     def cat_covariates = params.covariates_cat_columns ? params.covariates_cat_columns.split(',').collect{it.trim()} : []
     // Exclude categorical covariates from quantitative covariates
     def quant_covariates = all_covariates - cat_covariates
-    def covariates_basename = covariates_file.name != 'NO_FILE' ? covariates_file.baseName : 'covariates'
+    // Handle optional covariates_file: if [] (empty list), use default name
+    def covariates_basename = covariates_file ? covariates_file.baseName : 'covariates'
 
     """
     # Remove header from phenotypes file (skip first line)
     tail -n +2 ${phenotypes_file} > ${phenotypes_file.baseName}.noheader.txt
 
-    # Process covariates file if it exists and is not NO_FILE
-    if [ "${covariates_file.name}" != "NO_FILE" ] && [ -s "${covariates_file}" ]; then
+    # Process covariates file if provided (not empty list)
+    if [ "${covariates_file}" != "" ] && [ -s "${covariates_file}" ]; then
         # Process covariates using R script
         if [ "${quant_covariates.size()}" -gt 0 ]; then
             # Extract quantitative covariates (all covariates excluding categorical ones)

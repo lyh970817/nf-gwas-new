@@ -1,0 +1,85 @@
+nextflow_process {
+
+    name "Test Process RUN_REML_LDMS"
+    script "modules/local/gcta/run_reml_ldms.nf"
+    process "RUN_REML_LDMS"
+
+    test("Should execute multi-component REML with MGRM file") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+            }
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm.mgrm")
+                input[1] = [
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_1.grm.id"),
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_1.grm.bin"),
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_1.grm.N.bin"),
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_2.grm.id"),
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_2.grm.bin"),
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_2.grm.N.bin")
+                ]
+                input[2] = file("$projectDir/tests/input/gcta/run_reml_ldms/phenotype.noheader.txt")
+                input[3] = []  // no qcovariates
+                input[4] = []  // no covariates
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert reml_results
+                def hsqFile = path(reml_results.get(0))
+
+                assert hsqFile.fileName.toString().endsWith(".hsq")
+                assert hsqFile.size() > 0
+
+                // Check for multi-component REML results in file
+                def content = hsqFile.text
+                assert content.contains("V(G)") || content.contains("Vp")
+                // Multi-component REML should have variance estimates
+                assert content.contains("Variance") || content.contains("V(e)")
+            }
+        }
+    }
+
+    test("Should execute multi-component REML with covariates") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+            }
+            process {
+                """
+                input[0] = file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm.mgrm")
+                input[1] = [
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_1.grm.id"),
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_1.grm.bin"),
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_1.grm.N.bin"),
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_2.grm.id"),
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_2.grm.bin"),
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_2.grm.N.bin")
+                ]
+                input[2] = file("$projectDir/tests/input/gcta/run_reml_ldms/phenotype.noheader.txt")
+                input[3] = file("$projectDir/tests/input/gcta/run_reml_ldms/covariates.quant.noheader.txt")
+                input[4] = file("$projectDir/tests/input/gcta/run_reml_ldms/covariates.cat.noheader.txt")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert reml_results
+
+                // Snapshot the output
+                assert snapshot(reml_results).match()
+            }
+        }
+    }
+}

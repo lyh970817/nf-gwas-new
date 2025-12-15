@@ -1,0 +1,32 @@
+LDAK Inflation Analysis Results
+================================
+
+Number of quarter files processed: 2
+LDAK file processed: reml_ldak_grm.reml
+
+Quarter Results:
+  Mean Heritability: 0.048669
+  Mean SE: 0.090859
+
+LDAK Results:
+  Heritability: 0.048669
+  SE: 0.090859
+
+Inflation Analysis:
+  T1 Statistic (Documentation Formula): 0.048669
+  Inflation Ratio (Legacy, Quarter/LDAK): 1
+  Interpretation:
+    - T1 ≈ 0: No inflation (good quality control)
+    - T1 > 0.05: Possible population structure or relatedness not fully captured
+    - T1 < -0.05: Possible over-correction
+
+Statistical Test Results:
+  Number of quarters used: 2
+  P-value: 0.37785
+  Mean T1samp: 0.049264
+  SD T1samp: 0.158
+
+Individual Results:
+   reml_chr01.vcf.reml ( quarter ): H2 = 0.048669 SE = 0.090859
+   reml_chr02.vcf.reml ( quarter ): H2 = 0.048669 SE = 0.090859
+   reml_ldak_grm.reml ( ldak ): H2 = 0.048669 SE = 0.090859

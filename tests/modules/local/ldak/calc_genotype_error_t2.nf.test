@@ -1,0 +1,68 @@
+nextflow_process {
+
+    name "Test Process CALC_GENOTYPE_ERROR_T2"
+    script "modules/local/ldak/calc_genotype_error_t2.nf"
+    process "CALC_GENOTYPE_ERROR_T2"
+
+    test("Should calculate T2 genotype error statistic from HE results") {
+
+        when {
+            process {
+                """
+                // HE result files with batch within/across comparisons
+                // These files are produced by LDAK_HE with --subset-prefix and --subset-number
+                input[0] = [
+                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he"),
+                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.within"),
+                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.across")
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert genotype_error_results
+                def errorFile = path(genotype_error_results.get(0))
+
+                // Check output file exists
+                assert errorFile.fileName.toString() == "genotype_error_results.txt"
+                assert errorFile.size() > 0
+
+                // Check file contains T2 or error statistics
+                def content = errorFile.text
+                assert content.contains("T2") || content.contains("error") || content.contains("Genotype") || content.contains("h2")
+            }
+        }
+    }
+
+    test("Should handle minimal HE results") {
+
+        when {
+            process {
+                """
+                // Alternative HE results set
+                input[0] = [
+                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he"),
+                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.within"),
+                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.across"),
+                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.compare")
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert genotype_error_results
+                def errorFile = path(genotype_error_results.get(0))
+
+                assert errorFile.size() > 0
+            }
+        }
+    }
+}

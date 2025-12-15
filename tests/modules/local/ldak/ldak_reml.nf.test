@@ -1,0 +1,89 @@
+nextflow_process {
+
+    name "Test Process LDAK_REML"
+    script "modules/local/ldak/ldak_reml.nf"
+    process "LDAK_REML"
+
+    test("Should execute LDAK REML variance estimation with filtered GRM") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+            }
+            process {
+                """
+                // Use filtered GRM directly (no keep file needed)
+                input[0] = tuple(
+                    "ldak_grm",
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.bin"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.id"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.details"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.adjust")
+                )
+                input[1] = file("$projectDir/tests/input/ldak/filtered/ldak_grm.keep")  // Optional keep file
+                input[2] = file("$projectDir/tests/input/ldak/phenotype.noheader.txt")
+                input[3] = []  // No quantitative covariates (empty list)
+                input[4] = []  // No categorical covariates (empty list)
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert reml_results
+                def remlFile = path(reml_results.get(0))
+
+                // Check REML result file exists and has content
+                assert remlFile.fileName.toString().startsWith("reml_ldak_grm")
+                assert remlFile.fileName.toString().endsWith(".reml")
+                assert remlFile.size() > 0
+
+                // Verify heritability estimate is present
+                def content = remlFile.text
+                assert content.contains("Her_K1") || content.contains("Heritability")
+            }
+        }
+    }
+
+    test("Should execute LDAK REML with covariates") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+            }
+            process {
+                """
+                input[0] = tuple(
+                    "ldak_grm",
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.bin"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.id"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.details"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.adjust")
+                )
+                input[1] = file("$projectDir/tests/input/ldak/filtered/ldak_grm.keep")
+                input[2] = file("$projectDir/tests/input/ldak/phenotype.noheader.txt")
+                input[3] = file("$projectDir/tests/input/ldak/covariates.quant.noheader.txt")
+                input[4] = file("$projectDir/tests/input/ldak/covariates.cat.noheader.txt")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert reml_results
+                def remlFile = path(reml_results.get(0))
+
+                assert remlFile.fileName.toString().startsWith("reml_ldak_grm")
+                assert remlFile.size() > 0
+
+                // Verify covariate effect is accounted for
+                def content = remlFile.text
+                assert content.contains("Num_Covariates")
+            }
+        }
+    }
+}

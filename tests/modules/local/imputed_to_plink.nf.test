@@ -9,7 +9,10 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = [1, file("$projectDir/tests/input/pipeline/example.vcf.gz")]
+                input[0] = Channel.of(
+                    tuple(1, file("$projectDir/tests/input/chr01.vcf.gz")),
+                    tuple(2, file("$projectDir/tests/input/chr02.vcf.gz"))
+                )
                 """
             }
         }
@@ -18,13 +21,21 @@ nextflow_process {
             assert process.success
             with(process.out){
                 assert imputed_plink
-                assert imputed_plink.size() == 1
+                assert imputed_plink.size() == 2
                 with(imputed_plink.get(0)){
                     assert get(0) == 1
-                    assert get(1) == "example.vcf"
-                    assert get(2) ==~ ".*/example.vcf.bed"
-                    assert get(3) ==~ ".*/example.vcf.bim"
-                    assert get(4) ==~ ".*/example.vcf.fam"
+                    assert get(1) == "chr01.vcf"
+                    assert get(2) ==~ ".*/chr01.vcf.bed"
+                    assert get(3) ==~ ".*/chr01.vcf.bim"
+                    assert get(4) ==~ ".*/chr01.vcf.fam"
+                    assert file(get(4)).readLines().size() == 500
+                }
+                with(imputed_plink.get(1)){
+                    assert get(0) == 2
+                    assert get(1) == "chr02.vcf"
+                    assert get(2) ==~ ".*/chr02.vcf.bed"
+                    assert get(3) ==~ ".*/chr02.vcf.bim"
+                    assert get(4) ==~ ".*/chr02.vcf.fam"
                     assert file(get(4)).readLines().size() == 500
                 }
             }

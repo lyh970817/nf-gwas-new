@@ -1,0 +1,82 @@
+nextflow_process {
+
+    name "Test Process ADJUST_GRM"
+    script "modules/local/gcta/adjust_grm.nf"
+    process "ADJUST_GRM"
+
+    test("Should adjust GRM for incomplete tagging") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    null,  // no snp_group
+                    "gcta_grm_0",
+                    file("$projectDir/tests/input/gcta/adjust_grm/gcta_grm_0.grm.id"),
+                    file("$projectDir/tests/input/gcta/adjust_grm/gcta_grm_0.grm.bin"),
+                    file("$projectDir/tests/input/gcta/adjust_grm/gcta_grm_0.grm.N.bin")
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert grm_files
+                def grmTuple = grm_files.get(0)
+
+                // Should maintain same structure
+                assert grmTuple.size() == 5
+                assert grmTuple.get(0) == null  // snp_group
+                assert grmTuple.get(1) == "gcta_grm_0_adj"  // prefix with _adj suffix
+
+                // Check adjusted GRM files exist
+                def grmId = path(grmTuple.get(2))
+                def grmBin = path(grmTuple.get(3))
+                def grmN = path(grmTuple.get(4))
+
+                assert grmId.fileName.toString() == "gcta_grm_0_adj.grm.id"
+                assert grmBin.fileName.toString() == "gcta_grm_0_adj.grm.bin"
+                assert grmN.fileName.toString() == "gcta_grm_0_adj.grm.N.bin"
+
+                assert grmId.size() > 0
+                assert grmBin.size() > 0
+                assert grmN.size() > 0
+            }
+        }
+    }
+
+    test("Should adjust GRM with SNP group") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    "group1",
+                    "gcta_grm_1",
+                    file("$projectDir/tests/input/gcta/adjust_grm/gcta_grm_1.grm.id"),
+                    file("$projectDir/tests/input/gcta/adjust_grm/gcta_grm_1.grm.bin"),
+                    file("$projectDir/tests/input/gcta/adjust_grm/gcta_grm_1.grm.N.bin")
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert grm_files
+                def grmTuple = grm_files.get(0)
+
+                assert grmTuple.get(0) == "group1"
+                assert grmTuple.get(1) == "gcta_grm_1_adj"  // prefix with _adj suffix
+
+                // Snapshot the output
+                assert snapshot(grm_files).match()
+            }
+        }
+    }
+}

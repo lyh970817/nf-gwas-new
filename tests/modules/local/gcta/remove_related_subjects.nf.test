@@ -1,0 +1,49 @@
+nextflow_process {
+
+    name "Test Process REMOVE_RELATED_SUBJECTS"
+    script "modules/local/gcta/remove_related_subjects.nf"
+    process "REMOVE_RELATED_SUBJECTS"
+
+    test("Should filter related individuals from GRM") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    null,
+                    "gcta_grm_0",
+                    file("$projectDir/tests/input/gcta/remove_related_subjects/gcta_grm_0.grm.id"),
+                    file("$projectDir/tests/input/gcta/remove_related_subjects/gcta_grm_0.grm.bin"),
+                    file("$projectDir/tests/input/gcta/remove_related_subjects/gcta_grm_0.grm.N.bin")
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert grm_files
+                def grmTuple = grm_files.get(0)
+
+                assert grmTuple.size() == 5
+                assert grmTuple.get(1) == "gcta_grm_0_unrel05"  // prefix with _unrel05 suffix
+
+                // Check unrelated GRM files
+                def grmId = path(grmTuple.get(2))
+                def grmBin = path(grmTuple.get(3))
+                def grmN = path(grmTuple.get(4))
+
+                assert grmId.fileName.toString() == "gcta_grm_0_unrel05.grm.id"
+                assert grmBin.fileName.toString() == "gcta_grm_0_unrel05.grm.bin"
+                assert grmN.fileName.toString() == "gcta_grm_0_unrel05.grm.N.bin"
+
+                // Files should exist (possibly smaller than input)
+                assert grmId.size() > 0
+                assert grmBin.size() > 0
+                assert grmN.size() > 0
+            }
+        }
+    }
+}

@@ -1,0 +1,139 @@
+nextflow_workflow {
+
+    name "Test Workflow GCTA_GREML"
+    script "workflows/gcta/gcta_greml.nf"
+    workflow "GCTA_GREML"
+
+    test("Should perform GREML heritability estimation without covariates") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+                nparts_gcta = 2
+            }
+            workflow {
+                """
+                // Phenotype file
+                input[0] = file("$projectDir/tests/input/phenotype_single.txt")
+
+                // Covariate file (NO_COVARIATES)
+                input[1] = file("NO_COVARIATES")
+
+                // PLINK2 files channel
+                input[2] = Channel.of(
+                    tuple(
+                        1,
+                        "chr01.vcf",
+                        file("$projectDir/tests/input/chr01.vcf.pgen"),
+                        file("$projectDir/tests/input/chr01.vcf.psam"),
+                        file("$projectDir/tests/input/chr01.vcf.pvar"),
+                        null
+                    ),
+                    tuple(
+                        2,
+                        "chr02.vcf",
+                        file("$projectDir/tests/input/chr02.vcf.pgen"),
+                        file("$projectDir/tests/input/chr02.vcf.psam"),
+                        file("$projectDir/tests/input/chr02.vcf.pvar"),
+                        null
+                    )
+                )
+
+                // nparts_gcta parameter
+                input[3] = 2
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out.reml_results).match()
+        }
+    }
+
+    test("Should perform GREML with quantitative and categorical covariates") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+                covariates_columns = 'V1,V2,V3'
+                covariates_cat_columns = 'V1'
+                nparts_gcta = 2
+            }
+            workflow {
+                """
+                input[0] = file("$projectDir/tests/input/phenotype_single.txt")
+                input[1] = file("$projectDir/tests/input/covariates.txt")
+
+                input[2] = Channel.of(
+                    tuple(
+                        1,
+                        "chr01.vcf",
+                        file("$projectDir/tests/input/chr01.vcf.pgen"),
+                        file("$projectDir/tests/input/chr01.vcf.psam"),
+                        file("$projectDir/tests/input/chr01.vcf.pvar"),
+                        null
+                    ),
+                    tuple(
+                        2,
+                        "chr02.vcf",
+                        file("$projectDir/tests/input/chr02.vcf.pgen"),
+                        file("$projectDir/tests/input/chr02.vcf.psam"),
+                        file("$projectDir/tests/input/chr02.vcf.pvar"),
+                        null
+                    )
+                )
+
+                input[3] = 2
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out.reml_results).match()
+        }
+    }
+
+    test("Should handle single phenotype with different nparts value") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+                nparts_gcta = 1
+            }
+            workflow {
+                """
+                input[0] = file("$projectDir/tests/input/phenotype_single.txt")
+                input[1] = file("NO_COVARIATES")
+
+                input[2] = Channel.of(
+                    tuple(
+                        1,
+                        "chr01.vcf",
+                        file("$projectDir/tests/input/chr01.vcf.pgen"),
+                        file("$projectDir/tests/input/chr01.vcf.psam"),
+                        file("$projectDir/tests/input/chr01.vcf.pvar"),
+                        null
+                    ),
+                    tuple(
+                        2,
+                        "chr02.vcf",
+                        file("$projectDir/tests/input/chr02.vcf.pgen"),
+                        file("$projectDir/tests/input/chr02.vcf.psam"),
+                        file("$projectDir/tests/input/chr02.vcf.pvar"),
+                        null
+                    )
+                )
+
+                input[3] = 1
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert snapshot(workflow.out.reml_results).match()
+        }
+    }
+}

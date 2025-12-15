@@ -1,0 +1,48 @@
+nextflow_process {
+
+    name "Test Process FILTER_RELATEDNESS"
+    script "modules/local/ldak/filter_relatedness.nf"
+    process "FILTER_RELATEDNESS"
+
+    test("Should filter related individuals from kinship matrix") {
+
+        when {
+            process {
+                """
+                input[0] = tuple(
+                    "ldak_grm",
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.bin"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.id"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.details"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.adjust")
+                )
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert filtered_list
+                def filteredTuple = filtered_list.get(0)
+
+                // Should have: list_name, keep, lose, maxrel
+                assert filteredTuple.size() == 4
+
+                def listName = filteredTuple.get(0)
+                assert listName.contains("ldak_grm")
+
+                def keepFile = path(filteredTuple.get(1))
+                def loseFile = path(filteredTuple.get(2))
+                def maxrelFile = path(filteredTuple.get(3))
+
+                assert keepFile.fileName.toString().endsWith(".keep")
+                assert loseFile.fileName.toString().endsWith(".lose")
+                assert maxrelFile.fileName.toString().endsWith(".maxrel")
+
+                assert keepFile.size() > 0
+            }
+        }
+    }
+}

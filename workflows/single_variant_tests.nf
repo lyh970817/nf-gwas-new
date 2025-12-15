@@ -33,8 +33,9 @@ workflow SINGLE_VARIANT_TESTS {
         skip_predictions
     )
 
-    // regenie_step2_out = REGENIE.out.regenie_step2_out
-    // regenie_step1_out_ch = REGENIE.out.regenie_step1_out_ch
+    emit:
+    regenie_step2_results = REGENIE.out.regenie_step2_out
+    regenie_step1_results = REGENIE.out.regenie_step1_out_ch
 
 }
 

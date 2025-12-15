@@ -1,0 +1,39 @@
+nextflow_process {
+
+    name "Test Process LDAK_SUMCORS"
+    script "modules/local/ldak/ldak_sumcors.nf"
+    process "LDAK_SUMCORS"
+
+    test("Should estimate genetic correlation between two traits") {
+
+        when {
+            params {
+                ldak_sumcors_check_sums = false
+                ldak_sumcors_prevalence1 = null
+                ldak_sumcors_prevalence2 = null
+            }
+            process {
+                """
+                input[0] = Channel.of([
+                    "trait1",
+                    file("${projectDir}/tests/input/ldak/sumher/test_gwas_summary.txt"),
+                    "trait2",
+                    file("${projectDir}/tests/input/ldak/sumher/test_gwas_summary2.txt")
+                ])
+                input[1] = file("${projectDir}/tests/input/ldak/sumher/test_thin.tagging")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.trace.tasks().size() == 1
+
+            // Check correlation results file exists
+            with(process.out.correlation_results) {
+                assert size() == 1
+                assert path(get(0)).exists()
+            }
+        }
+    }
+}

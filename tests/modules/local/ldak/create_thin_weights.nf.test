@@ -1,0 +1,35 @@
+nextflow_process {
+
+    name "Test Process CREATE_THIN_WEIGHTS"
+    script "modules/local/ldak/create_thin_weights.nf"
+    process "CREATE_THIN_WEIGHTS"
+
+    test("Should create thinning weights from thin predictors file") {
+
+        when {
+            process {
+                """
+                // CREATE_THIN_WEIGHTS expects a single path input: thin predictors file
+                input[0] = file("$projectDir/tests/input/ldak/thin_predictors/example.thin.in")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert thin_weights
+                def weightsFile = path(thin_weights.get(0))
+
+                assert weightsFile.fileName.toString() == "weights.thin"
+                assert weightsFile.size() > 0
+
+                // Verify weights file format (SNP_ID weight)
+                def lines = weightsFile.readLines()
+                assert lines.size() > 0
+                assert lines[0].split().size() == 2
+            }
+        }
+    }
+}

@@ -1,0 +1,71 @@
+nextflow_process {
+
+    name "Test Process MAKE_MGRM_LDAK"
+    script "modules/local/ldak/make_mgrm_ldak.nf"
+    process "MAKE_MGRM_LDAK"
+
+    test("Should create multi-GRM file for LDAK") {
+
+        when {
+            process {
+                """
+                // MAKE_MGRM_LDAK expects 2 inputs:
+                // 1. grm_prefixes - list of GRM prefix names
+                // 2. output_path - output file prefix
+                input[0] = [
+                    "combined_grm_1",
+                    "combined_grm_2",
+                    "combined_grm_3"
+                ]
+                input[1] = "ldak_test_mgrm"
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert mgrm_file
+                def mgrmFile = path(mgrm_file.get(0))
+
+                assert mgrmFile.fileName.toString().endsWith(".mgrm")
+                assert mgrmFile.size() > 0
+
+                // Check file contains GRM prefixes
+                def content = mgrmFile.text
+                assert content.contains("combined_grm_1")
+                assert content.contains("combined_grm_2")
+                assert content.contains("combined_grm_3")
+
+                def lines = mgrmFile.readLines()
+                assert lines.size() == 3
+            }
+        }
+    }
+
+    test("Should handle single GRM") {
+
+        when {
+            process {
+                """
+                input[0] = ["combined_grm_single"]
+                input[1] = "single_mgrm"
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert mgrm_file
+                def mgrmFile = path(mgrm_file.get(0))
+
+                def lines = mgrmFile.readLines()
+                assert lines.size() == 1
+                assert lines[0].contains("combined_grm_single")
+            }
+        }
+    }
+}

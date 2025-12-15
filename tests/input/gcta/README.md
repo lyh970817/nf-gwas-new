@@ -1,6 +1,15 @@
 # GCTA Test Data
 
-This directory contains test data files generated from successful nf-test runs for GCTA modules.
+This directory contains test data files for GCTA module tests. Each subdirectory is **self-contained** with both input and output files for its corresponding test.
+
+## Directory Structure
+
+Each test directory contains:
+1. **Input files** - Test data required by the process
+2. **Output files** - Expected outputs from successful test runs
+3. **README.md** - Detailed documentation for that test
+
+This self-contained structure ensures each test can reference its own directory for all required files.
 
 ## Files
 
@@ -11,6 +20,16 @@ This directory contains test data files generated from successful nf-test runs f
 - `covariates.quant.noheader.txt` - Quantitative covariates without header (processed by PREPARE_PHENOCOV)
 - `covariates.cat.noheader.txt` - Categorical covariates without header (processed by PREPARE_PHENOCOV)
 
+### Prepared Phenotype/Covariate Files (prepare_phenocov/)
+- Contains **output files only** from PREPARE_PHENOCOV test
+- **Input**: Base phenotype/covariate files from `tests/input/`
+- **Output**: Header-removed and separated covariate files
+  - `phenotype.noheader.txt` - Phenotypes without header (500 samples, 2 phenotypes, 22K)
+  - `covariates.quant.noheader.txt` - Quantitative covariates (V2, V3, 22K)
+  - `covariates.cat.noheader.txt` - Categorical covariate (V1, 4.7K)
+- **Purpose**: Demonstrates GCTA-compatible file formatting
+- **Test**: `tests/modules/local/gcta/prepare_phenocov.nf.test` (4 test cases)
+
 ### GRM & Kinship Files
 - `gcta_grm_0.*` - Pre-computed Genetic Relationship Matrix files (from example.{bed,bim,fam})
   - Located in tests/input/pipeline/
@@ -18,69 +37,96 @@ This directory contains test data files generated from successful nf-test runs f
 ### MPFILE (Multi-Part Files)
 
 **Individual Chromosome Mpfiles (make_mpfiles/):**
-- `chr01.vcf.mpfile` - PLINK2 mpfile for chromosome 1 (output from MAKE_MPFILES)
-- `chr02.vcf.mpfile` - PLINK2 mpfile for chromosome 2 (output from MAKE_MPFILES)
+- Contains output files from MAKE_MPFILES test
+- Test uses base PLINK2 genotype data from `tests/input/chr*.vcf.{pgen,psam,pvar}`
+- Self-contained test (no external dependencies from other GCTA tests)
 
 **Merged Mpfiles (merge_mpfiles/):**
-- `gcta_grm.mpfile` - Merged mpfile for genome-wide GRM computation (output from MERGE_MPFILES)
+- Contains output files from MERGE_MPFILES test
+- Test creates mock mpfiles inline (self-contained)
+- No external dependencies
 
-### MGRM (Multi-GRM Files)
-- `gcta_grm.mgrm` - Multi-GRM file listing all GRM prefixes (one per line)
+### MGRM (Multi-GRM Files) (make_mgrm/)
+- Contains **both input and output files** for MAKE_MGRM test
+- **Input**: GRM files for validation (not directly read by process)
+  - `gcta_grm_1.grm.{bin,id,N.bin}` - First GRM
+  - `gcta_grm_2.grm.{bin,id,N.bin}` - Second GRM
+- **Output**: Multi-GRM file listing GRM prefixes
+  - `gcta_grm.mgrm` - Text file with one GRM prefix per line
+- **Purpose**: Self-contained test directory
 
 ### REML Results
 - `phenotypes_noheader.hsq` - REML heritability results (no covariates)
 - `phenotypes_with_covariates.hsq` - REML heritability results (with covariates)
 
-### LD Scores and SNP Groups (calculate_ld_scores/)
-**LD Score Files:**
-- `chr01.vcf_gcta_ld.score.ld` - LD scores for chromosome 1 (60K)
-- `chr02.vcf_gcta_ld.score.ld` - LD scores for chromosome 2 (60K)
-
-**SNP Group Files (segmented by LD score quartiles):**
-- `chr01.vcf_snp_group1.txt` through `chr01.vcf_snp_group4.txt` - Chr1 SNP groups
-- `chr02.vcf_snp_group1.txt` through `chr02.vcf_snp_group4.txt` - Chr2 SNP groups
-
-**Log Files:**
-- `chr01.vcf_gcta_ld.log` - GCTA LD calculation log for chr1
-- `chr02.vcf_gcta_ld.log` - GCTA LD calculation log for chr2
+### Merged SNP Groups (merge_snp_groups/)
+- Contains **both input and output files** for MERGE_SNP_GROUPS test
+- **Input**: Per-chromosome SNP group files (originally from CALCULATE_LD_SCORES test)
+  - `chr01.vcf_snp_group1.txt`, `chr02.vcf_snp_group1.txt`
+  - `chr01.vcf_snp_group3.txt`, `chr02.vcf_snp_group3.txt`
+- **Output**: Merged genome-wide SNP group files
+  - `snp_group1.txt`, `snp_group3.txt`
+- **Purpose**: Self-contained test directory
+- **Note**: CALCULATE_LD_SCORES test creates its outputs in nf-test work directory
 
 ### GRM Partitions (make_grm_part/)
-**GRM Partition Files (output from MAKE_GRM_PART):**
-- `gcta_grm_0.part_3_1.*` - GRM partition 1 of 3 (no SNP groups)
-  - `gcta_grm_0.part_3_1.grm.id` - Sample IDs
-  - `gcta_grm_0.part_3_1.grm.bin` - GRM matrix binary
-  - `gcta_grm_0.part_3_1.grm.N.bin` - Sample counts
-  - `gcta_grm_0.part_3_1.log` - GCTA process log
-- `gcta_grm_0.part_3_2.*` - GRM partition 2 of 3 (for merge testing)
-- `gcta_grm_0.part_3_3.*` - GRM partition 3 of 3 (for merge testing)
-- `gcta_grm_1.part_5_2.*` - GRM partition 2 of 5 (SNP group 1 filtering)
-  - `gcta_grm_1.part_5_2.grm.id` - Sample IDs
-  - `gcta_grm_1.part_5_2.grm.bin` - GRM matrix binary
-  - `gcta_grm_1.part_5_2.grm.N.bin` - Sample counts
-  - `gcta_grm_1.part_5_2.log` - GCTA process log
-- `gcta_grm_1.part_2_1.*` - GRM partition 1 of 2 (SNP group 1, for merge testing)
-- `gcta_grm_1.part_2_2.*` - GRM partition 2 of 2 (SNP group 1, for merge testing)
+- Contains **both input and output files** for MAKE_GRM_PART test
+- **Input**:
+  - `gcta_grm.mpfile` (copied from `merge_mpfiles/`)
+  - `snp_group1.txt` (copied from `merge_snp_groups/`)
+  - Base genotype data from `tests/input/chr*.vcf.{pgen,psam,pvar}`
+- **Output**: GRM partition files
+- **Purpose**: Self-contained test directory
 
 ### Merged GRM Partitions (merge_grm_parts/)
-**Merged GRM Files (output from MERGE_GRM_PARTS):**
-- `gcta_grm_0.grm.*` - Merged GRM (all SNPs, 3 partitions merged)
-  - `gcta_grm_0.grm.id` - Sample IDs (5.3 KB)
-  - `gcta_grm_0.grm.bin` - Merged GRM matrix binary (371 KB)
-  - `gcta_grm_0.grm.N.bin` - Sample counts binary (371 KB)
-- `gcta_grm_1.grm.*` - Merged GRM (SNP group 1, 2 partitions merged)
-  - `gcta_grm_1.grm.id` - Sample IDs (1.7 KB)
-  - `gcta_grm_1.grm.bin` - Merged GRM matrix binary (200 KB)
-  - `gcta_grm_1.grm.N.bin` - Sample counts binary (200 KB)
+- Contains **both input and output files** for MERGE_GRM_PARTS test
+- **Input**: GRM partition files (copied from `make_grm_part/`)
+- **Output**: Merged genome-wide GRM files
+- **Purpose**: Self-contained test directory
 
-### Merged SNP Groups (merge_snp_groups/)
-**Merged SNP Group Files (output from MERGE_SNP_GROUPS):**
-- `snp_group1.txt` - Merged high LD SNPs from chr01 + chr02
-- `snp_group3.txt` - Merged low LD SNPs from chr01 + chr02
+### Adjusted GRMs (adjust_grm/)
+- Contains **both input and output files** for ADJUST_GRM test
+- **Input**: Merged GRM files (copied from `merge_grm_parts/`)
+- **Output**: Adjusted GRM files with `_adj` suffix
+- **Purpose**: Self-contained test directory
+
+### Unrelated Subjects (remove_related_subjects/)
+- Contains **both input and output files** for REMOVE_RELATED_SUBJECTS test
+- **Input**: Merged GRM files (copied from `merge_grm_parts/`)
+- **Output**: Filtered GRM files with `_unrel05` suffix
+- **Purpose**: Self-contained test directory
+
+### Sparse GRM (make_bk_sparse/)
+- Contains **both input and output files** for MAKE_BK_SPARSE test
+- **Input**: Dense GRM files (gcta_grm_0.grm.{id,bin,N.bin})
+  - `gcta_grm_0.grm.id` - Individual IDs (3.7 KB, 500 samples)
+  - `gcta_grm_0.grm.bin` - Dense GRM values (490 KB)
+  - `gcta_grm_0.grm.N.bin` - Number of SNPs per pair (490 KB)
+- **Output**: Sparse GRM files (only values > cutoff)
+  - `gcta_grm_0_sp.grm.id` - Individual IDs (3.7 KB)
+  - `gcta_grm_0_sp.grm.sp` - Sparse GRM values (132 KB, ~73% reduction)
+- **Purpose**: Creates sparse GRM for FastGWA efficiency (cutoff: 0.05)
+- **Test**: Tests two different cutoffs (0.05 standard, 0.025 stricter)
+
+### FastGWA-MLM Association Tests (run_fastgwa_mlm/)
+- Contains **both input and output files** for RUN_FASTGWA_MLM test
+- **Input**:
+  - `phenotype.noheader.txt` - Phenotypes (Y1, Y2) for 500 samples, no header (22 KB)
+  - `covariates.quant.noheader.txt` - Quantitative covariates (V1, V2), no header (22 KB)
+  - `covariates.cat.noheader.txt` - Categorical covariates, no header (4.7 KB)
+  - `gcta_grm_0_sp.grm.id` - Sparse GRM sample IDs (3.7 KB, 500 samples)
+  - `gcta_grm_0_sp.grm.sp` - Sparse GRM values (132 KB, row col value format)
+  - Base genotype data from `tests/input/chr01.vcf.{pgen,psam,pvar}`
+- **Output**: FastGWA association results
+  - `chr01.vcf_phenotype.noheader.fastGWA` - Association results without covariates (57 KB)
+  - `chr01.vcf_phenotype.noheader_with_covariates.fastGWA` - Association results with covariates (57 KB)
+- **Purpose**: Execute FastGWA-mlm mixed linear model association tests with sparse GRM
+- **Test**: 2 test cases (basic test, test with quantitative covariates)
 
 ## Test Results Summary
 
-### Passing (16/24 tests)
-- ✅ PREPARE_PHENOCOV (3 tests)
+### Passing (21/25 tests)
+- ✅ PREPARE_PHENOCOV (4 tests)
 - ✅ MAKE_MPFILES (2 tests)
 - ✅ MERGE_MPFILES (1 test)
 - ✅ MAKE_MGRM (1 test)
@@ -89,23 +135,20 @@ This directory contains test data files generated from successful nf-test runs f
 - ✅ MERGE_SNP_GROUPS (2 tests)
 - ✅ MAKE_GRM_PART (2 tests)
 - ✅ MERGE_GRM_PARTS (2 tests)
+- ✅ MAKE_BK_SPARSE (2 tests)
+- ✅ RUN_FASTGWA_MLM (2 tests)
 
-### Failing (8/24 tests)
+### Failing (4/25 tests)
 Tests requiring additional pre-computed files:
 - ADJUST_GRM (2) - Needs gcta_grm_0_adj.* files
 - REMOVE_RELATED_SUBJECTS (1) - Needs gcta_grm_0_unrel05.* files
-- MAKE_BK_SPARSE (2) - Needs source GRM
-- RUN_FASTGWA_MLM (2) - Needs sparse GRM
 - GCTA_GREML (1) - Needs full workflow setup
 
-## Test Data Management
+## Test Data Reorganization
 
-**For complete test data management procedures**, see the **"Test Data Management Procedures"** section in [tests/CLAUDE.md](../../CLAUDE.md#test-data-management-procedures).
-
-The standard workflow is:
-1. Run test and confirm it passes
-2. Copy output files to `tests/input/gcta/<process_name>/`
-3. Create subdirectory README.md
-4. Update this README.md
-5. Update `tests/CLAUDE.md`
-6. Commit all changes together
+**Important**: As of 2025-12-15, all test directories have been reorganized to be **self-contained**:
+- Each test directory now contains its required **input files** (copied from upstream test outputs)
+- Each test references files in its **own directory** only
+- This eliminates cross-dependencies between test directories
+- Makes tests easier to understand and maintain
+- Removed `calculate_ld_scores/` directory - the CALCULATE_LD_SCORES test creates its outputs in nf-test work directory; downstream tests have their own copies of needed files

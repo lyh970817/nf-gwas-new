@@ -9,9 +9,9 @@ process MAKE_GRM_PART {
     output:
     tuple val(nparts_gcta),
           val(snp_group),
-          path("gcta_grm_${snp_group}.part_${nparts_gcta}_${part_gcta_job}.grm.id"),
-          path("gcta_grm_${snp_group}.part_${nparts_gcta}_${part_gcta_job}.grm.bin"),
-          path("gcta_grm_${snp_group}.part_${nparts_gcta}_${part_gcta_job}.grm.N.bin"), emit: grm_files
+          path("gcta_grm_*.part_${nparts_gcta}_${part_gcta_job}.grm.id"),
+          path("gcta_grm_*.part_${nparts_gcta}_${part_gcta_job}.grm.bin"),
+          path("gcta_grm_*.part_${nparts_gcta}_${part_gcta_job}.grm.N.bin"), emit: grm_files
 
     script:
     def suffix = snp_group ? "${snp_group}" : "0"

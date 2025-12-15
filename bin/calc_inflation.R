@@ -103,9 +103,19 @@ if (nrow(ldak_data) > 0) {
     ldak_se <- ldak_data$se[1]
 }
 
-# Calculate inflation factor (ratio of quarter mean to LDAK)
-if (!is.na(quarter_mean_h2) && !is.na(ldak_h2) && ldak_h2 != 0) {
+# Calculate inflation metrics using documentation-compliant T1 formula
+# T1 = (sum_of_quarter_h² - h²_full) / (n_quarters - 1)
+if (!is.na(quarter_mean_h2) && !is.na(ldak_h2) && nrow(quarter_data) > 0) {
+    n_quarters <- nrow(quarter_data)
+    quarter_sum_h2 <- sum(quarter_data$heritability, na.rm = TRUE)
+
+    # Documentation-compliant T1 statistic (LDAK QC documentation formula)
+    inflation_T1 <- (quarter_sum_h2 - ldak_h2) / (n_quarters - 1)
+
+    # Also calculate ratio for backwards compatibility
     inflation_factor <- quarter_mean_h2 / ldak_h2
+} else {
+    inflation_T1 <- NA
 }
 
 # Statistical test for inflation using sampling approach
@@ -168,7 +178,12 @@ output_lines <- c(
     paste("  SE:", round(ldak_se, 6)),
     "",
     "Inflation Analysis:",
-    paste("  Inflation Factor (Quarter/LDAK):", round(inflation_factor, 6)),
+    paste("  T1 Statistic (Documentation Formula):", round(inflation_T1, 6)),
+    paste("  Inflation Ratio (Legacy, Quarter/LDAK):", round(inflation_factor, 6)),
+    "  Interpretation:",
+    "    - T1 ≈ 0: No inflation (good quality control)",
+    "    - T1 > 0.05: Possible population structure or relatedness not fully captured",
+    "    - T1 < -0.05: Possible over-correction",
     "",
     "Statistical Test Results:",
     paste("  Number of quarters used:", statistical_test_results$n_quarters),

@@ -1,0 +1,80 @@
+nextflow_process {
+
+    name "Test Process RUN_BOLT_REML"
+    script "modules/local/bolt_lmm/run_reml.nf"
+    process "RUN_BOLT_REML"
+
+    test("Should execute BOLT-LMM REML analysis") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1'
+            }
+            process {
+                """
+                input[0] = [
+                    file("$projectDir/tests/input/pipeline/chr01.bed"),
+                    file("$projectDir/tests/input/pipeline/chr02.bed")
+                ]
+                input[1] = [
+                    file("$projectDir/tests/input/pipeline/chr01.bim"),
+                    file("$projectDir/tests/input/pipeline/chr02.bim")
+                ]
+                input[2] = file("$projectDir/tests/input/pipeline/chr01.fam")
+                input[3] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[4] = []  // no covariates
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert log_file
+                def logFile = path(log_file.get(0))
+
+                assert logFile.fileName.toString().endsWith(".bolt.reml.log")
+                assert logFile.size() > 0
+
+                // Check log contains BOLT-LMM output
+                def content = logFile.text
+                assert content.contains("h²") || content.contains("heritability") || content.contains("Variance")
+            }
+        }
+    }
+
+    test("Should execute BOLT-LMM REML with covariates") {
+
+        when {
+            params {
+                phenotypes_columns = 'Y1,Y2'
+                covariates_columns = 'V1,V2,Sex'
+                covariates_cat_columns = 'Sex'
+            }
+            process {
+                """
+                input[0] = [file("$projectDir/tests/input/pipeline/chr01.bed")]
+                input[1] = [file("$projectDir/tests/input/pipeline/chr01.bim")]
+                input[2] = file("$projectDir/tests/input/pipeline/chr01.fam")
+                input[3] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[4] = file("$projectDir/tests/input/pipeline/covariates.txt")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert log_file
+                def logFile = path(log_file.get(0))
+
+                assert logFile.size() > 0
+
+                // Snapshot the output
+                assert snapshot(log_file).match()
+            }
+        }
+    }
+}

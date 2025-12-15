@@ -28,18 +28,27 @@ process RUN_BOLT_REML {
                      .collect { "--phenoCol=${it}" }
                      .join(' ')
 
-  // Covariates: categorical vs quantitative
-  def allCovars  = params.covariates_columns.split(',')
-  def catCovars  = params.covariates_cat_columns.split(',')
-  def covarCols  = catCovars
-                     .collect { "--covarCol=${it}" }
-                     .join(' ')
-  def qcovarCols = allCovars
-                     .minus(catCovars)
-                     .collect { "--qCovarCol=${it}" }
-                     .join(' ')
+  // Covariates: categorical vs quantitative (handle null covariates)
+  def covarCols = ""
+  def qcovarCols = ""
+
+  if (params.covariates_columns != null && params.covariates_columns != "") {
+    def allCovars  = params.covariates_columns.split(',')
+    def catCovars  = params.covariates_cat_columns != null ? params.covariates_cat_columns.split(',') : []
+
+    covarCols  = catCovars
+                       .collect { "--covarCol=${it}" }
+                       .join(' ')
+    qcovarCols = allCovars
+                       .minus(catCovars)
+                       .collect { "--qCovarCol=${it}" }
+                       .join(' ')
+  }
 
   def outPrefix = phenotypes_file.baseName
+
+  // Build covariate flags only if covariates exist
+  def covarFileFlag = (params.covariates_columns != null && params.covariates_columns != "") ? "--covarFile ${covariates_file}" : ""
 
   """
   bolt \\
@@ -48,7 +57,7 @@ process RUN_BOLT_REML {
     --fam ${fam_plink_file} \\
     --phenoFile ${phenotypes_file} \\
     ${phenoCols} \\
-    --covarFile ${covariates_file} \\
+    ${covarFileFlag} \\
     ${covarCols} \\
     ${qcovarCols} \\
     --numThreads ${task.cpus} \\
