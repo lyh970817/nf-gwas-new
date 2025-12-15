@@ -4,6 +4,12 @@
 
 ## Change Log (Changelog)
 
+### 2025-12-16
+- **Added**: `liftover_sumstats.nf` process for genome build conversion (GRCh38 → GRCh37)
+- **Added**: `bin/liftover_sumstats.R` script using MungeSumstats::liftover()
+- **Updated**: `ldak_sumher.nf` and `ldak_sumcors.nf` workflows to support optional liftover
+- **Added**: New parameters: `ldak_sumher_liftover`, `ldak_sumcors_liftover`, etc.
+
 ### 2025-12-14
 - **Documentation Refactor**: Extracted detailed process descriptions to separate reference files
   - `KINSHIP_REFERENCE.md` - Kinship calculation and GRM management processes
@@ -79,6 +85,34 @@ LDAK (LD-Adjusted Kinships) process modules implement atomic tasks for LD-aware 
 |--------|---------|-------|--------|-----------|
 | `calc_inflation.nf` | Calculate inflation factor | Full + quarter REML | inflation_results.txt | [→](QC_REFERENCE.md#calc_inflation) |
 | `calc_genotype_error.nf` | Estimate genotype errors | Batch data | .he error estimates | [→](QC_REFERENCE.md#calc_genotype_error) |
+
+### Data Processing Modules
+
+| Module | Purpose | Input | Output | Reference |
+|--------|---------|-------|--------|-----------|
+| `liftover_sumstats.nf` | Convert genome build | Summary stats (GRCh38) | Summary stats (GRCh37) | See below |
+
+#### LIFTOVER_SUMSTATS
+
+**Purpose**: Convert GWAS summary statistics between genome builds using MungeSumstats::liftover()
+and apply MAF filtering.
+
+**Inputs**:
+- `tuple val(trait_name), path(summary_stats)`: Summary statistics file
+- `val target_build`: Target genome build ("GRCh37" or "GRCh38")
+- `val source_build`: Source genome build ("GRCh37", "GRCh38", or "auto")
+- `val frq_filter`: MAF filter threshold (default: 0.01)
+
+**Outputs**:
+- `tuple val(trait_name), path("${trait_name}_lifted.tsv.gz")`: Lifted summary stats
+- `path "${trait_name}_liftover.log"`: Log file
+
+**Parameters**:
+- `--ldak_sumher_liftover true`: Enable for SumHer workflow
+- `--ldak_sumher_target_build 'GRCh37'`: Target build (default: GRCh37)
+- `--ldak_sumher_source_build 'auto'`: Source build (default: auto-detect)
+- `--ldak_sumher_frq_filter 0.01`: MAF filter threshold (default: 0.01)
+- Similar parameters for SumCors: `--ldak_sumcors_liftover`, `--ldak_sumcors_frq_filter`, etc.
 
 **For detailed process descriptions**, see:
 - [Kinship Process Reference](KINSHIP_REFERENCE.md)
@@ -166,6 +200,22 @@ A: Download from LDAK website for your population. Use matching ancestry to GWAS
 **Q: Can I create my own tagging files?**
 A: Yes, use `ldak6 --calc-tagging`. Consult **LDAK skill** for instructions.
 
+**Q: My summary statistics are in GRCh38, but LDAK tagfiles are GRCh37. What do I do?**
+A: Enable liftover to convert your summary statistics to GRCh37 before analysis:
+```bash
+nextflow run main.nf \
+    --run_heritability_estimation true \
+    --heritability_method ldak_sumher \
+    --ldak_sumher_liftover true \
+    --ldak_sumher_target_build 'GRCh37' \
+    --ldak_sumher_source_build 'auto' \
+    ...
+```
+The pipeline uses MungeSumstats::liftover() for coordinate conversion.
+
+**Q: How many variants are typically lost during liftover?**
+A: Usually <5% of variants are lost. Losses >10% may indicate issues with input data or coordinate systems. Check the `*_liftover.log` file for details.
+
 ### Quality Control
 
 **Q: What is the inflation factor and how should I interpret it?**
@@ -198,7 +248,10 @@ A: Consult the **LDAK skill** for comprehensive documentation covering all LDAK 
 **Quality Control**: 2 processes
 - `calc_inflation.nf`, `calc_genotype_error.nf`
 
-**Total**: 16 process modules
+**Data Processing**: 1 process
+- `liftover_sumstats.nf` - Genome build conversion using MungeSumstats
+
+**Total**: 17 process modules
 
 ---
 
