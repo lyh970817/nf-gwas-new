@@ -7,7 +7,7 @@ workflow REGENIE {
     phenotypes_file
     covariates_file_validated
     condition_list_file
-    imputed_plink2_ch
+    imputed_plink1_ch
     genotypes_association_format
     skip_predictions
 
@@ -24,7 +24,7 @@ workflow REGENIE {
 
     REGENIE_STEP2(
         regenie_step1_out_ch,
-        imputed_plink2_ch,
+        imputed_plink1_ch,
         genotypes_association_format,
         phenotypes_file,
         covariates_file_validated,
@@ -32,8 +32,12 @@ workflow REGENIE {
     )
 
     regenie_step2_out = REGENIE_STEP2.out.regenie_step2_out
+    merged_results = REGENIE_STEP2.out.merged_results
+    munged_sumstats = REGENIE_STEP2.out.munged_sumstats
 
     emit:
     regenie_step1_out_ch
     regenie_step2_out
+    merged_results
+    munged_sumstats
 }

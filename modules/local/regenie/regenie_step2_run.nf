@@ -2,11 +2,11 @@ process REGENIE_STEP2_RUN {
 
     publishDir "${params.pubDir}/logs", mode: 'copy', pattern: '*.log'
 
-    tag "${plink2_pgen_file.simpleName}"
+    tag "${plink1_bed_file.simpleName}"
 
     input:
-	  path step1_out
-    tuple val(chr_num), val(filename), path(plink2_pgen_file), path(plink2_psam_file), path(plink2_pvar_file), val(range)
+    path step1_out
+    tuple val(chr_num), val(filename), path(plink1_bed_file), path(plink1_bim_file), path(plink1_fam_file), val(range)
     val assoc_format
     path phenotypes_file
     path sample_file
@@ -14,12 +14,13 @@ process REGENIE_STEP2_RUN {
     path condition_list_file
 
     output:
-    tuple val(filename), path("*regenie.gz"), path("*regenie.Ydict"), emit: regenie_step2_out, optional: true
+    tuple val(filename), path("*regenie.gz"), emit: regenie_step2_out
+    path "*regenie.Ydict", emit: regenie_step2_ydict, optional: true
     tuple val(filename), path("*regenie.gz"), emit: regenie_step2_out_interaction, optional: true
     path "${filename}*.log", emit: regenie_step2_out_log
 
     script:
-    def format = '--pgen'
+    def format = '--bed'
     def extension = ''
     def bgen_sample = ''
     def test = "--test $params.regenie_test"
@@ -39,10 +40,13 @@ process REGENIE_STEP2_RUN {
     def no_condtl = params.regenie_no_condtl ? "--no-condtl" : ''
     def force_condtl = params.regenie_force_condtl ? "--force-condtl" : ''
     def condition_list = params.regenie_condition_list ? "--condition-list $condition_list_file" : ''
+    // Only use --range if a proper range string is provided (format: CHR:START-END)
+    // The 'range' input variable contains the range string, or -1 if not specified
+    // Note: chr_num is just a sequential index, not suitable for --range
     def range_output = (chr_num != -1) ? chr_num.toString().replaceAll(":", "-"):''
-    def regenie_range = (chr_num != -1)  ? "--range ${chr_num}":''
-    def output_name = (chr_num != -1)  ? "${filename}-${range_output}":"$filename"
-    def phenotype_split = "--no-split"
+    def regenie_range = (range != -1 && range != null && range.toString() != '-1') ? "--range ${range}" : ''
+    def output_name = (chr_num != -1) ? "${filename}-${range_output}" : "$filename"
+    // Without --no-split, REGENIE creates separate files per phenotype: output_PHENO.regenie.gz
     def step2_optional = params.regenie_step2_optional  ? "$params.regenie_step2_optional":''
 
     """
@@ -57,7 +61,6 @@ process REGENIE_STEP2_RUN {
         --minMAC ${params.regenie_min_mac} \
         --minINFO ${params.regenie_min_imputation_score} \
         --gz \
-        $phenotype_split \
         $binaryTrait \
         $test \
         $bgen_sample \

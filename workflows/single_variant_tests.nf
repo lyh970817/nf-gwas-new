@@ -4,7 +4,7 @@ include { REGENIE              } from './regenie/regenie'
 workflow SINGLE_VARIANT_TESTS {
 
     take:
-    imputed_plink2_ch
+    imputed_plink1_ch
     phenotypes_file
     covariates_file
     genotyped_plink_ch
@@ -28,7 +28,7 @@ workflow SINGLE_VARIANT_TESTS {
         phenotypes_file,
         covariates_file,
         condition_list_file.collect().ifEmpty([]),
-        imputed_plink2_ch,
+        imputed_plink1_ch,
         genotypes_association_format,
         skip_predictions
     )
@@ -36,6 +36,8 @@ workflow SINGLE_VARIANT_TESTS {
     emit:
     regenie_step2_results = REGENIE.out.regenie_step2_out
     regenie_step1_results = REGENIE.out.regenie_step1_out_ch
+    merged_results = REGENIE.out.merged_results
+    munged_sumstats = REGENIE.out.munged_sumstats
 
 }
 

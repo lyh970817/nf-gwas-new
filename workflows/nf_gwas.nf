@@ -283,6 +283,9 @@ workflow NF_GWAS {
     println(ANSI_GREEN + "======================" + ANSI_RESET)
   }
 
+  // Define genotypes association format (now 'bed' for PLINK1 format used by REGENIE)
+  def genotypes_association_format = 'bed'
+
   // =============================================================================
   // 0. GRM-ONLY COMPUTATION MODE
   // =============================================================================
@@ -336,7 +339,7 @@ workflow NF_GWAS {
 
     if (params.association_method == 'regenie') {
       SINGLE_VARIANT_TESTS(
-        imputed_plink2_ch,
+        imputed_plink_ch,
         phenotypes_file,
         covariates_file,
         genotyped_plink_ch,

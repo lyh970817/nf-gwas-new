@@ -8,18 +8,45 @@ From: ubuntu:22.04
     export PATH=/opt/conda/bin:${PATH}
     export PATH=/opt/jbang/bin:${PATH}
     export PATH=/opt/regenie:${PATH}
+    export PATH=/opt/ldak:${PATH}
     export JAVA_TOOL_OPTIONS="-Djdk.lang.Process.launchMechanism=vfork"
     export GENOMIC_UTILS_VERSION="v0.3.7"
     export REGENIE_VERSION="v3.4"
 
 %post
-    # Update system packages
-    apt-get update && apt-get install -y wget
-    
+    # Update system packages and install all dependencies first
+    # Including build tools needed for compiling R/Bioconductor packages
+    apt-get update && apt-get install -y \
+        wget \
+        build-essential \
+        gcc \
+        g++ \
+        make \
+        gfortran \
+        python3 \
+        zlib1g-dev \
+        libgomp1 \
+        procps \
+        libx11-6 \
+        unzip \
+        curl \
+        libxml2-dev \
+        libcurl4-openssl-dev \
+        libssl-dev \
+        libfontconfig1-dev \
+        libfreetype6-dev \
+        libpng-dev \
+        libtiff5-dev \
+        libjpeg-dev \
+        libbz2-dev \
+        liblzma-dev \
+        libpcre2-dev \
+        libicu-dev
+
     # Install Mambaforge (includes mamba by default)
     wget https://github.com/conda-forge/miniforge/releases/download/25.3.1-0/Miniforge3-25.3.1-0-Linux-x86_64.sh
     bash Miniforge3-25.3.1-0-Linux-x86_64.sh -b -p /opt/conda
-    rm Miniforge3-25.3.1-0-Linux-x86_64.sh    
+    rm Miniforge3-25.3.1-0-Linux-x86_64.sh
 
     # Add to PATH
     export PATH="/opt/conda/bin:$PATH"
@@ -27,16 +54,8 @@ From: ubuntu:22.04
     mamba env update -n base -f /opt/environment.yml
     mamba clean --all -y
 
-    # Install additional system packages
-    apt-get update && \
-    apt-get install -y gfortran \
-    python3 \
-    zlib1g-dev \
-    libgomp1 \
-    procps \
-    libx11-6 \
-    unzip \
-    curl
+    # Verify MungeSumstats installation (installed via conda from bioconda)
+    /opt/conda/bin/Rscript -e "library(MungeSumstats); packageVersion('MungeSumstats')"
 
     # Clean up apt cache
     apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -62,6 +81,13 @@ From: ubuntu:22.04
     mv regenie_v3.4.gz_x86_64_Linux regenie
     chmod +x regenie
 
+    # Install LDAK
+    cd /opt
+    mkdir -p ldak && cd ldak
+    wget https://github.com/dougspeed/LDAK/raw/main/ldak6.1.linux
+    chmod +x ldak6.1.linux
+    ln -s ldak6.linux ldak
+
 %runscript
     exec "$@"
 
@@ -72,14 +98,14 @@ From: ubuntu:22.04
 
 %help
     This container includes all dependencies for the nf-gwas pipeline:
-    - Miniconda with bioinformatics packages (plink, plink2, gcta, ldak6, bolt-lmm, etc.)
+    - Conda with bioinformatics packages (plink, plink2, gcta, bolt-lmm, etc.)
+    - LDAK6 for heritability and genetic correlation analysis
     - Java tools (jbang, genomic-utils)
     - Regenie for GWAS analysis
-    - AWS CLI for cloud storage access
-    - Custom Java applications (RegenieLogParser, RegenieValidateInput)
-    
+    - MungeSumstats (Bioconductor) for standardizing GWAS summary statistics
+
     Usage:
     singularity exec nf-gwas.sif <command>
-    
+
     Example:
     singularity exec nf-gwas.sif nextflow run main.nf
