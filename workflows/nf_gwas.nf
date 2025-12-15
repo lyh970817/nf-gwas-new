@@ -98,10 +98,6 @@ workflow NF_GWAS {
     println(ANSI_YELLOW + "WARN: Option genotypes_array is deprecated. Please use genotypes_prediction instead." + ANSI_RESET)
   }
 
-  if (params.rsids_filename == null) {
-    println(ANSI_YELLOW + "WARN: A large rsID file will be downloaded for annotation. Please specify the path to the 'rsids_filename' parameter in the config (see docs for file creation) to avoid multiple downloads." + ANSI_RESET)
-  }
-
   // =============================================================================
   // COMMON DATA PREPARATION
   // =============================================================================

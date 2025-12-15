@@ -97,7 +97,6 @@ From `params`:
 - `params.covariates_filename`: Covariate file path (optional)
 - `params.regenie_skip_predictions`: Skip Step 1 flag
 - `params.nparts_gcta`: GRM calculation parallelization
-- `params.rsids_filename`: rsID annotation file
 
 ---
 

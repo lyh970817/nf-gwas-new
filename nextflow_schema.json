@@ -549,10 +549,6 @@
           "type": "string",
           "fa_icon": "fas fa-project-diagram"
         },
-        "rsids_filename": {
-          "type": "string",
-          "fa_icon": "fas fa-project-diagram"
-        },
         "regenie_range": {
           "type": "string",
           "fa_icon": "fas fa-project-diagram"
