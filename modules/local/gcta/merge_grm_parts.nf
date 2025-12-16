@@ -12,17 +12,26 @@ process MERGE_GRM_PARTS {
   def suffix = snp_group ? "${snp_group}" : "0"
   prefix = "gcta_grm_${suffix}"
   """
-    # IDs are the same across all partitions - use the first one
-    cp gcta_grm_${suffix}.part_${nparts_gcta}_1.grm.id ${prefix}.grm.id
+    # Calculate padding width (number of digits in nparts)
+    PAD_WIDTH=\${#${nparts_gcta}}
 
-    # Concatenate all binary files in order
+    # Concatenate all ID files in order (each partition has different individuals)
+    # GCTA --make-grm-part divides individuals across partitions
     for i in \$(seq 1 ${nparts_gcta}); do
-        cat gcta_grm_${suffix}.part_${nparts_gcta}_\${i}.grm.bin
+        PADDED=\$(printf "%0\${PAD_WIDTH}d" \$i)
+        cat gcta_grm_${suffix}.part_${nparts_gcta}_\${PADDED}.grm.id
+    done > ${prefix}.grm.id
+
+    # Concatenate all binary files in order (with zero-padded part numbers)
+    for i in \$(seq 1 ${nparts_gcta}); do
+        PADDED=\$(printf "%0\${PAD_WIDTH}d" \$i)
+        cat gcta_grm_${suffix}.part_${nparts_gcta}_\${PADDED}.grm.bin
     done > ${prefix}.grm.bin
 
-    # Concatenate all N.bin files in order
+    # Concatenate all N.bin files in order (with zero-padded part numbers)
     for i in \$(seq 1 ${nparts_gcta}); do
-        cat gcta_grm_${suffix}.part_${nparts_gcta}_\${i}.grm.N.bin
+        PADDED=\$(printf "%0\${PAD_WIDTH}d" \$i)
+        cat gcta_grm_${suffix}.part_${nparts_gcta}_\${PADDED}.grm.N.bin
     done > ${prefix}.grm.N.bin
     """
 }

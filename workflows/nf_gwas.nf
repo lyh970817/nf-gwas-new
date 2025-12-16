@@ -102,7 +102,16 @@ workflow NF_GWAS {
   // COMMON DATA PREPARATION
   // =============================================================================
 
-  phenotypes_file = file(params.phenotypes_filename, checkIfExists: true)
+  // Use Ternary File pattern: phenotypes not required for GRM-only mode or summary statistics methods
+  // Summary statistics methods (ldak_sumher, ldak_sumcors) don't need phenotype files
+  def needs_phenotypes = params.run_association_analysis ||
+                         (params.run_heritability_estimation && params.heritability_method != 'ldak_sumher') ||
+                         (params.run_genetic_correlation && params.genetic_correlation_method != 'ldak_sumcors')
+
+  phenotypes_file = needs_phenotypes
+      ? file(params.phenotypes_filename, checkIfExists: true)
+      : []
+
   // Use Ternary File pattern: file object if provided, empty list [] if not
   covariates_file = params.covariates_filename ? file(params.covariates_filename, checkIfExists: true) : []
 
@@ -142,9 +151,12 @@ workflow NF_GWAS {
   imputed_plink2_ch = Channel.empty()
   imputed_plink_ch = Channel.empty()
 
+  // Genotype data is required for most workflows except summary statistics methods
+  // ldak_sumher uses summary statistics only (no individual-level genotypes needed)
+  // ldak_sumcors is already correctly excluded via the genetic_correlation_method check
   def needs_genotypes = params.run_grm_only ||
                         params.run_association_analysis ||
-                        params.run_heritability_estimation ||
+                        (params.run_heritability_estimation && params.heritability_method != 'ldak_sumher') ||
                         (params.run_genetic_correlation && params.genetic_correlation_method in ['gcta_bivariate_greml', 'gcta_bivariate_greml_ldms'])
 
   if (needs_genotypes) {

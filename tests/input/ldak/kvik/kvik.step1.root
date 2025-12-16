@@ -1,0 +1,12 @@
+Analysis KVIK
+Regression Linear
+Datafile merged_chr.bed
+Phenotypes phenotype_single.txt
+Covariates covariates.txt
+Factors none
+Phenotype_Number 1
+Num_Samples_Used 500
+Num_Predictors_Used 1998
+Num_Chromosomes 2
+Multivariate NO
+Sample_Weights NO

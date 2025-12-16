@@ -1,0 +1,15 @@
+Testing for structure using 512 pedigree predictors
+Estimating per-predictor heritabilities using Randomized Haseman-Elston Regression with 10 random vectors
+Calculating traces for Chunk 1 of 8
+Time check: have so far spent 0.00 hours
+Constructing 10 PRS using training samples
+Will also make 33 REML models (using all samples)
+Scan 1: estimating training effect sizes for Chunk 1 of 8
+Average number of iterations per chunk: 3.50
+Scan 2: estimating training effect sizes for Chunk 1 of 8
+Average number of iterations per chunk: 2.75
+Scan 3: estimating training effect sizes for Chunk 1 of 8
+Average number of iterations per chunk: 2.62
+Time check: have so far spent 0.00 hours
+Constructing final PRS using all samples
+Will also make 4 LOCO PRS, and 20 calibration models

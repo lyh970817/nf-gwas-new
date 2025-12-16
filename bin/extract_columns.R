@@ -20,8 +20,8 @@ output_file <- args[3]
 # Fourth argument is the output file path for unspecified columns
 unspecified_output_file <- args[4]
 
-# Read the input file (space-delimited)
-data <- read.table(file_path, header = TRUE, sep = " ")
+# Read the input file (auto-detect delimiter: tab or space)
+data <- read.table(file_path, header = TRUE, sep = "")
 
 # Check if the file has at least two columns to extract
 if (ncol(data) < 2) {

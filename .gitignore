@@ -32,3 +32,6 @@ workflows/**/.spec-workflow/
 
 # Built containers (large binaries)
 *.sif
+
+# Documentation (project-specific AI context)
+CLAUDE.md

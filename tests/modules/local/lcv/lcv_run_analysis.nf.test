@@ -1,0 +1,139 @@
+nextflow_process {
+
+    name "Test Process LCV_RUN_ANALYSIS"
+    script "modules/local/lcv/lcv_run_analysis.nf"
+    process "LCV_RUN_ANALYSIS"
+
+    test("Should run LCV analysis with default parameters") {
+
+        when {
+            params {
+                pubDir = "results"
+            }
+            process {
+                """
+                input[0] = "test_lcv"  // analysis_id
+                input[1] = file("\${projectDir}/tests/input/lcv/trait1_sumstats.txt")
+                input[2] = file("\${projectDir}/tests/input/lcv/trait2_sumstats.txt")
+                input[3] = file("\${projectDir}/tests/input/lcv/ldscores.txt")
+                input[4] = "trait1"  // trait1_name
+                input[5] = "trait2"  // trait2_name
+                input[6] = 100       // no_blocks
+                input[7] = 30        // sig_threshold
+                input[8] = 1         // crosstrait_intercept
+                input[9] = 1         // ldsc_intercept
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            // Check results file
+            with(process.out.results) {
+                assert size() == 1
+                def resultsFile = path(get(0))
+                assert resultsFile.exists()
+                assert resultsFile.size() > 0
+                // Check header and content
+                def content = resultsFile.text
+                assert content.contains("analysis_id")
+                assert content.contains("trait1")
+                assert content.contains("trait2")
+                assert content.contains("gcp")
+                assert content.contains("rho")
+                assert content.contains("test_lcv")
+            }
+
+            // Check log file
+            with(process.out.log_file) {
+                assert size() == 1
+                def logFile = path(get(0))
+                assert logFile.exists()
+                def logContent = logFile.text
+                assert logContent.contains("Starting LCV analysis")
+                assert logContent.contains("LCV analysis completed")
+                assert logContent.contains("Genetic correlation (rho)")
+                assert logContent.contains("Genetic causal proportion (GCP)")
+            }
+        }
+    }
+
+    test("Should run LCV with no intercept estimation") {
+
+        when {
+            params {
+                pubDir = "results"
+            }
+            process {
+                """
+                input[0] = "test_lcv_no_intercept"
+                input[1] = file("\${projectDir}/tests/input/lcv/trait1_sumstats.txt")
+                input[2] = file("\${projectDir}/tests/input/lcv/trait2_sumstats.txt")
+                input[3] = file("\${projectDir}/tests/input/lcv/ldscores.txt")
+                input[4] = "trait1"
+                input[5] = "trait2"
+                input[6] = 50        // fewer blocks
+                input[7] = 30        // sig_threshold
+                input[8] = 0         // no crosstrait_intercept estimation
+                input[9] = 0         // no ldsc_intercept estimation
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            // Check results exist
+            with(process.out.results) {
+                assert size() == 1
+                assert path(get(0)).exists()
+            }
+
+            // Check log confirms completion
+            with(process.out.log_file) {
+                assert size() == 1
+                def logFile = path(get(0))
+                assert logFile.exists()
+                def logContent = logFile.text
+                assert logContent.contains("Cross-trait intercept estimation: 0")
+                assert logContent.contains("LDSC intercept estimation: 0")
+            }
+        }
+    }
+
+    test("Should run LCV with strict significance threshold") {
+
+        when {
+            params {
+                pubDir = "results"
+            }
+            process {
+                """
+                input[0] = "test_lcv_strict"
+                input[1] = file("\${projectDir}/tests/input/lcv/trait1_sumstats.txt")
+                input[2] = file("\${projectDir}/tests/input/lcv/trait2_sumstats.txt")
+                input[3] = file("\${projectDir}/tests/input/lcv/ldscores.txt")
+                input[4] = "exposure"
+                input[5] = "outcome"
+                input[6] = 100
+                input[7] = 10        // stricter sig_threshold
+                input[8] = 1
+                input[9] = 1
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            // Check results contain custom trait names
+            with(process.out.results) {
+                assert size() == 1
+                def content = path(get(0)).text
+                assert content.contains("exposure")
+                assert content.contains("outcome")
+            }
+        }
+    }
+}

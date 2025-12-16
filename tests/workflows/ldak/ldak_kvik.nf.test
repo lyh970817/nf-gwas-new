@@ -1,0 +1,103 @@
+nextflow_workflow {
+
+    name "Test LDAK_KVIK_WORKFLOW"
+    script "workflows/ldak/ldak_kvik.nf"
+    workflow "LDAK_KVIK_WORKFLOW"
+
+    test("Should execute complete LDAK-KVIK workflow for quantitative trait") {
+
+        when {
+            workflow {
+                """
+                // Step 1 input: Merged genotype data with multiple chromosomes for LOCO
+                // merged_chr has chr1 and chr2 (2000 variants)
+                step1_plink_ch = Channel.of(
+                    tuple(
+                        "merged_chr",
+                        file("\$projectDir/tests/input/merged_chr.bed"),
+                        file("\$projectDir/tests/input/merged_chr.bim"),
+                        file("\$projectDir/tests/input/merged_chr.fam")
+                    )
+                )
+
+                // Step 2 input: Per-chromosome imputed PLINK files
+                imputed_plink_ch = Channel.of(
+                    tuple(1, "chr01.vcf", file("\$projectDir/tests/input/chr01.vcf.bed"), file("\$projectDir/tests/input/chr01.vcf.bim"), file("\$projectDir/tests/input/chr01.vcf.fam"), null),
+                    tuple(2, "chr02.vcf", file("\$projectDir/tests/input/chr02.vcf.bed"), file("\$projectDir/tests/input/chr02.vcf.bim"), file("\$projectDir/tests/input/chr02.vcf.fam"), null)
+                )
+
+                input[0] = step1_plink_ch
+                input[1] = imputed_plink_ch
+                input[2] = file("\$projectDir/tests/input/phenotype_single.txt")
+                input[3] = file("\$projectDir/tests/input/covariates.txt")
+                input[4] = false  // is_binary (quantitative trait)
+                input[5] = 1  // mpheno
+                input[6] = "test_quant"  // phenotype_name
+                input[7] = []  // no genefile (skip Step 3)
+                input[8] = []  // no extract_file
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                // Verify Step 1 outputs
+                assert step1_outputs
+                assert step1_root
+                assert step1_loco_prs
+
+                // Verify merged Step 2 results
+                assert merged_assoc
+                assert merged_summaries
+
+                // Step 3 should be empty (no genefile provided)
+                // step3_outputs should be empty channel
+            }
+        }
+    }
+
+    test("Should execute LDAK-KVIK workflow without covariates") {
+
+        when {
+            workflow {
+                """
+                // Use merged_chr with multiple chromosomes for LOCO
+                step1_plink_ch = Channel.of(
+                    tuple(
+                        "merged_chr",
+                        file("\$projectDir/tests/input/merged_chr.bed"),
+                        file("\$projectDir/tests/input/merged_chr.bim"),
+                        file("\$projectDir/tests/input/merged_chr.fam")
+                    )
+                )
+
+                imputed_plink_ch = Channel.of(
+                    tuple(1, "chr01.vcf", file("\$projectDir/tests/input/chr01.vcf.bed"), file("\$projectDir/tests/input/chr01.vcf.bim"), file("\$projectDir/tests/input/chr01.vcf.fam"), null),
+                    tuple(2, "chr02.vcf", file("\$projectDir/tests/input/chr02.vcf.bed"), file("\$projectDir/tests/input/chr02.vcf.bim"), file("\$projectDir/tests/input/chr02.vcf.fam"), null)
+                )
+
+                input[0] = step1_plink_ch
+                input[1] = imputed_plink_ch
+                input[2] = file("\$projectDir/tests/input/phenotype_single.txt")
+                input[3] = []  // No covariates
+                input[4] = false
+                input[5] = 1
+                input[6] = "test_nocov"
+                input[7] = []
+                input[8] = []
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert step1_outputs
+                assert merged_assoc
+            }
+        }
+    }
+}

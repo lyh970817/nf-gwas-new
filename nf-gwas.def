@@ -57,6 +57,11 @@ From: ubuntu:22.04
     # Verify MungeSumstats installation (installed via conda from bioconda)
     /opt/conda/bin/Rscript -e "library(MungeSumstats); packageVersion('MungeSumstats')"
 
+    # Install LAVA R package from GitHub (for local genetic correlation analysis)
+    /opt/conda/bin/Rscript -e "if (!require('remotes', quietly=TRUE)) install.packages('remotes', repos='https://cloud.r-project.org'); remotes::install_github('josefin-werme/LAVA')"
+    # Verify LAVA installation
+    /opt/conda/bin/Rscript -e "library(LAVA); packageVersion('LAVA')"
+
     # Clean up apt cache
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -86,7 +91,7 @@ From: ubuntu:22.04
     mkdir -p ldak && cd ldak
     wget https://github.com/dougspeed/LDAK/raw/main/ldak6.1.linux
     chmod +x ldak6.1.linux
-    ln -s ldak6.linux ldak
+    ln -s ldak6.1.linux ldak6
 
 %runscript
     exec "$@"
@@ -100,6 +105,7 @@ From: ubuntu:22.04
     This container includes all dependencies for the nf-gwas pipeline:
     - Conda with bioinformatics packages (plink, plink2, gcta, bolt-lmm, etc.)
     - LDAK6 for heritability and genetic correlation analysis
+    - LAVA R package for local genetic correlation analysis
     - Java tools (jbang, genomic-utils)
     - Regenie for GWAS analysis
     - MungeSumstats (Bioconductor) for standardizing GWAS summary statistics

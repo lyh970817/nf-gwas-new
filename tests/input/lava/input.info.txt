@@ -1,0 +1,3 @@
+phenotype	cases	controls	prevalence	filename
+trait1	NA	NA	NA	tests/input/lava/trait1_sumstats.txt
+trait2	NA	NA	NA	tests/input/lava/trait2_sumstats.txt

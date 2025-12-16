@@ -1,0 +1,52 @@
+nextflow_process {
+
+    name "Test Process KVIK_STEP2"
+    script "modules/local/ldak/kvik_step2.nf"
+    process "KVIK_STEP2"
+
+    // NOTE: KVIK_STEP2 requires Step 1 outputs (kvik.step1.*)
+    // These tests require pre-computed Step 1 outputs to be available
+    // For initial testing, run Step 1 first and copy outputs to tests/input/ldak/kvik/
+
+    test("Should execute KVIK Step 2 per-chromosome association") {
+
+        tag "requires_step1_outputs"
+
+        when {
+            process {
+                """
+                // Per-chromosome PLINK files for Step 2
+                input[0] = tuple(
+                    1,  // chr_num
+                    "chr01.vcf",
+                    file("\$projectDir/tests/input/chr01.vcf.bed"),
+                    file("\$projectDir/tests/input/chr01.vcf.bim"),
+                    file("\$projectDir/tests/input/chr01.vcf.fam")
+                )
+                input[1] = file("\$projectDir/tests/input/phenotype_single.txt")
+                input[2] = file("\$projectDir/tests/input/covariates.txt")
+                // Step 1 outputs (must be pre-computed)
+                input[3] = file("\$projectDir/tests/input/ldak/kvik/kvik.step1.root")
+                input[4] = file("\$projectDir/tests/input/ldak/kvik/kvik.step1.loco.details")
+                input[5] = file("\$projectDir/tests/input/ldak/kvik/kvik.step1.loco.prs")
+                input[6] = file("\$projectDir/tests/input/ldak/kvik/kvik.step1.effects")
+                input[7] = 1  // mpheno
+                input[8] = []  // no keep_file
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert step2_chr_results
+                assert step2_assoc
+
+                // Verify association file has content
+                def assocFile = step2_assoc.get(0)
+                assert path(assocFile).size() > 0
+            }
+        }
+    }
+}

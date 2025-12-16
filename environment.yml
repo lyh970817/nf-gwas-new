@@ -12,6 +12,7 @@ dependencies:
   - r-httr
   - r-jsonlite
   - r-curl
+  - r-remotes
   # MungeSumstats and dependencies (pre-compiled from bioconda)
   - bioconductor-mungesumstats
   # Other tools (relaxed version constraints to avoid conflicts)

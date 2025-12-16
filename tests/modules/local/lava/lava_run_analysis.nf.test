@@ -1,0 +1,136 @@
+nextflow_process {
+
+    name "Test Process LAVA_RUN_ANALYSIS"
+    script "modules/local/lava/lava_run_analysis.nf"
+    process "LAVA_RUN_ANALYSIS"
+
+    test("Should run LAVA univariate and bivariate analysis") {
+
+        when {
+            params {
+                pubDir = "results"
+            }
+            process {
+                """
+                input[0] = "test_lava"  // analysis_id
+                input[1] = file("\${projectDir}/tests/input/lava/lava_ref.bed")
+                input[2] = file("\${projectDir}/tests/input/lava/lava_ref.bim")
+                input[3] = file("\${projectDir}/tests/input/lava/lava_ref.fam")
+                input[4] = [
+                    file("\${projectDir}/tests/input/lava/trait1_sumstats.txt"),
+                    file("\${projectDir}/tests/input/lava/trait2_sumstats.txt")
+                ]
+                input[5] = file("\${projectDir}/tests/input/lava/test.loci")
+                input[6] = file("\${projectDir}/tests/input/lava/sample.overlap.txt")
+                input[7] = '[{"name":"trait1","cases":null,"controls":null,"prevalence":null,"filename":"trait1_sumstats.txt"},{"name":"trait2","cases":null,"controls":null,"prevalence":null,"filename":"trait2_sumstats.txt"}]'
+                input[8] = 0.05  // univ_threshold
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            // Check univariate results
+            with(process.out.univ_results) {
+                assert size() == 1
+                def univFile = path(get(0))
+                assert univFile.exists()
+                assert univFile.size() > 0
+                // Check header is present
+                def content = univFile.text
+                assert content.contains("locus") || content.contains("phen")
+            }
+
+            // Check log file
+            with(process.out.log_file) {
+                assert size() == 1
+                def logFile = path(get(0))
+                assert logFile.exists()
+                def logContent = logFile.text
+                assert logContent.contains("Starting LAVA analysis")
+                assert logContent.contains("LAVA analysis completed")
+            }
+        }
+    }
+
+    test("Should run LAVA without sample overlap file") {
+
+        when {
+            params {
+                pubDir = "results"
+            }
+            process {
+                """
+                input[0] = "test_lava_no_overlap"
+                input[1] = file("\${projectDir}/tests/input/lava/lava_ref.bed")
+                input[2] = file("\${projectDir}/tests/input/lava/lava_ref.bim")
+                input[3] = file("\${projectDir}/tests/input/lava/lava_ref.fam")
+                input[4] = [
+                    file("\${projectDir}/tests/input/lava/trait1_sumstats.txt"),
+                    file("\${projectDir}/tests/input/lava/trait2_sumstats.txt")
+                ]
+                input[5] = file("\${projectDir}/tests/input/lava/test.loci")
+                input[6] = []  // No sample overlap file
+                input[7] = '[{"name":"trait1","cases":null,"controls":null,"prevalence":null,"filename":"trait1_sumstats.txt"},{"name":"trait2","cases":null,"controls":null,"prevalence":null,"filename":"trait2_sumstats.txt"}]'
+                input[8] = 0.05
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            // Check univariate results exist
+            with(process.out.univ_results) {
+                assert size() == 1
+                assert path(get(0)).exists()
+            }
+
+            // Check log confirms completion
+            with(process.out.log_file) {
+                assert size() == 1
+                def logFile = path(get(0))
+                assert logFile.exists()
+            }
+        }
+    }
+
+    test("Should handle strict univariate threshold") {
+
+        when {
+            params {
+                pubDir = "results"
+            }
+            process {
+                """
+                input[0] = "test_lava_strict"
+                input[1] = file("\${projectDir}/tests/input/lava/lava_ref.bed")
+                input[2] = file("\${projectDir}/tests/input/lava/lava_ref.bim")
+                input[3] = file("\${projectDir}/tests/input/lava/lava_ref.fam")
+                input[4] = [
+                    file("\${projectDir}/tests/input/lava/trait1_sumstats.txt"),
+                    file("\${projectDir}/tests/input/lava/trait2_sumstats.txt")
+                ]
+                input[5] = file("\${projectDir}/tests/input/lava/test.loci")
+                input[6] = []
+                input[7] = '[{"name":"trait1","cases":null,"controls":null,"prevalence":null,"filename":"trait1_sumstats.txt"},{"name":"trait2","cases":null,"controls":null,"prevalence":null,"filename":"trait2_sumstats.txt"}]'
+                input[8] = 0.001  // Very strict threshold
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            // Univariate results should still be generated
+            with(process.out.univ_results) {
+                assert size() == 1
+                assert path(get(0)).exists()
+            }
+
+            // Bivariate results might be empty with strict threshold
+            // (this is expected behavior)
+        }
+    }
+}

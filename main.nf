@@ -1,14 +1,4 @@
 #!/usr/bin/env nextflow
-/*
-========================================================================================
-    genepi/nf-gwas
-========================================================================================
-    Github : https://github.com/genepi/nf-gwas
-    Author: Sebastian Schönherr & Lukas Forer
-    ---------------------------
-*/
-
-
 
 // include { paramsSummaryLog } from 'plugin/nf-schema'
 

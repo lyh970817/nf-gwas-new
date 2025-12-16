@@ -1,0 +1,46 @@
+nextflow_process {
+
+    name "Test Process MERGE_KVIK_RESULTS"
+    script "modules/local/ldak/merge_kvik_results.nf"
+    process "MERGE_KVIK_RESULTS"
+
+    // NOTE: This test requires pre-computed per-chromosome Step 2 outputs
+    // For initial testing, run the KVIK workflow first and copy outputs
+
+    test("Should merge per-chromosome association results") {
+
+        tag "requires_step2_outputs"
+
+        when {
+            process {
+                """
+                // Collected association files from multiple chromosomes
+                // These would be outputs from KVIK_STEP2 runs
+                input[0] = [
+                    file("\$projectDir/tests/input/ldak/kvik/kvik.step2.chr1.assoc"),
+                    file("\$projectDir/tests/input/ldak/kvik/kvik.step2.chr2.assoc")
+                ]
+                // Collected summaries files
+                input[1] = [
+                    file("\$projectDir/tests/input/ldak/kvik/kvik.step2.chr1.summaries"),
+                    file("\$projectDir/tests/input/ldak/kvik/kvik.step2.chr2.summaries")
+                ]
+                input[2] = "test_phenotype"  // phenotype_name
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert merged_assoc
+                assert merged_summaries
+
+                // Verify merged file has content
+                def mergedAssoc = merged_assoc.get(0)
+                assert path(mergedAssoc).size() > 0
+            }
+        }
+    }
+}
