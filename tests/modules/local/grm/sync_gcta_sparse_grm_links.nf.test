@@ -1,0 +1,38 @@
+nextflow_process {
+
+    name "Test Process SYNC_GCTA_SPARSE_GRM_LINKS"
+    script "modules/local/grm/sync_gcta_sparse_grm_links.nf"
+    process "SYNC_GCTA_SPARSE_GRM_LINKS"
+
+    test("Should symlink gcta sparse grm into grm_dir/gcta_grm_sparse") {
+
+        when {
+            process {
+                """
+                input[0] = Channel.of(tuple(
+                    file("$projectDir/tests/input/gcta/run_fastgwa_mlm/gcta_grm_0_sp.grm.id"),
+                    file("$projectDir/tests/input/gcta/run_fastgwa_mlm/gcta_grm_0_sp.grm.sp")
+                ))
+
+                input[1] = "$outputDir/grm"
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out.linked_grm) {
+                assert size() == 1
+                def row = get(0)
+                def linkedId = path(row.get(0))
+                def linkedSp = path(row.get(1))
+
+                assert linkedId.exists()
+                assert linkedSp.exists()
+                assert java.nio.file.Files.isSymbolicLink(linkedId)
+                assert java.nio.file.Files.isSymbolicLink(linkedSp)
+            }
+        }
+    }
+}

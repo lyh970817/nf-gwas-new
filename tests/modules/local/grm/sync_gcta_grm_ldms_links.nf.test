@@ -1,0 +1,43 @@
+nextflow_process {
+
+    name "Test Process SYNC_GCTA_GRM_LDMS_LINKS"
+    script "modules/local/grm/sync_gcta_grm_ldms_links.nf"
+    process "SYNC_GCTA_GRM_LDMS_LINKS"
+
+    test("Should symlink gcta ldms grm into grm_dir/gcta_grm_ldms") {
+
+        when {
+            process {
+                """
+                input[0] = Channel.of(tuple(
+                    '1',
+                    'gcta_grm_1_adj_unrel',
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_1.grm.id"),
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_1.grm.bin"),
+                    file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_1.grm.N.bin")
+                ))
+
+                input[1] = "$outputDir/grm"
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            with(process.out.linked_grm) {
+                assert size() == 1
+                def row = get(0)
+                def linkedId = path(row.get(2))
+                def linkedBin = path(row.get(3))
+                def linkedN = path(row.get(4))
+
+                assert linkedId.exists()
+                assert linkedBin.exists()
+                assert linkedN.exists()
+                assert java.nio.file.Files.isSymbolicLink(linkedId)
+                assert java.nio.file.Files.isSymbolicLink(linkedBin)
+                assert java.nio.file.Files.isSymbolicLink(linkedN)
+            }
+        }
+    }
+}

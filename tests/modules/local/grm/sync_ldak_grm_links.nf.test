@@ -1,0 +1,52 @@
+nextflow_process {
+
+    name "Test Process SYNC_LDAK_GRM_LINKS"
+    script "modules/local/grm/sync_ldak_grm_links.nf"
+    process "SYNC_LDAK_GRM_LINKS"
+
+    test("Should symlink ldak grm into grm_dir/ldak_grm") {
+
+        when {
+            process {
+                """
+                input[0] = Channel.of(tuple(
+                    'ldak_grm',
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.bin"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.id"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.details"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.adjust"),
+                    file("$projectDir/tests/input/ldak/filtered/ldak_grm.keep")
+                ))
+
+                input[1] = "$outputDir/grm"
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out.linked_grm) {
+                assert size() == 1
+                def row = get(0)
+
+                def linkedBin = path(row.get(1))
+                def linkedId = path(row.get(2))
+                def linkedDetails = path(row.get(3))
+                def linkedAdjust = path(row.get(4))
+                def linkedKeep = path(row.get(5))
+
+                assert linkedBin.exists()
+                assert linkedId.exists()
+                assert linkedDetails.exists()
+                assert linkedAdjust.exists()
+                assert linkedKeep.exists()
+                assert java.nio.file.Files.isSymbolicLink(linkedBin)
+                assert java.nio.file.Files.isSymbolicLink(linkedId)
+                assert java.nio.file.Files.isSymbolicLink(linkedDetails)
+                assert java.nio.file.Files.isSymbolicLink(linkedAdjust)
+                assert java.nio.file.Files.isSymbolicLink(linkedKeep)
+            }
+        }
+    }
+}
