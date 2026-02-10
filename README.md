@@ -90,7 +90,7 @@ Identify genetic variants associated with traits or diseases.
 
 | Method | Tool | Best For | Speed |
 |--------|------|----------|-------|
-| Two-step regression | REGENIE | Large biobanks, gene-based tests | Fast |
+| Two-step regression | REGENIE | Large biobanks | Fast |
 | Mixed model | GCTA FastGWA | Alternative to REGENIE | Fast |
 | Mixed model | LDAK-KVIK | Best power/speed trade-off | Fastest |
 
@@ -135,22 +135,29 @@ Infer genetically causal relationships between traits.
 | File Type | Description | Example |
 |-----------|-------------|---------|
 | **Genotypes** | VCF or PLINK format | `chr*.vcf.gz`, `data.{bed,bim,fam}` |
-| **Phenotypes** | Tab-separated file with FID, IID, traits | `phenotypes.txt` |
+| **Phenotypes** | Directory of tab-separated files (one trait per file) | `phenotypes/` |
 
 ### Optional Files
 
 | File Type | Description | Example |
 |-----------|-------------|---------|
 | **Covariates** | Tab-separated file with FID, IID, covariates | `covariates.txt` |
-| **Summary Statistics** | GWAS results for summary-based methods | `gwas_results.txt` |
+| **Summary Statistics** | Directory of GWAS summary files | `gwas_stats/` |
 
 ### File Format Details
 
-**Phenotype File**:
+**Phenotype Files (one per trait)**:
 ```
-FID    IID    height    bmi    disease
-1001   1001   175.5     24.3   0
-1002   1002   162.3     22.1   1
+phenotypes/
+├── height.txt
+└── bmi.txt
+```
+
+Each file:
+```
+FID    IID    height
+1001   1001   175.5
+1002   1002   162.3
 ```
 
 **Covariate File**:
@@ -177,11 +184,10 @@ rs67890     C     T     50000  -0.015    0.004    1.8e-4
 ```bash
 nextflow run main.nf \
     --project my_gwas \
-    --run_association_analysis true \
-    --genotypes_association_vcf "data/chr*.vcf.gz" \
-    --genotypes_prediction "data/array.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height,bmi \
+    --run_assoc_regenie true \
+    --imputed_genotyped_files_vcf "data/chr*.vcf.gz" \
+    --genotyped_file "data/array.{bed,bim,fam}" \
+    --phenotypes_dir phenotypes/ \
     --covariates_filename covariates.txt \
     --covariates_columns age,sex,PC1,PC2 \
     -profile slurm,singularity
@@ -191,11 +197,13 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --project my_gwas \
-    --run_association_analysis true \
-    --association_method ldak_kvik \
-    --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --run_assoc_regenie false \
+    --run_assoc_kvik true \
+    --imputed_genotyped_files_plink1 "data/chr*.{bed,bim,fam}" \
+    --phenotypes_dir phenotypes/ \
+    --covariates_filename covariates.txt \
+    --covariates_columns age,PC1,PC2 \
+    --covariates_cat_columns sex \
     -profile slurm,singularity
 ```
 
@@ -205,11 +213,9 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --project heritability \
-    --run_heritability_estimation true \
-    --heritability_method gcta_greml \
-    --genotypes_association_plink2 "data/chr*.{pgen,psam,pvar}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --run_h2_gcta_greml true \
+    --imputed_genotyped_files_plink2 "data/chr*.{pgen,psam,pvar}" \
+    --phenotypes_dir phenotypes/ \
     -profile singularity
 ```
 
@@ -217,11 +223,9 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --project heritability \
-    --run_heritability_estimation true \
-    --heritability_method ldak_he \
-    --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --run_h2_ldak_he true \
+    --imputed_genotyped_files_plink1 "data/chr*.{bed,bim,fam}" \
+    --phenotypes_dir phenotypes/ \
     -profile singularity
 ```
 
@@ -229,13 +233,10 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --project heritability_case_control \
-    --run_heritability_estimation true \
-    --heritability_method ldak_pcgc \
+    --run_h2_ldak_pcgc true \
     --ldak_pcgc_prevalence 0.05 \
-    --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns disease \
-    --phenotypes_binary_trait true \
+    --imputed_genotyped_files_plink1 "data/chr*.{bed,bim,fam}" \
+    --phenotypes_dir phenotypes/ \
     -profile singularity
 ```
 
@@ -243,10 +244,20 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --project sumher_analysis \
-    --run_heritability_estimation true \
-    --heritability_method ldak_sumher \
-    --ldak_sumher_summary_stats gwas_results.txt \
+    --run_h2_ldak_sumher true \
+    --summary_stats_dir gwas_stats/ \
     --ldak_sumher_tagfile tagging_file.tagging \
+    -profile singularity
+```
+
+**LDSC h2 (From summary statistics)**:
+```bash
+nextflow run main.nf \
+    --project ldsc_h2_analysis \
+    --run_h2_ldsc_h2 true \
+    --summary_stats_dir gwas_stats/ \
+    --ldsc_ref_ld_chr ldsc_ref/eur_w_ld_chr/ \
+    --ldsc_w_ld_chr ldsc_ref/eur_w_ld_chr/ \
     -profile singularity
 ```
 
@@ -256,11 +267,20 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --project genetic_correlation \
-    --run_genetic_correlation true \
-    --genetic_correlation_method ldak_sumcors \
-    --ldak_sumcors_summary_stats1 trait1_gwas.txt \
-    --ldak_sumcors_summary_stats2 trait2_gwas.txt \
+    --run_rg_ldak_sumcors true \
+    --summary_stats_dir gwas_stats/ \
     --ldak_sumcors_tagfile tagging_file.tagging \
+    -profile singularity
+```
+
+**LDSC rg (Summary statistics)**:
+```bash
+nextflow run main.nf \
+    --project ldsc_rg_analysis \
+    --run_rg_ldsc_rg true \
+    --summary_stats_dir gwas_stats/ \
+    --ldsc_ref_ld_chr ldsc_ref/eur_w_ld_chr/ \
+    --ldsc_w_ld_chr ldsc_ref/eur_w_ld_chr/ \
     -profile singularity
 ```
 
@@ -268,9 +288,8 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --project local_rg \
-    --run_genetic_correlation true \
-    --genetic_correlation_method lava \
-    --lava_input_info input_info.txt \
+    --run_lava_local_rg true \
+    --summary_stats_dir gwas_stats/ \
     --lava_loci_file test.loci \
     --lava_ref_plink "reference.{bed,bim,fam}" \
     -profile singularity
@@ -282,11 +301,12 @@ nextflow run main.nf \
 ```bash
 nextflow run main.nf \
     --project causal_inference \
-    --run_causal_inference true \
-    --causal_inference_method lcv \
-    --lcv_sumstats1 exposure_gwas.txt \
-    --lcv_sumstats2 outcome_gwas.txt \
-    --lcv_ldscores ldscores.l2.ldscore.gz \
+    --run_lcv_causal true \
+    --lcv_sumstats_trait1 exposure_gwas.txt \
+    --lcv_sumstats_trait2 outcome_gwas.txt \
+    --lcv_ldscores_file ldscores.l2.ldscore.gz \
+    --lcv_trait1_name exposure \
+    --lcv_trait2_name outcome \
     -profile singularity
 ```
 
@@ -305,7 +325,7 @@ output/
 │   │   │   └── *.log                  # Log files
 │   │   └── ldak_kvik/
 │   │       ├── kvik.step2.assoc       # GWAS summary statistics
-│   │       └── kvik.step3.remls.all   # Gene-based results
+│   │       └── kvik.step2.summaries  # Optional per-chromosome summaries merged
 │   │
 │   ├── heritability/
 │   │   ├── gcta/
@@ -373,12 +393,21 @@ nextflow run main.nf -profile test,singularity
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `--project` | Project name | Required |
-| `--outdir` | Output directory | `output/${project}` |
-| `--phenotypes_filename` | Phenotype file | Required |
-| `--phenotypes_columns` | Phenotype column names | Required |
-| `--phenotypes_binary_trait` | Binary trait flag | `false` |
+| `--pubDir` | Output directory | `results` |
+| `--phenotypes_dir` | Directory of phenotype files (one trait per file) | Required |
+| `--summary_stats_dir` | Directory of summary stats files (LDAK SumHer/SumCors and MAGMA gene analysis) | Optional |
+| `--grm_dir` | Directory where computed GRMs are symlinked (`gcta_grm/`, `ldak_grm/`) | `${projectDir}/grm` |
+| `--magma_gene_input_mode` | MAGMA gene input mode: `sumstats` or `raw` | `sumstats` |
+| `--imputed_genotyped_files_plink1` | PLINK input for MAGMA raw mode (`*.{bed,bim,fam}`) | Optional |
 | `--covariates_filename` | Covariate file | Optional |
 | `--nparts_gcta` | GRM parallelization | `10` |
+
+For GRM-aware analyses, default reusable GRM paths point to:
+- `--gcta_grm_prefix ${projectDir}/grm/gcta_grm/gcta_grm_0_adj_unrel05`
+- `--gcta_sparse_grm_prefix ${projectDir}/grm/gcta_grm_sparse/gcta_grm_0_adj_unrel05_sp`
+- `--gcta_mgrm_file ${projectDir}/grm/gcta_grm_ldms/gcta_grm_ldms.mgrm`
+- `--ldak_grm_prefix ${projectDir}/grm/ldak_grm/ldak_grm`
+- `--ldak_adjusted_grm_prefix ${projectDir}/grm/ldak_grm_adjusted/ldak_grm_adj`
 
 ### Resource Configuration
 
@@ -415,6 +444,7 @@ Detailed documentation for each workflow is available in the respective director
 | BOLT-LMM | [workflows/bolt_lmm/README.md](workflows/bolt_lmm/README.md) | Fast mixed model analysis |
 | LAVA | [workflows/lava/README.md](workflows/lava/README.md) | Local genetic correlation |
 | LCV | [workflows/lcv/README.md](workflows/lcv/README.md) | Causal inference |
+| MAGMA | [docs/external/magma/gene.md](docs/external/magma/gene.md) | Gene and gene-set analyses from GWAS summary statistics |
 
 ---
 
@@ -462,12 +492,36 @@ Run the test suite:
 # Run all tests
 nf-test test
 
-# Run specific workflow test
+# Run a specific workflow/module test
 nf-test test tests/modules/local/regenie_step1.nf.test
 
-# Run main workflow test
-nf-test test tests/main.nf.test
+# Run lean main.nf smoke tests only
+nf-test test tests/main.nf.test --tag main_smoke
+
+# Run main.nf negative-path tests only
+nf-test test tests/main.nf.test --tag main_negative
+
+# Run full suite in shards (useful for CI parallel jobs)
+nf-test test --profile test,singularity --shard 1/4
+nf-test test --profile test,singularity --shard 2/4
+nf-test test --profile test,singularity --shard 3/4
+nf-test test --profile test,singularity --shard 4/4
+
+# Run shards concurrently locally (adaptive auto-sharding)
+scripts/test-parallel.sh
+
+# Override shard count explicitly
+scripts/test-parallel.sh --shards 4
+
+# Quick local pipeline-guard checks in parallel
+scripts/test-parallel-main.sh
+
+# Run only tagged tests in parallel
+scripts/test-parallel.sh --tag main_smoke
 ```
+
+Parallel test logs are written per run to `tmp/nf-test/parallel/<timestamp>/`.
+If a shard fails, rerun it with the command printed in `summary.txt`.
 
 ---
 
