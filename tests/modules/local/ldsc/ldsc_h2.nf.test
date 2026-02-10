@@ -1,0 +1,45 @@
+nextflow_process {
+
+    name "Test Process LDSC_H2"
+    script "modules/local/ldsc/ldsc_h2.nf"
+    process "LDSC_H2"
+
+    test("Should estimate heritability from munged summary statistics") {
+
+        when {
+            params {
+                ldsc_h2_extra_args = null
+            }
+            process {
+                """
+                input[0] = Channel.of([
+                    "trait1",
+                    file("${projectDir}/tests/input/ldsc/sumstats/trait1.txt")
+                ])
+                input[1] = "${projectDir}/tests/input/ldsc/reference/weights.hm3_noMHC."
+                input[2] = "${projectDir}/tests/input/ldsc/reference/weights.hm3_noMHC."
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.trace.tasks().size() == 1
+
+            with(process.out.heritability_results) {
+                assert size() == 1
+                def h2Path = path(get(0))
+                assert h2Path.exists()
+                assert h2Path.text.contains('trait\th2\tse')
+                assert h2Path.text.contains('trait1\t0.2100\t0.0300')
+            }
+
+            with(process.out.h2_log) {
+                assert size() == 1
+                def logPath = path(get(0))
+                assert logPath.exists()
+                assert logPath.text.contains('Total Observed scale h2')
+            }
+        }
+    }
+}

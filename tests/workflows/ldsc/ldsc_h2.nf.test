@@ -1,0 +1,48 @@
+nextflow_workflow {
+
+    name "Test Workflow LDSC_H2_WORKFLOW"
+    script "workflows/ldsc/ldsc_h2.nf"
+    workflow "LDSC_H2_WORKFLOW"
+
+    test("LDSC h2: Should process all summary stats files") {
+
+        when {
+            params {
+                ldsc_ref_ld_chr = "${projectDir}/tests/input/ldsc/reference/weights.hm3_noMHC."
+                ldsc_w_ld_chr = "${projectDir}/tests/input/ldsc/reference/weights.hm3_noMHC."
+                sumstats_snp_col = 'Predictor'
+                sumstats_a1_col = 'A1'
+                sumstats_a2_col = 'A2'
+                sumstats_n_col = 'n'
+                ldsc_munge_signed_sumstats = 'Z,0'
+            }
+            workflow {
+                """
+                input[0] = Channel.of(
+                    tuple("trait1", file("$projectDir/tests/input/ldsc/sumstats/trait1.txt")),
+                    tuple("trait2", file("$projectDir/tests/input/ldsc/sumstats/trait2.txt")),
+                    tuple("trait3", file("$projectDir/tests/input/ldsc/sumstats/trait3.txt"))
+                )
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert heritability_results
+                def results = heritability_results.toList()
+                assert results.size() == 3
+                results.each { f ->
+                    def p = path(f)
+                    assert p.exists()
+                    assert p.text.contains('trait\th2\tse')
+                }
+
+                assert munge_logs
+                assert munge_logs.toList().size() == 3
+            }
+        }
+    }
+}

@@ -1,0 +1,47 @@
+nextflow_process {
+
+    name "Test Process LDSC_RG"
+    script "modules/local/ldsc/ldsc_rg.nf"
+    process "LDSC_RG"
+
+    test("Should estimate genetic correlation between two traits") {
+
+        when {
+            params {
+                ldsc_rg_extra_args = null
+            }
+            process {
+                """
+                input[0] = Channel.of([
+                    "trait1",
+                    file("${projectDir}/tests/input/ldsc/sumstats/trait1.txt"),
+                    "trait2",
+                    file("${projectDir}/tests/input/ldsc/sumstats/trait2.txt")
+                ])
+                input[1] = "${projectDir}/tests/input/ldsc/reference/weights.hm3_noMHC."
+                input[2] = "${projectDir}/tests/input/ldsc/reference/weights.hm3_noMHC."
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.trace.tasks().size() == 1
+
+            with(process.out.correlation_results) {
+                assert size() == 1
+                def rgPath = path(get(0))
+                assert rgPath.exists()
+                assert rgPath.text.contains('trait1\ttrait2\trg\tse')
+                assert rgPath.text.contains('trait1\ttrait2\t0.3500\t0.0700')
+            }
+
+            with(process.out.rg_log) {
+                assert size() == 1
+                def logPath = path(get(0))
+                assert logPath.exists()
+                assert logPath.text.contains('p1 p2 rg se z p')
+            }
+        }
+    }
+}

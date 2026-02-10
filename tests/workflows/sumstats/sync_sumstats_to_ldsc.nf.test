@@ -1,0 +1,56 @@
+nextflow_workflow {
+
+    name "Test Workflow SUMSTATS_SYNC_TO_LDSC"
+    script "tests/workflows/sumstats/sync_sumstats_to_ldsc.nf"
+    workflow "SUMSTATS_SYNC_TO_LDSC"
+
+    test("Should symlink generated sumstats and run LDSC h2") {
+
+        when {
+            params {
+                pubDir = "$outputDir/results"
+                ldsc_ref_ld_chr = "$projectDir/tests/input/ldsc/smoke_reference/weights.synthetic."
+                ldsc_w_ld_chr = "$projectDir/tests/input/ldsc/smoke_reference/weights.synthetic."
+                sumstats_snp_col = 'Predictor'
+                sumstats_a1_col = 'A1'
+                sumstats_a2_col = 'A2'
+                sumstats_n_col = 'n'
+                sumstats_p_col = 'P'
+            }
+            workflow {
+                """
+                input[0] = Channel.of(tuple(
+                    'trait1',
+                    'regenie',
+                    file("$projectDir/tests/input/ldsc/smoke_sumstats/trait1.txt")
+                ))
+
+                input[1] = "$outputDir/summary_stats"
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def linkedInSummaryDir = new File("$outputDir/summary_stats/trait1.regenie.sumstats")
+            assert linkedInSummaryDir.exists()
+            assert java.nio.file.Files.isSymbolicLink(linkedInSummaryDir.toPath())
+
+            with(workflow.out.linked_sumstats) {
+                assert size() == 1
+                def linked = path(get(0).get(1))
+                assert linked.exists()
+                assert java.nio.file.Files.isSymbolicLink(linked)
+            }
+
+            with(workflow.out.h2_results) {
+                assert size() == 1
+                def h2 = path(get(0))
+                assert h2.exists()
+                assert h2.text.contains('trait\th2\tse')
+                assert h2.text.contains('trait1')
+            }
+        }
+    }
+}

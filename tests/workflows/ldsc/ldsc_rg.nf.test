@@ -1,0 +1,63 @@
+nextflow_workflow {
+
+    name "Test Workflow LDSC_RG_WORKFLOW"
+    script "workflows/ldsc/ldsc_rg.nf"
+    workflow "LDSC_RG_WORKFLOW"
+
+    test("LDSC rg: Should process all pairwise combinations") {
+
+        when {
+            params {
+                ldsc_ref_ld_chr = "${projectDir}/tests/input/ldsc/reference/weights.hm3_noMHC."
+                ldsc_w_ld_chr = "${projectDir}/tests/input/ldsc/reference/weights.hm3_noMHC."
+                sumstats_snp_col = 'Predictor'
+                sumstats_a1_col = 'A1'
+                sumstats_a2_col = 'A2'
+                sumstats_n_col = 'n'
+                ldsc_munge_signed_sumstats = 'Z,0'
+            }
+            workflow {
+                """
+                input[0] = Channel.of(
+                    tuple(
+                        "trait1",
+                        file("$projectDir/tests/input/ldsc/sumstats/trait1.txt"),
+                        "trait2",
+                        file("$projectDir/tests/input/ldsc/sumstats/trait2.txt")
+                    ),
+                    tuple(
+                        "trait1",
+                        file("$projectDir/tests/input/ldsc/sumstats/trait1.txt"),
+                        "trait3",
+                        file("$projectDir/tests/input/ldsc/sumstats/trait3.txt")
+                    ),
+                    tuple(
+                        "trait2",
+                        file("$projectDir/tests/input/ldsc/sumstats/trait2.txt"),
+                        "trait3",
+                        file("$projectDir/tests/input/ldsc/sumstats/trait3.txt")
+                    )
+                )
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert correlation_results
+                def results = correlation_results.toList()
+                assert results.size() == 3
+                results.each { f ->
+                    def p = path(f)
+                    assert p.exists()
+                    assert p.text.contains('trait1\ttrait2\trg\tse')
+                }
+
+                assert munge_logs
+                assert munge_logs.toList().size() == 3
+            }
+        }
+    }
+}

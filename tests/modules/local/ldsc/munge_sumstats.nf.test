@@ -1,0 +1,49 @@
+nextflow_process {
+
+    name "Test Process LDSC_MUNGE_SUMSTATS"
+    script "modules/local/ldsc/munge_sumstats.nf"
+    process "LDSC_MUNGE_SUMSTATS"
+
+    test("Should munge raw summary statistics for LDSC") {
+
+        when {
+            params {
+                sumstats_snp_col = 'Predictor'
+                sumstats_a1_col = 'A1'
+                sumstats_a2_col = 'A2'
+                sumstats_n_col = 'n'
+                ldsc_munge_signed_sumstats = 'Z,0'
+                ldsc_munge_extra_args = null
+            }
+            process {
+                """
+                input[0] = Channel.of([
+                    "trait1",
+                    file("${projectDir}/tests/input/ldsc/sumstats/trait1.txt")
+                ])
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.trace.tasks().size() == 1
+
+            with(process.out.munged_sumstats) {
+                assert size() == 1
+                def item = get(0)
+                assert item[0] == 'trait1'
+                def sumstatsPath = path(item[1])
+                assert sumstatsPath.exists()
+                assert sumstatsPath.fileName.toString().endsWith('.sumstats.gz')
+            }
+
+            with(process.out.munge_log) {
+                assert size() == 1
+                def logPath = path(get(0))
+                assert logPath.exists()
+                assert logPath.text.contains('Mock munge_sumstats run for trait1')
+            }
+        }
+    }
+}
