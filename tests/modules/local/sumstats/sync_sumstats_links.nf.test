@@ -1,0 +1,33 @@
+nextflow_process {
+
+    name "Test Process SYNC_SUMSTATS_LINKS"
+    script "modules/local/sumstats/sync_sumstats_links.nf"
+    process "SYNC_SUMSTATS_LINKS"
+
+    test("Should symlink sumstats into summary_stats_dir") {
+
+        when {
+            process {
+                """
+                input[0] = Channel.of(tuple(
+                    'Y1',
+                    'regenie',
+                    file("$projectDir/tests/input/magma/sumstats/trait1.tsv")
+                ))
+
+                input[1] = "$outputDir/summary_stats"
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            with(process.out.linked_sumstats) {
+                assert size() == 1
+                def linked = path(get(0).get(1))
+                assert linked.exists()
+                assert java.nio.file.Files.isSymbolicLink(linked)
+            }
+        }
+    }
+}
