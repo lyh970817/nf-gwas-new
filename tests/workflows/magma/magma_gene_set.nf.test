@@ -1,0 +1,36 @@
+nextflow_workflow {
+
+    name "Test MAGMA_GENE_SET"
+    script "workflows/magma/magma_gene_set.nf"
+    workflow "MAGMA_GENE_SET"
+
+    test("Should run MAGMA gene-set workflow") {
+
+        when {
+            params {
+                pubDir = "$outputDir/results"
+                magma_set_model = null
+                magma_set_extra_args = null
+            }
+            workflow {
+                """
+                input[0] = Channel.of(tuple(
+                    'trait_external',
+                    file("$projectDir/tests/input/magma/gene_results/trait_external.genes.raw")
+                ))
+                input[1] = file("$projectDir/tests/input/magma/geneset/set_annot.sets.annot")
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with(workflow.out.geneset_results) {
+                assert size() == 1
+                def outFile = path(get(0).get(1))
+                assert outFile.exists()
+                assert outFile.text.contains('VARIABLE')
+            }
+        }
+    }
+}

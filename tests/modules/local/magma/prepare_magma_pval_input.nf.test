@@ -1,0 +1,66 @@
+nextflow_process {
+
+    name "Test Process PREPARE_MAGMA_PVAL_INPUT"
+    script "modules/local/magma/prepare_magma_pval_input.nf"
+    process "PREPARE_MAGMA_PVAL_INPUT"
+
+    test("Should pass through p-value summary statistics") {
+
+        when {
+            params {
+                sumstats_log10p_col = null
+                sumstats_p_col = 'P'
+            }
+            process {
+                """
+                input[0] = Channel.of(tuple(
+                    'trait1',
+                    file("$projectDir/tests/input/magma/sumstats/trait1.tsv")
+                ))
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.trace.tasks().size() == 1
+            with(process.out.magma_pval_input) {
+                assert size() == 1
+                def outputFile = path(get(0).get(1))
+                assert outputFile.exists()
+                def lines = outputFile.readLines()
+                assert lines[0].contains('SNP')
+                assert lines[1].contains('0.05')
+            }
+        }
+    }
+
+    test("Should convert LOG10P to P when sumstats_log10p_col is provided") {
+
+        when {
+            params {
+                sumstats_log10p_col = 'LOG10P'
+                sumstats_p_col = 'P'
+            }
+            process {
+                """
+                input[0] = Channel.of(tuple(
+                    'trait_log10',
+                    file("$projectDir/tests/input/magma/sumstats/trait_log10.tsv")
+                ))
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            with(process.out.magma_pval_input) {
+                assert size() == 1
+                def outputFile = path(get(0).get(1))
+                def lines = outputFile.readLines()
+                assert lines[0].contains('P')
+                assert lines[1].contains('0.05')
+            }
+        }
+    }
+}

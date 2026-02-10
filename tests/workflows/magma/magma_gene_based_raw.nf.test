@@ -1,0 +1,50 @@
+nextflow_workflow {
+
+    name "Test MAGMA_GENE_BASED_RAW"
+    script "workflows/magma/magma_gene_based_raw.nf"
+    workflow "MAGMA_GENE_BASED_RAW"
+
+    test("Should run MAGMA raw gene workflow with generated annotation") {
+
+        when {
+            params {
+                pubDir = "$outputDir/results"
+                covariates_columns = 'V2,V3'
+                magma_window_up_kb = 35
+                magma_window_down_kb = 10
+                magma_gene_model = null
+                magma_raw_extra_args = null
+            }
+            workflow {
+                """
+                input[0] = Channel.of(tuple(
+                    'Y1',
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.txt"),
+                    false
+                ))
+
+                input[1] = Channel.of(tuple(
+                    'raw',
+                    file("$projectDir/tests/input/magma/ref.bed"),
+                    file("$projectDir/tests/input/magma/ref.bim"),
+                    file("$projectDir/tests/input/magma/ref.fam")
+                ))
+
+                input[2] = []
+                input[3] = file("$projectDir/tests/input/magma/genes.loc")
+                input[4] = file("$projectDir/tests/input/covariates.txt")
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            with(workflow.out.gene_results) {
+                assert size() == 1
+            }
+            with(workflow.out.gene_results_raw) {
+                assert size() == 1
+            }
+        }
+    }
+}

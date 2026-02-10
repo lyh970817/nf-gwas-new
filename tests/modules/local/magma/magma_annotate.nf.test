@@ -1,0 +1,37 @@
+nextflow_process {
+
+    name "Test Process MAGMA_ANNOTATE"
+    script "modules/local/magma/magma_annotate.nf"
+    process "MAGMA_ANNOTATE"
+
+    test("Should create gene annotation file") {
+
+        when {
+            params {
+                pubDir = "$outputDir/results"
+                magma_window_up_kb = 35
+                magma_window_down_kb = 10
+            }
+            process {
+                """
+                input[0] = Channel.of(tuple(
+                    'ref',
+                    file("$projectDir/tests/input/magma/ref.bed"),
+                    file("$projectDir/tests/input/magma/ref.bim"),
+                    file("$projectDir/tests/input/magma/ref.fam")
+                ))
+                input[1] = file("$projectDir/tests/input/magma/genes.loc")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            with(process.out.gene_annotation) {
+                assert size() == 1
+                def annotFile = path(get(0))
+                assert annotFile.exists()
+            }
+        }
+    }
+}

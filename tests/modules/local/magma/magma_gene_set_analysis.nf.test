@@ -1,0 +1,36 @@
+nextflow_process {
+
+    name "Test Process MAGMA_GENE_SET_ANALYSIS"
+    script "modules/local/magma/magma_gene_set_analysis.nf"
+    process "MAGMA_GENE_SET_ANALYSIS"
+
+    test("Should run MAGMA gene-set analysis and emit set outputs") {
+
+        when {
+            params {
+                pubDir = "$outputDir/results"
+                magma_set_model = null
+                magma_set_extra_args = null
+            }
+            process {
+                """
+                input[0] = Channel.of(tuple(
+                    'trait_external',
+                    file("$projectDir/tests/input/magma/gene_results/trait_external.genes.raw")
+                ))
+                input[1] = file("$projectDir/tests/input/magma/geneset/set_annot.sets.annot")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            with(process.out.geneset_results) {
+                assert size() == 1
+                def gsaOut = path(get(0).get(1))
+                assert gsaOut.exists()
+                assert gsaOut.text.contains('VARIABLE')
+            }
+        }
+    }
+}

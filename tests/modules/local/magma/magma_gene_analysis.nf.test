@@ -1,0 +1,50 @@
+nextflow_process {
+
+    name "Test Process MAGMA_GENE_ANALYSIS"
+    script "modules/local/magma/magma_gene_analysis.nf"
+    process "MAGMA_GENE_ANALYSIS"
+
+    test("Should run MAGMA gene analysis and emit gene outputs") {
+
+        when {
+            params {
+                pubDir = "$outputDir/results"
+                sumstats_snp_col = 'SNP'
+                sumstats_p_col = 'P'
+                sumstats_n = 500
+                sumstats_n_col = null
+                magma_gene_model = null
+                magma_gene_extra_args = null
+            }
+            process {
+                """
+                input[0] = Channel.of(tuple(
+                    'trait1',
+                    file("$projectDir/tests/input/magma/sumstats/trait1.tsv"),
+                    'ref',
+                    file("$projectDir/tests/input/magma/ref.bed"),
+                    file("$projectDir/tests/input/magma/ref.bim"),
+                    file("$projectDir/tests/input/magma/ref.fam"),
+                    file("$projectDir/tests/input/magma/mock.genes.annot")
+                ))
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            with(process.out.gene_results) {
+                assert size() == 1
+                def geneOut = path(get(0).get(1))
+                assert geneOut.exists()
+                assert geneOut.text.contains('GENE')
+            }
+            with(process.out.gene_results_raw) {
+                assert size() == 1
+                def rawOut = path(get(0).get(1))
+                assert rawOut.exists()
+                assert rawOut.text.contains('GENE1')
+            }
+        }
+    }
+}
