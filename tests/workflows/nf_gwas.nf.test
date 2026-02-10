@@ -1,0 +1,617 @@
+nextflow_workflow {
+
+    name "Test Workflow NF_GWAS"
+    script "workflows/nf_gwas.nf"
+    workflow "NF_GWAS"
+
+    test("NF_GWAS: GCTA GREML skips GRM computation when precomputed dense GRM exists") {
+
+        tag "nf_gwas"
+        tag "grm_branching"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+
+                run_assoc_regenie                 = false
+                run_assoc_fastgwa                 = false
+                run_assoc_kvik                    = false
+                run_h2_gcta_grm                   = false
+                run_h2_ldak_grm                   = false
+                run_h2_gcta_greml                 = true
+                run_h2_gcta_greml_ldms            = false
+                run_h2_bolt_lmm_reml              = false
+                run_h2_ldak_reml                  = false
+                run_h2_ldak_he                    = false
+                run_h2_ldak_pcgc                  = false
+                run_h2_ldak_qc                    = false
+                run_h2_ldak_sumher                = false
+                run_h2_ldsc_h2                    = false
+                run_rg_ldak_sumcors               = false
+                run_rg_ldsc_rg                    = false
+                run_rg_gcta_bivariate_greml       = false
+                run_rg_gcta_bivariate_greml_ldms  = false
+                run_magma_gene_based              = false
+                run_magma_gene_set                = false
+                run_lava_local_rg                 = false
+                run_lcv_causal                    = false
+
+                phenotypes_dir                    = "$projectDir/tests/input/phenotypes/single"
+                covariates_filename               = "$projectDir/tests/input/covariates.txt"
+
+                imputed_genotyped_files_vcf       = null
+                imputed_genotyped_files_plink1    = "$projectDir/tests/input/chr*.vcf.{bed,bim,fam}"
+                imputed_genotyped_files_plink2    = "$projectDir/tests/input/chr*.vcf.{pgen,psam,pvar}"
+
+                gcta_grm_prefix                   = "$projectDir/tests/input/gcta/remove_related_subjects/gcta_grm_0"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.grm_results) {
+                assert size() == 0
+            }
+
+            with(workflow.out.heritability_results) {
+                assert size() >= 1
+            }
+
+            def taskNames = workflow.trace.tasks()*.name
+            assert taskNames.any { it.contains(":GCTA_REML_ANALYSIS:RUN_REML") }
+            assert taskNames.every { !it.contains(":GCTA_GREML:GCTA_GRM:") }
+        }
+    }
+
+    test("NF_GWAS: GCTA GREML computes GRM when precomputed dense GRM is missing") {
+
+        tag "nf_gwas"
+        tag "grm_branching"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+
+                run_assoc_regenie                 = false
+                run_assoc_fastgwa                 = false
+                run_assoc_kvik                    = false
+                run_h2_gcta_grm                   = false
+                run_h2_ldak_grm                   = false
+                run_h2_gcta_greml                 = true
+                run_h2_gcta_greml_ldms            = false
+                run_h2_bolt_lmm_reml              = false
+                run_h2_ldak_reml                  = false
+                run_h2_ldak_he                    = false
+                run_h2_ldak_pcgc                  = false
+                run_h2_ldak_qc                    = false
+                run_h2_ldak_sumher                = false
+                run_h2_ldsc_h2                    = false
+                run_rg_ldak_sumcors               = false
+                run_rg_ldsc_rg                    = false
+                run_rg_gcta_bivariate_greml       = false
+                run_rg_gcta_bivariate_greml_ldms  = false
+                run_magma_gene_based              = false
+                run_magma_gene_set                = false
+                run_lava_local_rg                 = false
+                run_lcv_causal                    = false
+
+                phenotypes_dir                    = "$projectDir/tests/input/phenotypes/single"
+                covariates_filename               = "$projectDir/tests/input/covariates.txt"
+
+                imputed_genotyped_files_vcf       = null
+                imputed_genotyped_files_plink1    = "$projectDir/tests/input/chr*.vcf.{bed,bim,fam}"
+                imputed_genotyped_files_plink2    = "$projectDir/tests/input/chr*.vcf.{pgen,psam,pvar}"
+
+                gcta_grm_prefix                   = "$outputDir/missing_gcta_dense/gcta_grm_0_adj_unrel05"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.grm_results) {
+                assert size() >= 1
+            }
+
+            with(workflow.out.heritability_results) {
+                assert size() >= 1
+            }
+
+            def taskNames = workflow.trace.tasks()*.name
+            assert taskNames.any { it.contains(":GCTA_GREML:GCTA_GRM:MAKE_GRM_PART") }
+            assert taskNames.any { it.contains(":GCTA_GREML:GCTA_REML_ANALYSIS:RUN_REML") }
+        }
+    }
+
+    test("NF_GWAS: FastGWA skips sparse GRM computation when sparse GRM exists") {
+
+        tag "nf_gwas"
+        tag "grm_branching"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+
+                run_assoc_regenie                 = false
+                run_assoc_fastgwa                 = true
+                run_assoc_kvik                    = false
+                run_h2_gcta_grm                   = false
+                run_h2_ldak_grm                   = false
+                run_h2_gcta_greml                 = false
+                run_h2_gcta_greml_ldms            = false
+                run_h2_bolt_lmm_reml              = false
+                run_h2_ldak_reml                  = false
+                run_h2_ldak_he                    = false
+                run_h2_ldak_pcgc                  = false
+                run_h2_ldak_qc                    = false
+                run_h2_ldak_sumher                = false
+                run_h2_ldsc_h2                    = false
+                run_rg_ldak_sumcors               = false
+                run_rg_ldsc_rg                    = false
+                run_rg_gcta_bivariate_greml       = false
+                run_rg_gcta_bivariate_greml_ldms  = false
+                run_magma_gene_based              = false
+                run_magma_gene_set                = false
+                run_lava_local_rg                 = false
+                run_lcv_causal                    = false
+
+                phenotypes_dir                    = "$projectDir/tests/input/phenotypes/single"
+                covariates_filename               = "$projectDir/tests/input/covariates.txt"
+
+                imputed_genotyped_files_vcf       = null
+                imputed_genotyped_files_plink1    = "$projectDir/tests/input/chr*.vcf.{bed,bim,fam}"
+                imputed_genotyped_files_plink2    = "$projectDir/tests/input/chr*.vcf.{pgen,psam,pvar}"
+
+                gcta_sparse_grm_prefix            = "$projectDir/tests/input/gcta/run_fastgwa_mlm/gcta_grm_0_sp"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.association_results) {
+                assert size() >= 1
+            }
+
+            def grmLinksDir = new File("$outputDir/results/grm_links")
+            def linkedCount = grmLinksDir.exists()
+                ? (grmLinksDir.listFiles()?.findAll { it.name.endsWith('.linked') }?.size() ?: 0)
+                : 0
+            assert linkedCount == 0
+
+            def taskNames = workflow.trace.tasks()*.name
+            assert taskNames.any { it.contains(":GCTA_FASTGWA_ANALYSIS:RUN_FASTGWA_MLM") }
+            assert taskNames.every { !it.contains(":GCTA_FASTGWA:GCTA_GRM:") }
+            assert taskNames.every { !it.contains(":SYNC_GCTA_SPARSE_GRM_LINKS") }
+        }
+    }
+
+    test("NF_GWAS: FastGWA computes sparse GRM and links it when sparse GRM is missing") {
+
+        tag "nf_gwas"
+        tag "grm_branching"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+
+                run_assoc_regenie                 = false
+                run_assoc_fastgwa                 = true
+                run_assoc_kvik                    = false
+                run_h2_gcta_grm                   = false
+                run_h2_ldak_grm                   = false
+                run_h2_gcta_greml                 = false
+                run_h2_gcta_greml_ldms            = false
+                run_h2_bolt_lmm_reml              = false
+                run_h2_ldak_reml                  = false
+                run_h2_ldak_he                    = false
+                run_h2_ldak_pcgc                  = false
+                run_h2_ldak_qc                    = false
+                run_h2_ldak_sumher                = false
+                run_h2_ldsc_h2                    = false
+                run_rg_ldak_sumcors               = false
+                run_rg_ldsc_rg                    = false
+                run_rg_gcta_bivariate_greml       = false
+                run_rg_gcta_bivariate_greml_ldms  = false
+                run_magma_gene_based              = false
+                run_magma_gene_set                = false
+                run_lava_local_rg                 = false
+                run_lcv_causal                    = false
+
+                phenotypes_dir                    = "$projectDir/tests/input/phenotypes/single"
+                covariates_filename               = "$projectDir/tests/input/covariates.txt"
+
+                imputed_genotyped_files_vcf       = null
+                imputed_genotyped_files_plink1    = "$projectDir/tests/input/chr*.vcf.{bed,bim,fam}"
+                imputed_genotyped_files_plink2    = "$projectDir/tests/input/chr*.vcf.{pgen,psam,pvar}"
+
+                gcta_sparse_grm_prefix            = "$outputDir/missing_gcta_sparse/gcta_grm_0_adj_unrel05_sp"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.association_results) {
+                assert size() >= 1
+            }
+
+            def grmLinksDir = new File("$outputDir/results/grm_links")
+            def linkedCount = grmLinksDir.exists()
+                ? (grmLinksDir.listFiles()?.findAll { it.name.endsWith('.linked') }?.size() ?: 0)
+                : 0
+            assert linkedCount >= 1
+
+            def taskNames = workflow.trace.tasks()*.name
+            assert taskNames.any { it.contains(":GCTA_FASTGWA:GCTA_GRM:MAKE_BK_SPARSE") }
+            assert taskNames.any { it.contains(":SYNC_GCTA_SPARSE_GRM_LINKS") }
+            assert taskNames.any { it.contains(":GCTA_FASTGWA:GCTA_FASTGWA_ANALYSIS:RUN_FASTGWA_MLM") }
+        }
+    }
+
+    test("NF_GWAS: LDAK HE skips GRM computation when adjusted GRM exists") {
+
+        tag "nf_gwas"
+        tag "grm_branching"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+
+                run_assoc_regenie                 = false
+                run_assoc_fastgwa                 = false
+                run_assoc_kvik                    = false
+                run_h2_gcta_grm                   = false
+                run_h2_ldak_grm                   = false
+                run_h2_gcta_greml                 = false
+                run_h2_gcta_greml_ldms            = false
+                run_h2_bolt_lmm_reml              = false
+                run_h2_ldak_reml                  = false
+                run_h2_ldak_he                    = true
+                run_h2_ldak_pcgc                  = false
+                run_h2_ldak_qc                    = false
+                run_h2_ldak_sumher                = false
+                run_h2_ldsc_h2                    = false
+                run_rg_ldak_sumcors               = false
+                run_rg_ldsc_rg                    = false
+                run_rg_gcta_bivariate_greml       = false
+                run_rg_gcta_bivariate_greml_ldms  = false
+                run_magma_gene_based              = false
+                run_magma_gene_set                = false
+                run_lava_local_rg                 = false
+                run_lcv_causal                    = false
+
+                phenotypes_dir                    = "$projectDir/tests/input/phenotypes/single"
+                covariates_filename               = "$projectDir/tests/input/covariates.txt"
+
+                imputed_genotyped_files_vcf       = null
+                imputed_genotyped_files_plink1    = "$projectDir/tests/input/chr*.vcf.{bed,bim,fam}"
+                imputed_genotyped_files_plink2    = "$projectDir/tests/input/chr*.vcf.{pgen,psam,pvar}"
+
+                ldak_adjusted_grm_prefix          = "$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.grm_results) {
+                assert size() == 0
+            }
+
+            with(workflow.out.heritability_results) {
+                assert size() >= 1
+            }
+
+            def taskNames = workflow.trace.tasks()*.name
+            assert taskNames.any { it.contains(":LDAK_HE_ANALYSIS:LDAK_HE") }
+            assert taskNames.every { !it.contains(":LDAK_HE_WORKFLOW:LDAK_GRM:") }
+        }
+    }
+
+    test("NF_GWAS: LDAK HE computes GRM when adjusted and base GRMs are missing") {
+
+        tag "nf_gwas"
+        tag "grm_branching"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+
+                run_assoc_regenie                 = false
+                run_assoc_fastgwa                 = false
+                run_assoc_kvik                    = false
+                run_h2_gcta_grm                   = false
+                run_h2_ldak_grm                   = false
+                run_h2_gcta_greml                 = false
+                run_h2_gcta_greml_ldms            = false
+                run_h2_bolt_lmm_reml              = false
+                run_h2_ldak_reml                  = false
+                run_h2_ldak_he                    = true
+                run_h2_ldak_pcgc                  = false
+                run_h2_ldak_qc                    = false
+                run_h2_ldak_sumher                = false
+                run_h2_ldsc_h2                    = false
+                run_rg_ldak_sumcors               = false
+                run_rg_ldsc_rg                    = false
+                run_rg_gcta_bivariate_greml       = false
+                run_rg_gcta_bivariate_greml_ldms  = false
+                run_magma_gene_based              = false
+                run_magma_gene_set                = false
+                run_lava_local_rg                 = false
+                run_lcv_causal                    = false
+
+                phenotypes_dir                    = "$projectDir/tests/input/phenotypes/single"
+                covariates_filename               = "$projectDir/tests/input/covariates.txt"
+
+                imputed_genotyped_files_vcf       = null
+                imputed_genotyped_files_plink1    = "$projectDir/tests/input/chr*.vcf.{bed,bim,fam}"
+                imputed_genotyped_files_plink2    = "$projectDir/tests/input/chr*.vcf.{pgen,psam,pvar}"
+
+                ldak_adjusted_grm_prefix          = "$outputDir/missing_ldak_adjusted/ldak_grm_adj"
+                ldak_grm_prefix                   = "$outputDir/missing_ldak_base/ldak_grm"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.grm_results) {
+                assert size() >= 1
+            }
+
+            with(workflow.out.heritability_results) {
+                assert size() >= 1
+            }
+
+            def taskNames = workflow.trace.tasks()*.name
+            assert taskNames.any { it.contains(":LDAK_HE_WORKFLOW:LDAK_GRM:") }
+            assert taskNames.any { it.contains(":LDAK_HE_WORKFLOW:LDAK_HE_ANALYSIS:LDAK_HE") }
+        }
+    }
+
+    test("NF_GWAS: GCTA GREML-LDMS skips GRM computation when precomputed MGRM exists") {
+
+        tag "nf_gwas"
+        tag "grm_branching"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+
+                run_assoc_regenie                 = false
+                run_assoc_fastgwa                 = false
+                run_assoc_kvik                    = false
+                run_h2_gcta_grm                   = false
+                run_h2_ldak_grm                   = false
+                run_h2_gcta_greml                 = false
+                run_h2_gcta_greml_ldms            = true
+                run_h2_bolt_lmm_reml              = false
+                run_h2_ldak_reml                  = false
+                run_h2_ldak_he                    = false
+                run_h2_ldak_pcgc                  = false
+                run_h2_ldak_qc                    = false
+                run_h2_ldak_sumher                = false
+                run_h2_ldsc_h2                    = false
+                run_rg_ldak_sumcors               = false
+                run_rg_ldsc_rg                    = false
+                run_rg_gcta_bivariate_greml       = false
+                run_rg_gcta_bivariate_greml_ldms  = false
+                run_magma_gene_based              = false
+                run_magma_gene_set                = false
+                run_lava_local_rg                 = false
+                run_lcv_causal                    = false
+
+                phenotypes_dir                    = "$projectDir/tests/input/phenotypes/single"
+                covariates_filename               = "$projectDir/tests/input/covariates.txt"
+
+                imputed_genotyped_files_vcf       = null
+                imputed_genotyped_files_plink1    = "$projectDir/tests/input/chr*.vcf.{bed,bim,fam}"
+                imputed_genotyped_files_plink2    = "$projectDir/tests/input/chr*.vcf.{pgen,psam,pvar}"
+
+                gcta_mgrm_file                    = "$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm.mgrm"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.grm_results) {
+                assert size() == 0
+            }
+
+            with(workflow.out.heritability_results) {
+                assert size() >= 1
+            }
+
+            def taskNames = workflow.trace.tasks()*.name
+            assert taskNames.any { it.contains(":GCTA_REML_LDMS_ANALYSIS:RUN_REML_LDMS") }
+            assert taskNames.every { !it.contains(":GCTA_GREML_LDMS:GCTA_GRM_LDMS:") }
+        }
+    }
+
+    test("NF_GWAS: GCTA GREML-LDMS computes GRMs when precomputed MGRM is missing") {
+
+        tag "nf_gwas"
+        tag "grm_branching"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+
+                run_assoc_regenie                 = false
+                run_assoc_fastgwa                 = false
+                run_assoc_kvik                    = false
+                run_h2_gcta_grm                   = false
+                run_h2_ldak_grm                   = false
+                run_h2_gcta_greml                 = false
+                run_h2_gcta_greml_ldms            = true
+                run_h2_bolt_lmm_reml              = false
+                run_h2_ldak_reml                  = false
+                run_h2_ldak_he                    = false
+                run_h2_ldak_pcgc                  = false
+                run_h2_ldak_qc                    = false
+                run_h2_ldak_sumher                = false
+                run_h2_ldsc_h2                    = false
+                run_rg_ldak_sumcors               = false
+                run_rg_ldsc_rg                    = false
+                run_rg_gcta_bivariate_greml       = false
+                run_rg_gcta_bivariate_greml_ldms  = false
+                run_magma_gene_based              = false
+                run_magma_gene_set                = false
+                run_lava_local_rg                 = false
+                run_lcv_causal                    = false
+
+                phenotypes_dir                    = "$projectDir/tests/input/phenotypes/single"
+                covariates_filename               = "$projectDir/tests/input/covariates.txt"
+
+                imputed_genotyped_files_vcf       = null
+                imputed_genotyped_files_plink1    = "$projectDir/tests/input/chr*.vcf.{bed,bim,fam}"
+                imputed_genotyped_files_plink2    = "$projectDir/tests/input/chr*.vcf.{pgen,psam,pvar}"
+
+                gcta_mgrm_file                    = "$outputDir/missing_gcta_ldms/gcta_grm_ldms.mgrm"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.grm_results) {
+                assert size() >= 1
+            }
+
+            with(workflow.out.heritability_results) {
+                assert size() >= 1
+            }
+
+            def taskNames = workflow.trace.tasks()*.name
+            assert taskNames.any { it.contains(":GCTA_GREML_LDMS:GCTA_GRM_LDMS:") }
+            assert taskNames.any { it.contains(":SYNC_GCTA_GRM_LDMS_LINKS") }
+            assert taskNames.any { it.contains(":GCTA_GREML_LDMS:GCTA_REML_LDMS_ANALYSIS:RUN_REML_LDMS") }
+        }
+    }
+
+    test("NF_GWAS: LDAK PCGC skips GRM computation when adjusted GRM exists") {
+
+        tag "nf_gwas"
+        tag "grm_branching"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+
+                run_assoc_regenie                 = false
+                run_assoc_fastgwa                 = false
+                run_assoc_kvik                    = false
+                run_h2_gcta_grm                   = false
+                run_h2_ldak_grm                   = false
+                run_h2_gcta_greml                 = false
+                run_h2_gcta_greml_ldms            = false
+                run_h2_bolt_lmm_reml              = false
+                run_h2_ldak_reml                  = false
+                run_h2_ldak_he                    = false
+                run_h2_ldak_pcgc                  = true
+                run_h2_ldak_qc                    = false
+                run_h2_ldak_sumher                = false
+                run_h2_ldsc_h2                    = false
+                run_rg_ldak_sumcors               = false
+                run_rg_ldsc_rg                    = false
+                run_rg_gcta_bivariate_greml       = false
+                run_rg_gcta_bivariate_greml_ldms  = false
+                run_magma_gene_based              = false
+                run_magma_gene_set                = false
+                run_lava_local_rg                 = false
+                run_lcv_causal                    = false
+
+                phenotypes_dir                    = "$projectDir/tests/input/phenotypes/ldak_bin"
+                covariates_filename               = "$projectDir/tests/input/covariates.txt"
+                ldak_pcgc_prevalence              = 0.2
+
+                imputed_genotyped_files_vcf       = null
+                imputed_genotyped_files_plink1    = "$projectDir/tests/input/chr*.vcf.{bed,bim,fam}"
+                imputed_genotyped_files_plink2    = "$projectDir/tests/input/chr*.vcf.{pgen,psam,pvar}"
+
+                ldak_adjusted_grm_prefix          = "$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.grm_results) {
+                assert size() == 0
+            }
+
+            with(workflow.out.heritability_results) {
+                assert size() >= 1
+            }
+
+            def taskNames = workflow.trace.tasks()*.name
+            assert taskNames.any { it.contains(":LDAK_PCGC_ANALYSIS:LDAK_PCGC") }
+            assert taskNames.every { !it.contains(":LDAK_PCGC_WORKFLOW:LDAK_GRM:") }
+        }
+    }
+
+    test("NF_GWAS: LDAK PCGC computes GRM when adjusted and base GRMs are missing") {
+
+        tag "nf_gwas"
+        tag "grm_branching"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+
+                run_assoc_regenie                 = false
+                run_assoc_fastgwa                 = false
+                run_assoc_kvik                    = false
+                run_h2_gcta_grm                   = false
+                run_h2_ldak_grm                   = false
+                run_h2_gcta_greml                 = false
+                run_h2_gcta_greml_ldms            = false
+                run_h2_bolt_lmm_reml              = false
+                run_h2_ldak_reml                  = false
+                run_h2_ldak_he                    = false
+                run_h2_ldak_pcgc                  = true
+                run_h2_ldak_qc                    = false
+                run_h2_ldak_sumher                = false
+                run_h2_ldsc_h2                    = false
+                run_rg_ldak_sumcors               = false
+                run_rg_ldsc_rg                    = false
+                run_rg_gcta_bivariate_greml       = false
+                run_rg_gcta_bivariate_greml_ldms  = false
+                run_magma_gene_based              = false
+                run_magma_gene_set                = false
+                run_lava_local_rg                 = false
+                run_lcv_causal                    = false
+
+                phenotypes_dir                    = "$projectDir/tests/input/phenotypes/ldak_bin"
+                covariates_filename               = "$projectDir/tests/input/covariates.txt"
+                ldak_pcgc_prevalence              = 0.2
+
+                imputed_genotyped_files_vcf       = null
+                imputed_genotyped_files_plink1    = "$projectDir/tests/input/chr*.vcf.{bed,bim,fam}"
+                imputed_genotyped_files_plink2    = "$projectDir/tests/input/chr*.vcf.{pgen,psam,pvar}"
+
+                ldak_adjusted_grm_prefix          = "$outputDir/missing_ldak_pcgc_adjusted/ldak_grm_adj"
+                ldak_grm_prefix                   = "$outputDir/missing_ldak_pcgc_base/ldak_grm"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.grm_results) {
+                assert size() >= 1
+            }
+
+            with(workflow.out.heritability_results) {
+                assert size() >= 1
+            }
+
+            def taskNames = workflow.trace.tasks()*.name
+            assert taskNames.any { it.contains(":LDAK_PCGC_WORKFLOW:LDAK_GRM:") }
+            assert taskNames.any { it.contains(":LDAK_PCGC_WORKFLOW:LDAK_PCGC_ANALYSIS:LDAK_PCGC") }
+        }
+    }
+}

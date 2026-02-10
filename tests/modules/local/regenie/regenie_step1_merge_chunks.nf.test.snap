@@ -1,0 +1,17 @@
+{
+    "Should handle merge with covariates": {
+        "content": [
+            [
+                "regenie_step1_out_1.loco.gz:md5,e205bcd5127499f614c4f1f8e9cfca18"
+            ],
+            [
+                "regenie_step1_out_pred.list:md5,ea5ce3827f8c93026062fb588991912a"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2026-02-03T21:42:21.329551"
+    }
+}

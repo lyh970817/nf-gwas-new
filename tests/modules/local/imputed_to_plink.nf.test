@@ -10,8 +10,8 @@ nextflow_process {
             process {
                 """
                 input[0] = Channel.of(
-                    tuple(1, file("$projectDir/tests/input/chr01.vcf.gz")),
-                    tuple(2, file("$projectDir/tests/input/chr02.vcf.gz"))
+                    tuple(1, file("$projectDir/tests/input/imputed_to_plink/chr01.vcf.gz")),
+                    tuple(2, file("$projectDir/tests/input/imputed_to_plink/chr02.vcf.gz"))
                 )
                 """
             }
@@ -24,18 +24,18 @@ nextflow_process {
                 assert imputed_plink.size() == 2
                 with(imputed_plink.get(0)){
                     assert get(0) == 1
-                    assert get(1) == "chr01.vcf"
-                    assert get(2) ==~ ".*/chr01.vcf.bed"
-                    assert get(3) ==~ ".*/chr01.vcf.bim"
-                    assert get(4) ==~ ".*/chr01.vcf.fam"
+                    assert get(1) == "chr01"
+                    assert get(2) ==~ ".*/chr01.bed"
+                    assert get(3) ==~ ".*/chr01.bim"
+                    assert get(4) ==~ ".*/chr01.fam"
                     assert file(get(4)).readLines().size() == 500
                 }
                 with(imputed_plink.get(1)){
                     assert get(0) == 2
-                    assert get(1) == "chr02.vcf"
-                    assert get(2) ==~ ".*/chr02.vcf.bed"
-                    assert get(3) ==~ ".*/chr02.vcf.bim"
-                    assert get(4) ==~ ".*/chr02.vcf.fam"
+                    assert get(1) == "chr02"
+                    assert get(2) ==~ ".*/chr02.bed"
+                    assert get(3) ==~ ".*/chr02.bim"
+                    assert get(4) ==~ ".*/chr02.fam"
                     assert file(get(4)).readLines().size() == 500
                 }
             }

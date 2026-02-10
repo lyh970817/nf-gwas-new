@@ -2,37 +2,85 @@
     "Should perform FastGWA with quantitative and categorical covariates": {
         "content": [
             [
-                "chr01.vcf_phenotype_single.noheader.fastGWA:md5,49c65037f8c62d4dcf90b007b82c9399"
+                [
+                    "0",
+                    "gcta_grm_0_adj_unrel05",
+                    "gcta_grm_0_adj_unrel05.grm.id:md5,78d2027a9e05085ca53d59f8578bf968",
+                    "gcta_grm_0_adj_unrel05.grm.bin:md5,338c202e279369908fb1e65350a2d7eb",
+                    "gcta_grm_0_adj_unrel05.grm.N.bin:md5,0a8ce2f24d85934e6b1bdb09ae4b0bf1"
+                ]
+            ],
+            [
+                [
+                    "gcta_grm_0_adj_unrel05_sp.grm.id:md5,78d2027a9e05085ca53d59f8578bf968",
+                    "gcta_grm_0_adj_unrel05_sp.grm.sp:md5,94842987b42d59c8c160f94f7902879c"
+                ]
+            ],
+            [
+                "chr01.vcf_Y1.fastGWA:md5,e79603aede3425757516c20781fe7ae5",
+                "chr02.vcf_Y1.fastGWA:md5,5bb8b70184c111ebbf1462fb6587995f"
             ]
         ],
         "meta": {
             "nf-test": "0.9.3",
             "nextflow": "24.08.0"
         },
-        "timestamp": "2025-12-15T13:48:58.499262"
+        "timestamp": "2026-02-03T19:45:12.569289"
     },
     "Should perform FastGWA association testing without covariates": {
         "content": [
             [
-
+                [
+                    "0",
+                    "gcta_grm_0_adj_unrel05",
+                    "gcta_grm_0_adj_unrel05.grm.id:md5,78d2027a9e05085ca53d59f8578bf968",
+                    "gcta_grm_0_adj_unrel05.grm.bin:md5,338c202e279369908fb1e65350a2d7eb",
+                    "gcta_grm_0_adj_unrel05.grm.N.bin:md5,0a8ce2f24d85934e6b1bdb09ae4b0bf1"
+                ]
+            ],
+            [
+                [
+                    "gcta_grm_0_adj_unrel05_sp.grm.id:md5,78d2027a9e05085ca53d59f8578bf968",
+                    "gcta_grm_0_adj_unrel05_sp.grm.sp:md5,94842987b42d59c8c160f94f7902879c"
+                ]
+            ],
+            [
+                "chr01.vcf_Y1.fastGWA:md5,b6d66d0bdef676bd8768b936c33a1ad0",
+                "chr02.vcf_Y1.fastGWA:md5,5a9c715b4ef6eff23d9419275cf7d753"
             ]
         ],
         "meta": {
             "nf-test": "0.9.3",
             "nextflow": "24.08.0"
         },
-        "timestamp": "2025-12-15T13:36:33.31602"
+        "timestamp": "2026-02-03T19:45:07.06784"
     },
     "Should perform FastGWA with different sparse cutoff": {
         "content": [
             [
-
+                [
+                    "0",
+                    "gcta_grm_0_adj_unrel05",
+                    "gcta_grm_0_adj_unrel05.grm.id:md5,78d2027a9e05085ca53d59f8578bf968",
+                    "gcta_grm_0_adj_unrel05.grm.bin:md5,338c202e279369908fb1e65350a2d7eb",
+                    "gcta_grm_0_adj_unrel05.grm.N.bin:md5,0a8ce2f24d85934e6b1bdb09ae4b0bf1"
+                ]
+            ],
+            [
+                [
+                    "gcta_grm_0_adj_unrel05_sp.grm.id:md5,78d2027a9e05085ca53d59f8578bf968",
+                    "gcta_grm_0_adj_unrel05_sp.grm.sp:md5,9bd2ae7a91e4911d77adad09443f2788"
+                ]
+            ],
+            [
+                "chr01.vcf_Y1.fastGWA:md5,b6d66d0bdef676bd8768b936c33a1ad0",
+                "chr02.vcf_Y1.fastGWA:md5,5a9c715b4ef6eff23d9419275cf7d753"
             ]
         ],
         "meta": {
             "nf-test": "0.9.3",
             "nextflow": "24.08.0"
         },
-        "timestamp": "2025-12-15T13:53:14.515704"
+        "timestamp": "2026-02-03T19:45:19.378016"
     }
 }

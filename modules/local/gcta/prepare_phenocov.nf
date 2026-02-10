@@ -2,11 +2,11 @@ process PREPARE_PHENOCOV {
     tag "${phenotypes_file.baseName}"
 
     input:
-    path phenotypes_file
+    tuple val(phenotype_name), path(phenotypes_file)
     path covariates_file
 
     output:
-    path "${phenotypes_file.baseName}.noheader.txt", emit: phenotypes_noheader
+    tuple val(phenotype_name), path("${phenotypes_file.baseName}.noheader.txt"), emit: phenotypes_noheader
     path "*.quant.noheader.txt", optional: true, emit: covariates_quant_noheader
     path "*.cat.noheader.txt", optional: true, emit: covariates_cat_noheader
 

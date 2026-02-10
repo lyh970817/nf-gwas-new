@@ -24,7 +24,7 @@ include { LDAK_REML_ANALYSIS } from './ldak_reml_analysis'
 workflow LDAK_REML_WORKFLOW {
     take:
     imputed_plink_ch     // Channel with imputed PLINK files (bed, bim, fam)
-    phenotype_file       // Path to phenotype file
+    phenotype_meta_ch    // Channel: tuple(phenotype_name, phenotype_file, is_binary)
     covariates_file      // Path to covariates file (optional)
     heritability_model   // Heritability model parameter (optional)
 
@@ -40,7 +40,7 @@ workflow LDAK_REML_WORKFLOW {
     LDAK_REML_ANALYSIS(
         LDAK_GRM.out.filtered_grm,  // Use filtered GRM directly (5-tuple)
         [],                          // No keep_file needed
-        phenotype_file,
+        phenotype_meta_ch,
         covariates_file
     )
 

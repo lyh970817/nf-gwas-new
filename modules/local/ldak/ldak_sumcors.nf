@@ -14,8 +14,6 @@ process LDAK_SUMCORS {
 
     script:
     def check_sums = params.ldak_sumcors_check_sums ? "" : "--check-sums NO"
-    def prevalence1 = params.ldak_sumcors_prevalence1 ? "--prevalence ${params.ldak_sumcors_prevalence1}" : ""
-    def prevalence2 = params.ldak_sumcors_prevalence2 ? "--prevalence2 ${params.ldak_sumcors_prevalence2}" : ""
 
     """
     # Run LDAK Sumcors for genetic correlation estimation
@@ -24,8 +22,6 @@ process LDAK_SUMCORS {
         --summary2 ${summary_stats2} \\
         --tagfile ${tagfile} \\
         ${check_sums} \\
-        ${prevalence1} \\
-        ${prevalence2} \\
         --max-threads ${task.cpus}
     """
 }

@@ -3,10 +3,10 @@ process CALC_GENOTYPE_ERROR_T2 {
     publishDir "${params.pubDir}/ldak/genotype_error", mode: 'copy'
 
     input:
-    path he_results
+    tuple val(phenotype_name), path(he_results)
 
     output:
-    path "genotype_error_results.txt", emit: genotype_error_results
+    tuple val(phenotype_name), path { "genotype_error_${phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')}.txt" }, emit: genotype_error_results
 
     script:
     """
@@ -30,5 +30,6 @@ process CALC_GENOTYPE_ERROR_T2 {
 
     # Run the R script to calculate T2 statistic
     calc_genotype_error.R "\$overall_file" "\$within_file" "\$across_file"
+    mv genotype_error_results.txt genotype_error_${phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')}.txt
     """
 }

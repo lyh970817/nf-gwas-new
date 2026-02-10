@@ -4,7 +4,7 @@ process RUN_REML {
 
   input:
   tuple val(snp_group), val(prefix), path(grm_id), path(grm_bin), path(grm_n_bin)
-  path phenotypes_file
+  tuple val(phenotype_name), path(phenotypes_file)
   path qcovariates_file
   path covariates_file
 
@@ -12,7 +12,8 @@ process RUN_REML {
   path "*.hsq", emit: reml_results
 
   script:
-  def out = phenotypes_file.baseName
+  def phenotype_slug = phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')
+  def out = phenotype_slug
   def qcovar_param = qcovariates_file ? "--qcovar ${qcovariates_file}" : ''
   def covar_param = covariates_file ? "--covar ${covariates_file}" : ''
 

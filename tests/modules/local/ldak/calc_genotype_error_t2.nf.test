@@ -11,11 +11,14 @@ nextflow_process {
                 """
                 // HE result files with batch within/across comparisons
                 // These files are produced by LDAK_HE with --subset-prefix and --subset-number
-                input[0] = [
-                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he"),
-                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.within"),
-                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.across")
-                ]
+                input[0] = tuple(
+                    "Y1",
+                    [
+                        file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he"),
+                        file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.within"),
+                        file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.across")
+                    ]
+                )
                 """
             }
         }
@@ -25,10 +28,10 @@ nextflow_process {
 
             with(process.out) {
                 assert genotype_error_results
-                def errorFile = path(genotype_error_results.get(0))
+                def errorFile = path(genotype_error_results.get(0).get(1))
 
                 // Check output file exists
-                assert errorFile.fileName.toString() == "genotype_error_results.txt"
+                assert errorFile.fileName.toString() == "genotype_error_Y1.txt"
                 assert errorFile.size() > 0
 
                 // Check file contains T2 or error statistics
@@ -44,12 +47,15 @@ nextflow_process {
             process {
                 """
                 // Alternative HE results set
-                input[0] = [
-                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he"),
-                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.within"),
-                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.across"),
-                    file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.compare")
-                ]
+                input[0] = tuple(
+                    "Y1",
+                    [
+                        file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he"),
+                        file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.within"),
+                        file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.across"),
+                        file("$projectDir/tests/input/ldak/he_results/he_batch_grm.he.compare")
+                    ]
+                )
                 """
             }
         }
@@ -59,7 +65,7 @@ nextflow_process {
 
             with(process.out) {
                 assert genotype_error_results
-                def errorFile = path(genotype_error_results.get(0))
+                def errorFile = path(genotype_error_results.get(0).get(1))
 
                 assert errorFile.size() > 0
             }

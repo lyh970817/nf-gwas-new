@@ -4,9 +4,8 @@ include { REGENIE_STEP2 } from './regenie_step2'
 workflow REGENIE {
     take:
     genotyped_final_ch
-    phenotypes_file
+    phenotype_meta_ch
     covariates_file_validated
-    condition_list_file
     imputed_plink1_ch
     genotypes_association_format
     skip_predictions
@@ -15,9 +14,8 @@ workflow REGENIE {
     regenie_step1_out_ch = Channel.empty()
     REGENIE_STEP1(
         genotyped_final_ch,
-        phenotypes_file,
-        covariates_file_validated,
-        condition_list_file.collect().ifEmpty([]),
+        phenotype_meta_ch,
+        covariates_file_validated
     )
 
     regenie_step1_out_ch = REGENIE_STEP1.out.regenie_step1_out_ch
@@ -26,9 +24,8 @@ workflow REGENIE {
         regenie_step1_out_ch,
         imputed_plink1_ch,
         genotypes_association_format,
-        phenotypes_file,
-        covariates_file_validated,
-        condition_list_file.collect().ifEmpty([]),
+        phenotype_meta_ch,
+        covariates_file_validated
     )
 
     regenie_step2_out = REGENIE_STEP2.out.regenie_step2_out

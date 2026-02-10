@@ -13,17 +13,17 @@ nextflow_process {
                     tuple(
                         1,
                         "chr01.vcf",
-                        file("$projectDir/tests/input/chr01.vcf.bed"),
-                        file("$projectDir/tests/input/chr01.vcf.bim"),
-                        file("$projectDir/tests/input/chr01.vcf.fam"),
+                        file("$projectDir/tests/input/gcta/calculate_ld_scores/chr01.vcf.bed"),
+                        file("$projectDir/tests/input/gcta/calculate_ld_scores/chr01.vcf.bim"),
+                        file("$projectDir/tests/input/gcta/calculate_ld_scores/chr01.vcf.fam"),
                         null
                     ),
                     tuple(
                         2,
                         "chr02.vcf",
-                        file("$projectDir/tests/input/chr02.vcf.bed"),
-                        file("$projectDir/tests/input/chr02.vcf.bim"),
-                        file("$projectDir/tests/input/chr02.vcf.fam"),
+                        file("$projectDir/tests/input/gcta/calculate_ld_scores/chr02.vcf.bed"),
+                        file("$projectDir/tests/input/gcta/calculate_ld_scores/chr02.vcf.bim"),
+                        file("$projectDir/tests/input/gcta/calculate_ld_scores/chr02.vcf.fam"),
                         null
                     )
                 )

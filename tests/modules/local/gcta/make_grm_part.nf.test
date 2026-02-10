@@ -12,7 +12,7 @@ nextflow_process {
                 input[0] = file("$projectDir/tests/input/gcta/make_grm_part/gcta_grm.mpfile")
                 input[1] = tuple(1, 3, null, [])  // part 1 of 3, no SNP group
                 input[2] = Channel.fromFilePairs(
-                    "$projectDir/tests/input/chr*.vcf.{pgen,psam,pvar}",
+                    "$projectDir/tests/input/gcta/make_grm_part/chr*.vcf.{pgen,psam,pvar}",
                     size: 3,
                     flat: true
                 ).map { filename, pgen, psam, pvar -> [pgen, psam, pvar] }.collect()
@@ -61,7 +61,7 @@ nextflow_process {
                     file("$projectDir/tests/input/gcta/make_grm_part/snp_group1.txt")
                 )  // part 2 of 5, with SNP group 1
                 input[2] = Channel.fromFilePairs(
-                    "$projectDir/tests/input/chr*.vcf.{pgen,psam,pvar}",
+                    "$projectDir/tests/input/gcta/make_grm_part/chr*.vcf.{pgen,psam,pvar}",
                     size: 3,
                     flat: true
                 ).map { filename, pgen, psam, pvar -> [pgen, psam, pvar] }.collect()

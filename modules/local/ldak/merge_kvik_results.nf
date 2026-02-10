@@ -6,7 +6,7 @@
     Purpose: Merge per-chromosome association results from Step 2 into genome-wide files
 
     When running Step 2 per-chromosome for parallelization, results need to be
-    merged before Step 3 (gene-based analysis) or final output.
+    merged into final genome-wide output files.
 
     Documentation: docs/external/ldak-kvik/ukbrap/running.md
 ========================================================================================
@@ -20,45 +20,46 @@ process MERGE_KVIK_RESULTS {
 
     input:
     // Collected association files from all chromosomes
-    path assoc_files           // List of kvik.step2.chr*.assoc files
-    // Collected summaries files from all chromosomes (for Step 3)
-    path summaries_files       // List of kvik.step2.chr*.summaries files
-    val phenotype_name         // For output naming
+    tuple path(assoc_files), path(summaries_files), val(phenotype_name)
 
     output:
-    path "kvik.step2.assoc", emit: merged_assoc
-    path "kvik.step2.summaries", emit: merged_summaries
-    path "kvik.step2.pvalues", emit: merged_pvalues, optional: true
+    tuple val(phenotype_name), path { "kvik_${phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')}.step2.assoc" }, emit: merged_assoc
+    tuple val(phenotype_name), path { "kvik_${phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')}.step2.summaries" }, emit: merged_summaries
+    tuple val(phenotype_name), path { "kvik_${phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')}.step2.pvalues" }, emit: merged_pvalues, optional: true
 
     script:
+    def phenotype_slug = phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')
+    def target_prefix = "kvik_${phenotype_slug}"
+    def source_prefix = assoc_files[0].name.replaceAll(/\.step2\.chr[0-9]+\.assoc$/, '')
+
     """
     # Merge per-chromosome association results
     # Combine header from first file with data from all files
 
     # Merge .assoc files
     # Get header from first file
-    head -n 1 \$(ls kvik.step2.chr*.assoc | sort -V | head -n 1) > kvik.step2.assoc
+    head -n 1 \$(ls ${source_prefix}.step2.chr*.assoc | sort -V | head -n 1) > ${target_prefix}.step2.assoc
 
     # Append data from all files (skip header)
-    for f in \$(ls kvik.step2.chr*.assoc | sort -V); do
-        tail -n +2 "\$f" >> kvik.step2.assoc
+    for f in \$(ls ${source_prefix}.step2.chr*.assoc | sort -V); do
+        tail -n +2 "\$f" >> ${target_prefix}.step2.assoc
     done
 
     # Merge .summaries files (if they exist)
-    if ls kvik.step2.chr*.summaries 1>/dev/null 2>&1; then
-        head -n 1 \$(ls kvik.step2.chr*.summaries | sort -V | head -n 1) > kvik.step2.summaries
-        for f in \$(ls kvik.step2.chr*.summaries | sort -V); do
-            tail -n +2 "\$f" >> kvik.step2.summaries
+    if ls ${source_prefix}.step2.chr*.summaries 1>/dev/null 2>&1; then
+        head -n 1 \$(ls ${source_prefix}.step2.chr*.summaries | sort -V | head -n 1) > ${target_prefix}.step2.summaries
+        for f in \$(ls ${source_prefix}.step2.chr*.summaries | sort -V); do
+            tail -n +2 "\$f" >> ${target_prefix}.step2.summaries
         done
     else
-        touch kvik.step2.summaries
+        touch ${target_prefix}.step2.summaries
     fi
 
     # Merge .pvalues files (if they exist)
-    if ls kvik.step2.chr*.pvalues 1>/dev/null 2>&1; then
-        head -n 1 \$(ls kvik.step2.chr*.pvalues | sort -V | head -n 1) > kvik.step2.pvalues
-        for f in \$(ls kvik.step2.chr*.pvalues | sort -V); do
-            tail -n +2 "\$f" >> kvik.step2.pvalues
+    if ls ${source_prefix}.step2.chr*.pvalues 1>/dev/null 2>&1; then
+        head -n 1 \$(ls ${source_prefix}.step2.chr*.pvalues | sort -V | head -n 1) > ${target_prefix}.step2.pvalues
+        for f in \$(ls ${source_prefix}.step2.chr*.pvalues | sort -V); do
+            tail -n +2 "\$f" >> ${target_prefix}.step2.pvalues
         done
     fi
     """

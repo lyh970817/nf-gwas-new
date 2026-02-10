@@ -27,27 +27,34 @@ workflow GCTA_REML_LDMS_ANALYSIS {
     take:
     mgrm_file           // Multi-GRM file listing all GRM prefixes
     all_grm_files       // Collected GRM files (all grm.id, grm.bin, grm.N.bin files)
-    phenotypes_file     // Path to phenotypes file
+    phenotype_meta_ch   // Channel: tuple(phenotype_name, phenotype_file, is_binary)
     covariates_file     // Path to covariates file (optional, can be [])
 
     main:
     // Prepare phenotypes and covariates files (remove headers and split covariates)
     PREPARE_PHENOCOV(
-        phenotypes_file,
+        phenotype_meta_ch.map { phenotype_name, phenotypes_file, _is_binary -> tuple(phenotype_name, phenotypes_file) },
         covariates_file,
     )
 
     // Get the covariates files or use empty channel if not available
     def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader
+        .collect()
+        .map { files -> files ? files[0] : [] }
     def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader
+        .collect()
+        .map { files -> files ? files[0] : [] }
+
+    def mgrm_value = mgrm_file.collect().map { files -> files ? files[0] : [] }
+    def all_grm_files_value = all_grm_files.collect().map { files -> files.flatten() }
 
     // Run REML-LDMS analysis using the pre-computed multi-GRM files
     RUN_REML_LDMS(
-        mgrm_file,
-        all_grm_files,
+        mgrm_value,
+        all_grm_files_value,
         PREPARE_PHENOCOV.out.phenotypes_noheader,
-        quant_covariates.ifEmpty([]),
-        cat_covariates.ifEmpty([]),
+        quant_covariates,
+        cat_covariates,
     )
 
     emit:

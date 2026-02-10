@@ -2,15 +2,17 @@
     "Should execute regenie step2 without predictions": {
         "content": [
             [
-                "example",
-                "example.regenie.gz:md5,18c80204000d96c4cffbfd1859088111",
-                "example.regenie.Ydict:md5,89086862ab0ea9b2a1a92f3bee0b55d3"
+                "chr01.vcf",
+                [
+                    "chr01.vcf_Y1.regenie.gz:md5,5edb2f44c84cd2c191625d5ddab9d732",
+                    "chr01.vcf_Y2.regenie.gz:md5,44aba0b11a6d3f4ae0de3090bee78004"
+                ]
             ]
         ],
         "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "23.04.3"
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
         },
-        "timestamp": "2023-12-14T14:47:08.826254"
+        "timestamp": "2026-02-03T21:45:35.904381"
     }
 }

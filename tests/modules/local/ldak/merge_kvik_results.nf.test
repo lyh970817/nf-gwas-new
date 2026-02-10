@@ -14,18 +14,18 @@ nextflow_process {
         when {
             process {
                 """
-                // Collected association files from multiple chromosomes
-                // These would be outputs from KVIK_STEP2 runs
-                input[0] = [
-                    file("\$projectDir/tests/input/ldak/kvik/kvik.step2.chr1.assoc"),
-                    file("\$projectDir/tests/input/ldak/kvik/kvik.step2.chr2.assoc")
-                ]
-                // Collected summaries files
-                input[1] = [
-                    file("\$projectDir/tests/input/ldak/kvik/kvik.step2.chr1.summaries"),
-                    file("\$projectDir/tests/input/ldak/kvik/kvik.step2.chr2.summaries")
-                ]
-                input[2] = "test_phenotype"  // phenotype_name
+                // Single tuple input: (assoc_files, summaries_files, phenotype_name)
+                input[0] = tuple(
+                    [
+                        file("\$projectDir/tests/input/ldak/kvik/kvik.step2.chr1.assoc"),
+                        file("\$projectDir/tests/input/ldak/kvik/kvik.step2.chr2.assoc")
+                    ],
+                    [
+                        file("\$projectDir/tests/input/ldak/kvik/kvik.step2.chr1.summaries"),
+                        file("\$projectDir/tests/input/ldak/kvik/kvik.step2.chr2.summaries")
+                    ],
+                    "Y1"
+                )
                 """
             }
         }
@@ -38,8 +38,9 @@ nextflow_process {
                 assert merged_summaries
 
                 // Verify merged file has content
-                def mergedAssoc = merged_assoc.get(0)
+                def mergedAssoc = merged_assoc.get(0).get(1)
                 assert path(mergedAssoc).size() > 0
+                assert path(mergedAssoc).fileName.toString() == "kvik_Y1.step2.assoc"
             }
         }
     }

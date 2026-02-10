@@ -1,0 +1,76 @@
+nextflow_workflow {
+
+    name "Test Workflow LAVA_LOCAL_RG"
+    script "workflows/lava/lava_local_rg.nf"
+    workflow "LAVA_LOCAL_RG"
+
+    test("LAVA local rg: Should generate univariate and bivariate outputs") {
+
+        when {
+            params {
+                pubDir = "results"
+            }
+            workflow {
+                """
+                def ref_plink_ch = Channel.of([
+                    file("\${projectDir}/tests/input/lava/lava_ref.bed"),
+                    file("\${projectDir}/tests/input/lava/lava_ref.bim"),
+                    file("\${projectDir}/tests/input/lava/lava_ref.fam")
+                ])
+
+                def sumstats_files = [
+                    file("\${projectDir}/tests/input/lava/trait1_sumstats.txt"),
+                    file("\${projectDir}/tests/input/lava/trait2_sumstats.txt")
+                ]
+                def sumstats_ch = Channel.of(sumstats_files)
+
+                def phenotype_info = groovy.json.JsonOutput.toJson([
+                    [name: 'trait1', cases: null, controls: null, prevalence: null, filename: 'trait1_sumstats.txt'],
+                    [name: 'trait2', cases: null, controls: null, prevalence: null, filename: 'trait2_sumstats.txt']
+                ])
+
+                input[0] = "lava_workflow"
+                input[1] = ref_plink_ch
+                input[2] = sumstats_ch
+                input[3] = file("\${projectDir}/tests/input/lava/test.loci")
+                input[4] = file("\${projectDir}/tests/input/lava/sample.overlap.txt")
+                input[5] = phenotype_info
+                input[6] = 0.05
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out.univ_results) {
+                assert size() == 1
+                def univFile = path(get(0))
+                assert univFile.exists()
+                def univLines = univFile.readLines()
+                assert univLines.size() == 8
+                assert univLines[0] == "locus\tchr\tstart\tstop\tn.snps\tn.pcs\tphen\th2.obs\tp"
+                assert univLines[1].contains("\ttrait1\t0.0172847\t1.93274e-11")
+                assert univLines[2].contains("\ttrait2\t0.00624282\t0.00373374")
+            }
+
+            with(workflow.out.bivar_results) {
+                assert size() == 1
+                def bivarFile = path(get(0))
+                assert bivarFile.exists()
+                def bivarLines = bivarFile.readLines()
+                assert bivarLines.size() == 4
+                assert bivarLines[1].contains("\ttrait1\ttrait2\t-0.130215")
+            }
+
+            with(workflow.out.log_file) {
+                assert size() == 1
+                def logFile = path(get(0))
+                assert logFile.exists()
+                def logContent = logFile.text
+                assert logContent.contains("Starting LAVA analysis")
+                assert logContent.contains("LAVA analysis completed")
+            }
+        }
+    }
+}

@@ -13,16 +13,16 @@ nextflow_process {
                 // merged_chr has chr1 and chr2 (2000 variants), which allows LOCO analysis
                 input[0] = tuple(
                     "merged_chr",
-                    file("\$projectDir/tests/input/merged_chr.bed"),
-                    file("\$projectDir/tests/input/merged_chr.bim"),
-                    file("\$projectDir/tests/input/merged_chr.fam")
+                    file("\$projectDir/tests/input/ldak/kvik_step1/merged_chr.bed"),
+                    file("\$projectDir/tests/input/ldak/kvik_step1/merged_chr.bim"),
+                    file("\$projectDir/tests/input/ldak/kvik_step1/merged_chr.fam"),
+                    file("\$projectDir/tests/input/ldak/kvik_step1/phenotype_single.txt"),
+                    "test_pheno",
+                    false,
+                    1
                 )
-                input[1] = file("\$projectDir/tests/input/phenotype_single.txt")
-                input[2] = file("\$projectDir/tests/input/covariates.txt")
-                input[3] = "test_pheno"  // phenotype_name
-                input[4] = false  // is_binary (quantitative trait)
-                input[5] = 1  // mpheno (first phenotype column)
-                input[6] = []  // no extract file
+                input[1] = file("\$projectDir/tests/input/ldak/kvik_step1/covariates.txt")
+                input[2] = []
                 """
             }
         }
@@ -49,16 +49,16 @@ nextflow_process {
                 // Use merged_chr with multiple chromosomes for LOCO analysis
                 input[0] = tuple(
                     "merged_chr",
-                    file("\$projectDir/tests/input/merged_chr.bed"),
-                    file("\$projectDir/tests/input/merged_chr.bim"),
-                    file("\$projectDir/tests/input/merged_chr.fam")
+                    file("\$projectDir/tests/input/ldak/kvik_step1/merged_chr.bed"),
+                    file("\$projectDir/tests/input/ldak/kvik_step1/merged_chr.bim"),
+                    file("\$projectDir/tests/input/ldak/kvik_step1/merged_chr.fam"),
+                    file("\$projectDir/tests/input/ldak/kvik_step1/phenotype_single.txt"),
+                    "test_pheno_nocov",
+                    false,
+                    1
                 )
-                input[1] = file("\$projectDir/tests/input/phenotype_single.txt")
-                input[2] = []  // No covariates
-                input[3] = "test_pheno_nocov"
-                input[4] = false
-                input[5] = 1
-                input[6] = []
+                input[1] = []
+                input[2] = []
                 """
             }
         }

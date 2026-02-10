@@ -1,0 +1,28 @@
+{
+    "Should handle different chunk numbers": {
+        "content": [
+            [
+                [
+                    "chunks.master:md5,28cbb84795269e2e17ef8d8fe90d13f4",
+                    "chunks_job1.snplist:md5,53d025127ae99ab79e8502aae2d9bea6",
+                    "example",
+                    [
+                        "example.bed:md5,09757b147a47f7f673255fe8a686bcc0",
+                        "example.bim:md5,5ca66860121ac9acab4d68a425ff1c32",
+                        "example.fam:md5,7c61ab47530b6146928156fc0c6e315f"
+                    ],
+                    "phenotype.txt:md5,57f9a6926550af8640bbf211700e39d9",
+                    "covariates.txt:md5,b9a9598a042f5b4377ca80e13aa90137",
+                    [
+                        
+                    ]
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2026-02-03T21:34:45.95173"
+    }
+}

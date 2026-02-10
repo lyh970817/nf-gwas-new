@@ -13,7 +13,8 @@ process MERGE_GRM_PARTS {
   prefix = "gcta_grm_${suffix}"
   """
     # Calculate padding width (number of digits in nparts)
-    PAD_WIDTH=\${#${nparts_gcta}}
+    NPARTS=${nparts_gcta}
+    PAD_WIDTH=\${#NPARTS}
 
     # Concatenate all ID files in order (each partition has different individuals)
     # GCTA --make-grm-part divides individuals across partitions

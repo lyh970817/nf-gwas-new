@@ -2,7 +2,7 @@
     "Should execute FastGWA with covariates": {
         "content": [
             [
-                "chr01.vcf_phenotype.noheader.fastGWA:md5,68568e6663d82cedc2304f39e1462754"
+                "chr01.vcf_Y1.fastGWA:md5,68568e6663d82cedc2304f39e1462754"
             ]
         ],
         "meta": {

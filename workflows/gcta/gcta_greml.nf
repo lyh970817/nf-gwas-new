@@ -20,7 +20,7 @@ include { GCTA_REML_ANALYSIS } from './gcta_reml_analysis'
 
 workflow GCTA_GREML {
     take:
-    phenotypes_file     // Path to phenotypes file
+    phenotype_meta_ch   // Channel: tuple(phenotype_name, phenotype_file, is_binary)
     covariates_file     // Path to covariates file (optional)
     imputed_plink2_ch   // Channel with imputed PLINK2 files
     nparts_gcta         // Number of parts for GCTA GRM calculation
@@ -43,7 +43,7 @@ workflow GCTA_GREML {
     // Run REML analysis using the computed GRM
     GCTA_REML_ANALYSIS(
         GCTA_GRM.out.grm_files,
-        phenotypes_file,
+        phenotype_meta_ch,
         covariates_file,
     )
 

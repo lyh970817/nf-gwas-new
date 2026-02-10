@@ -1,0 +1,14 @@
+{
+    "Should handle chunk with covariates": {
+        "content": [
+            [
+                "chunks_job1_l0_Y1:md5,4a5577ada1e5128d7f0e9e49b73c5d6b"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
+        },
+        "timestamp": "2026-02-04T00:15:02.234535"
+    }
+}

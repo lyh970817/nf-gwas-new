@@ -38,13 +38,11 @@ include { GCTA_GRM } from './gcta_grm'
 
 workflow GCTA_BIVARIATE_GREML_LDMS {
     take:
-    phenotypes_file     // Path to phenotypes file
+    phenotype_pairs_ch  // Channel: tuple(phenotype1_name, phenotype1_file, is_binary1, phenotype2_name, phenotype2_file, is_binary2)
     covariates_file     // Path to covariates file (optional)
     imputed_plink2_ch   // Channel with imputed PLINK2 files
     imputed_plink_ch    // Channel with imputed PLINK files (for LD score calculation)
     nparts_gcta         // Number of parts for GCTA GRM calculation
-    phenotype1_name     // Name of first phenotype column
-    phenotype2_name     // Name of second phenotype column
 
     main:
     // Calculate LD scores for each chromosome and segment SNPs into groups
@@ -147,23 +145,27 @@ workflow GCTA_BIVARIATE_GREML_LDMS {
 
     // Prepare phenotypes for bivariate analysis
     PREPARE_PHENOCOV_BIVARIATE(
-        phenotypes_file,
-        covariates_file,
-        phenotype1_name,
-        phenotype2_name,
+        phenotype_pairs_ch.map { phenotype1_name, phenotype1_file, _is_binary1, phenotype2_name, phenotype2_file, _is_binary2 ->
+            def pair_name = "${phenotype1_name}__${phenotype2_name}"
+            tuple(phenotype1_file, phenotype2_file, covariates_file, phenotype1_name, phenotype2_name, pair_name)
+        }
     )
 
     // Get the covariates files or use empty channel if not available
     def quant_covariates = PREPARE_PHENOCOV_BIVARIATE.out.covariates_quant_noheader
+        .collect()
+        .map { files -> files ? files[0] : [] }
     def cat_covariates = PREPARE_PHENOCOV_BIVARIATE.out.covariates_cat_noheader
+        .collect()
+        .map { files -> files ? files[0] : [] }
 
     // Run bivariate REML analysis with multiple GRMs
     RUN_BIVARIATE_REML_LDMS(
         final_mgrm_file,
         ch_all_grm_files,
         PREPARE_PHENOCOV_BIVARIATE.out.phenotypes_file,
-        quant_covariates.ifEmpty([]),
-        cat_covariates.ifEmpty([]),
+        quant_covariates,
+        cat_covariates,
     )
 
     emit:

@@ -8,7 +8,6 @@ nextflow_process {
 
         when {
             params {
-                phenotypes_columns = 'Y1'
             }
             process {
                 """
@@ -22,7 +21,10 @@ nextflow_process {
                     file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.root")
                 )
                 input[1] = []  // No keep file needed (GRM already filtered)
-                input[2] = file("$projectDir/tests/input/ldak/phenotype.noheader.txt")
+                input[2] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.noheader.txt")
+                )
                 input[3] = []  // No quantitative covariates (empty list)
                 input[4] = []  // No categorical covariates (empty list)
                 input[5] = ''  // no subset_prefix
@@ -36,7 +38,7 @@ nextflow_process {
 
             with(process.out) {
                 assert he_results
-                def heFiles = he_results.get(0)
+                def heFiles = he_results.get(0).get(1)
 
                 // he_results contains paths matching "he_${grm_name}.*"
                 // Could be a list or single path
@@ -55,7 +57,6 @@ nextflow_process {
 
         when {
             params {
-                phenotypes_columns = 'Y1'
             }
             process {
                 """
@@ -68,7 +69,10 @@ nextflow_process {
                     file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.root")
                 )
                 input[1] = []  // No keep file needed (GRM already filtered)
-                input[2] = file("$projectDir/tests/input/ldak/phenotype.noheader.txt")
+                input[2] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.noheader.txt")
+                )
                 input[3] = file("$projectDir/tests/input/ldak/covariates.quant.noheader.txt")
                 input[4] = file("$projectDir/tests/input/ldak/covariates.cat.noheader.txt")
                 input[5] = ''  // no subset_prefix
@@ -82,7 +86,7 @@ nextflow_process {
 
             with(process.out) {
                 assert he_results
-                def heFiles = he_results.get(0)
+                def heFiles = he_results.get(0).get(1)
 
                 // Verify output files are generated
                 if (heFiles instanceof java.util.List) {

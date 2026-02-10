@@ -6,6 +6,7 @@ channels:
   - bioconda
   - defaults
 dependencies:
+  - pip
   - r-base>=4.3
   - r-data.table
   - r-r.utils
@@ -26,3 +27,6 @@ dependencies:
   - htslib
   - csvtk
   - curl
+  - pip:
+      - pandas<3
+      - ldsc==2.0.1

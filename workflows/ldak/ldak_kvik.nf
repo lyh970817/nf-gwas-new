@@ -19,11 +19,6 @@
        - Parallelized across chromosomes
 
     3. MERGE_KVIK_RESULTS: Combine per-chromosome results
-
-    4. KVIK_STEP3 (optional): Gene-based association testing
-       - Uses LDAK-GBAT methodology
-       - Requires gene annotation file
-
     Recommendations:
     - For Step 1: Use ~500k SNPs (directly genotyped or thinned)
     - For Step 2: Run per-chromosome for parallelization
@@ -35,10 +30,8 @@
 
 include { KVIK_STEP1 } from '../../modules/local/ldak/kvik_step1'
 include { KVIK_STEP2 } from '../../modules/local/ldak/kvik_step2'
-include { KVIK_STEP3 } from '../../modules/local/ldak/kvik_step3'
 include { MERGE_KVIK_RESULTS } from '../../modules/local/ldak/merge_kvik_results'
-include { MERGE_PLINK_FILES } from '../../modules/local/merge_plink_files'
-include { THIN_PREDICTORS } from '../../modules/local/ldak/thin_predictors'
+include { PREPARE_PHENOCOV } from '../../modules/local/gcta/prepare_phenocov'
 
 workflow LDAK_KVIK_WORKFLOW {
     take:
@@ -52,19 +45,8 @@ workflow LDAK_KVIK_WORKFLOW {
     imputed_plink_ch         // Channel: [chr_num, filename, bed, bim, fam, range]
 
     // Phenotype and covariates
-    phenotype_file           // Path to phenotype file
+    phenotype_meta_ch        // Channel: tuple(phenotype_name, phenotype_file, is_binary)
     covariates_file          // Path to covariates file (optional - can be [])
-
-    // Analysis options
-    is_binary                // Boolean: true for case-control, false for quantitative
-    mpheno                   // Phenotype column: 1, 2, ... or "ALL"
-    phenotype_name           // String: phenotype name for output naming
-
-    // Optional Step 3 inputs
-    genefile                 // Path to gene annotation file ([] to skip Step 3)
-
-    // Optional filtering
-    extract_file             // SNP list to restrict Step 1 ([] for no restriction)
 
     main:
     //=========================================================================
@@ -72,14 +54,42 @@ workflow LDAK_KVIK_WORKFLOW {
     //=========================================================================
     // Uses directly genotyped or thinned SNPs for speed
 
+    PREPARE_PHENOCOV(
+        phenotype_meta_ch.map { phenotype_name, phenotypes_file, _is_binary -> tuple(phenotype_name, phenotypes_file) },
+        covariates_file
+    )
+
+    quant_covariates_ch = PREPARE_PHENOCOV.out.covariates_quant_noheader
+        .toList()
+        .map { files ->
+            if (files) {
+                return files[0]
+            }
+            return params.covariates_cat_columns ? [] : covariates_file
+        }
+    cat_covariates_ch = PREPARE_PHENOCOV.out.covariates_cat_noheader
+        .toList()
+        .map { files -> files ? files[0] : [] }
+
+    phenotype_binary_flags = phenotype_meta_ch
+        .map { phenotype_name, _phenotypes_file, is_binary -> tuple(phenotype_name, is_binary) }
+
+    phenotype_ctx_ch = PREPARE_PHENOCOV.out.phenotypes_noheader
+        .join(phenotype_binary_flags, by: 0)
+        .map { phenotype_name, phenotype_file_noheader, is_binary ->
+        tuple(phenotype_name, phenotype_file_noheader, is_binary, 1)
+    }
+
+    step1_inputs = step1_plink_ch
+        .combine(phenotype_ctx_ch)
+        .map { genotype_name, bed, bim, fam, phenotype_name, phenotype_file, is_binary, mpheno ->
+            tuple(genotype_name, bed, bim, fam, phenotype_file, phenotype_name, is_binary, mpheno)
+        }
+
     KVIK_STEP1(
-        step1_plink_ch,
-        phenotype_file,
-        covariates_file,
-        phenotype_name,
-        is_binary,
-        mpheno,
-        extract_file
+        step1_inputs,
+        quant_covariates_ch,
+        cat_covariates_ch
     )
 
     //=========================================================================
@@ -88,18 +98,35 @@ workflow LDAK_KVIK_WORKFLOW {
     // Run in parallel across chromosomes using imputed data
 
     // Extract sample list from Step 1 fam file for consistency
-    step1_keep_file = step1_plink_ch.map { name, bed, bim, fam -> fam }
+    step1_keep_file = step1_plink_ch
+        .map { _name, _bed, _bim, fam -> fam }
+        .first()
+
+    step1_ctx = KVIK_STEP1.out.step1_root
+        .join(KVIK_STEP1.out.step1_loco_details, by: 0)
+        .join(KVIK_STEP1.out.step1_loco_prs, by: 0)
+        .join(KVIK_STEP1.out.step1_effects, by: 0)
+        .map { phenotype_name, step1_root, step1_loco_details, step1_loco_prs, step1_effects ->
+            tuple(phenotype_name, step1_root, step1_loco_details, step1_loco_prs, step1_effects)
+        }
+
+    step2_ctx = step1_ctx
+        .join(PREPARE_PHENOCOV.out.phenotypes_noheader, by: 0)
+        .map { phenotype_name, step1_root, step1_loco_details, step1_loco_prs, step1_effects, phenotype_file_noheader ->
+            tuple(phenotype_name, phenotype_file_noheader, step1_root, step1_loco_details, step1_loco_prs, step1_effects, 1)
+        }
+
+    step2_inputs = step2_ctx
+        .combine(imputed_plink_ch)
+        .combine(step1_keep_file)
+        .map { phenotype_name, phenotype_file, step1_root, step1_loco_details, step1_loco_prs, step1_effects, mpheno, chr_num, filename, bed, bim, fam, _range, keep_file ->
+            tuple(chr_num, filename, bed, bim, fam, phenotype_file, step1_root, step1_loco_details, step1_loco_prs, step1_effects, phenotype_name, mpheno, keep_file)
+        }
 
     KVIK_STEP2(
-        imputed_plink_ch,
-        phenotype_file,
-        covariates_file,
-        KVIK_STEP1.out.step1_root,
-        KVIK_STEP1.out.step1_loco_details,
-        KVIK_STEP1.out.step1_loco_prs,
-        KVIK_STEP1.out.step1_effects,
-        mpheno,
-        step1_keep_file
+        step2_inputs,
+        quant_covariates_ch,
+        cat_covariates_ch
     )
 
     //=========================================================================
@@ -107,60 +134,24 @@ workflow LDAK_KVIK_WORKFLOW {
     //=========================================================================
 
     // Collect all chromosome results
-    assoc_files_ch = KVIK_STEP2.out.step2_assoc.collect()
-    summaries_files_ch = KVIK_STEP2.out.step2_summaries.collect()
+    assoc_files_by_pheno = KVIK_STEP2.out.step2_assoc.groupTuple()
+    summaries_files_by_pheno = phenotype_meta_ch
+        .map { phenotype_name, _phenotype_file, _is_binary -> tuple(phenotype_name, []) }
+        .mix(KVIK_STEP2.out.step2_summaries.groupTuple())
+        .groupTuple()
+        .map { phenotype_name, summaries_lists ->
+            tuple(phenotype_name, summaries_lists.flatten().findAll { it })
+        }
+
+    merge_inputs = assoc_files_by_pheno
+        .join(summaries_files_by_pheno, by: 0)
+        .map { phenotype_name, assoc_files, summaries_files ->
+            tuple(assoc_files, summaries_files, phenotype_name)
+        }
 
     MERGE_KVIK_RESULTS(
-        assoc_files_ch,
-        summaries_files_ch,
-        phenotype_name
+        merge_inputs
     )
-
-    //=========================================================================
-    // Step 3: Gene-Based Analysis (Optional)
-    //=========================================================================
-
-    // Only run Step 3 if gene annotation file is provided
-    if (genefile) {
-        // For Step 3, we need merged PLINK files
-        // Collect all chromosome PLINK files
-        merged_plink_for_step3 = imputed_plink_ch
-            .map { chr_num, filename, bed, bim, fam, range ->
-                [bed, bim, fam]
-            }
-            .collect()
-            .map { files ->
-                def beds = files.collect { it[0] }
-                def bims = files.collect { it[1] }
-                def fams = files.collect { it[2] }
-                [beds, bims, fams]
-            }
-
-        MERGE_PLINK_FILES(
-            merged_plink_for_step3.map { it[0] }.flatten().collect(),
-            merged_plink_for_step3.map { it[1] }.flatten().collect(),
-            merged_plink_for_step3.map { it[2] }.flatten().collect(),
-            "merged_for_step3"
-        )
-
-        KVIK_STEP3(
-            MERGE_PLINK_FILES.out.merged_plink,
-            genefile,
-            KVIK_STEP1.out.step1_root,
-            KVIK_STEP1.out.step1_loco_details,
-            KVIK_STEP1.out.step1_loco_prs,
-            KVIK_STEP1.out.step1_effects,
-            MERGE_KVIK_RESULTS.out.merged_summaries,
-            phenotype_name
-        )
-
-        step3_outputs = KVIK_STEP3.out.step3_outputs
-        step3_remls_all = KVIK_STEP3.out.step3_remls_all
-    } else {
-        // Create empty channels if Step 3 is skipped
-        step3_outputs = Channel.empty()
-        step3_remls_all = Channel.empty()
-    }
 
     emit:
     // Step 1 outputs
@@ -174,8 +165,4 @@ workflow LDAK_KVIK_WORKFLOW {
     // Merged Step 2 results
     merged_assoc = MERGE_KVIK_RESULTS.out.merged_assoc
     merged_summaries = MERGE_KVIK_RESULTS.out.merged_summaries
-
-    // Step 3 results (if run)
-    step3_outputs = step3_outputs
-    step3_remls_all = step3_remls_all
 }

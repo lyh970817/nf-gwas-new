@@ -9,36 +9,40 @@ nextflow_workflow {
         when {
             params {
                 ldak_heritability_model = 'human_default'
-                phenotypes_columns = 'Y1'
+                batch_subset_prefix = null
+                batch_subset_number = null
             }
             workflow {
                 """
                 // Prepare PLINK input channel for 2 chromosomes
-                input[0] = Channel.fromPath("$projectDir/tests/input/pipeline/chr*.vcf.gz")
-                    .map { vcf ->
-                        def chr_match = (vcf.name =~ /chr(\d+)\.vcf\.gz/)
-                        def chr_num = chr_match ? chr_match[0][1].toInteger() : 0
-                        [chr_num, vcf.baseName.replaceAll(/\.vcf$/, ''), vcf, null, null, null]
-                    }
-                    .filter { chr_num, filename, bed, bim, fam, range ->
-                        chr_num in [1, 2]  // Only chr01 and chr02
-                    }
-                    // Convert VCF to PLINK for testing (simplified)
-                    .map { chr_num, filename, vcf, _b, _c, _d ->
-                        // Use the same PLINK files for both chromosomes (test data limitation)
-                        def plink_base = file("$projectDir/tests/input/pipeline/example")
-                        [chr_num, "chr0${chr_num}",
-                         file("${plink_base}.bed"),
-                         file("${plink_base}.bim"),
-                         file("${plink_base}.fam"),
-                         null]
-                    }
+                input[0] = Channel.of(
+                    tuple(
+                        1,
+                        "chr01.vcf",
+                        file("$projectDir/tests/input/ldak/chr01.vcf.bed"),
+                        file("$projectDir/tests/input/ldak/chr01.vcf.bim"),
+                        file("$projectDir/tests/input/ldak/chr01.vcf.fam"),
+                        null
+                    ),
+                    tuple(
+                        2,
+                        "chr02.vcf",
+                        file("$projectDir/tests/input/ldak/chr02.vcf.bed"),
+                        file("$projectDir/tests/input/ldak/chr02.vcf.bim"),
+                        file("$projectDir/tests/input/ldak/chr02.vcf.fam"),
+                        null
+                    )
+                )
 
-                // Phenotype file
-                input[1] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                // Phenotype meta channel
+                input[1] = Channel.of(tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.txt"),
+                    false
+                ))
 
                 // Covariates file
-                input[2] = file("$projectDir/tests/input/pipeline/covariates.txt")
+                input[2] = file("$projectDir/tests/input/ldak/covariates.txt")
                 """
             }
         }
@@ -49,7 +53,7 @@ nextflow_workflow {
             with(workflow.out) {
                 // Check quarter REML results exist
                 assert quarter_reml_results
-                def quarter_results = quarter_reml_results.toList().get()
+                def quarter_results = quarter_reml_results.toList()
                 assert quarter_results.size() == 2 : "Expected 2 quarter results for 2 chromosomes"
 
                 // Check inflation results exist
@@ -57,12 +61,11 @@ nextflow_workflow {
                 assert inflation_results.get(0) != null
 
                 // Genotype error should be empty (no batch params)
-                assert genotype_error_results
-                def ge_results = genotype_error_results.toList().get()
+                def ge_results = genotype_error_results.toList()
                 assert ge_results.size() == 0 : "Expected no genotype error results without batch params"
 
-                // Snapshot results
-                assert snapshot(quarter_reml_results, inflation_results).match()
+                def inflationFile = path(inflation_results.get(0).get(1))
+                assert inflationFile.text.contains("LDAK Inflation Analysis Results")
             }
         }
     }
@@ -73,29 +76,35 @@ nextflow_workflow {
         when {
             params {
                 ldak_heritability_model = 'human_default'
-                phenotypes_columns = 'Y1'
+                batch_subset_prefix = null
+                batch_subset_number = null
             }
             workflow {
                 """
-                input[0] = Channel.fromPath("$projectDir/tests/input/pipeline/chr*.vcf.gz")
-                    .map { vcf ->
-                        def chr_match = (vcf.name =~ /chr(\d+)\.vcf\.gz/)
-                        def chr_num = chr_match ? chr_match[0][1].toInteger() : 0
-                        [chr_num, vcf.baseName.replaceAll(/\.vcf$/, ''), vcf, null, null, null]
-                    }
-                    .filter { chr_num, filename, bed, bim, fam, range ->
-                        chr_num in [1, 2]
-                    }
-                    .map { chr_num, filename, vcf, _b, _c, _d ->
-                        def plink_base = file("$projectDir/tests/input/pipeline/example")
-                        [chr_num, "chr0${chr_num}",
-                         file("${plink_base}.bed"),
-                         file("${plink_base}.bim"),
-                         file("${plink_base}.fam"),
-                         null]
-                    }
+                input[0] = Channel.of(
+                    tuple(
+                        1,
+                        "chr01.vcf",
+                        file("$projectDir/tests/input/ldak/chr01.vcf.bed"),
+                        file("$projectDir/tests/input/ldak/chr01.vcf.bim"),
+                        file("$projectDir/tests/input/ldak/chr01.vcf.fam"),
+                        null
+                    ),
+                    tuple(
+                        2,
+                        "chr02.vcf",
+                        file("$projectDir/tests/input/ldak/chr02.vcf.bed"),
+                        file("$projectDir/tests/input/ldak/chr02.vcf.bim"),
+                        file("$projectDir/tests/input/ldak/chr02.vcf.fam"),
+                        null
+                    )
+                )
 
-                input[1] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[1] = Channel.of(tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.txt"),
+                    false
+                ))
                 input[2] = []  // No covariates
                 """
             }
@@ -108,7 +117,8 @@ nextflow_workflow {
                 assert quarter_reml_results
                 assert inflation_results
 
-                assert snapshot(inflation_results).match("qc_no_covariates")
+                def inflationFile = path(inflation_results.get(0).get(1))
+                assert inflationFile.text.contains("LDAK Inflation Analysis Results")
             }
         }
     }

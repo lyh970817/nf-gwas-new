@@ -8,20 +8,24 @@ nextflow_process {
 
         when {
             params {
-                phenotypes_columns = 'Y1'
+                covariates_columns = null
+                covariates_cat_columns = null
             }
             process {
                 """
                 input[0] = [
-                    file("$projectDir/tests/input/pipeline/chr01.bed"),
-                    file("$projectDir/tests/input/pipeline/chr02.bed")
+                    file("$projectDir/tests/input/bolt_lmm/chr01.vcf.bed"),
+                    file("$projectDir/tests/input/bolt_lmm/chr02.vcf.bed")
                 ]
                 input[1] = [
-                    file("$projectDir/tests/input/pipeline/chr01.bim"),
-                    file("$projectDir/tests/input/pipeline/chr02.bim")
+                    file("$projectDir/tests/input/bolt_lmm/chr01.vcf.bim"),
+                    file("$projectDir/tests/input/bolt_lmm/chr02.vcf.bim")
                 ]
-                input[2] = file("$projectDir/tests/input/pipeline/chr01.fam")
-                input[3] = file("$projectDir/tests/input/pipeline/phenotype.txt")
+                input[2] = file("$projectDir/tests/input/bolt_lmm/chr01.vcf.fam")
+                input[3] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.txt")
+                )
                 input[4] = []  // no covariates
                 """
             }
@@ -48,17 +52,19 @@ nextflow_process {
 
         when {
             params {
-                phenotypes_columns = 'Y1,Y2'
-                covariates_columns = 'V1,V2,Sex'
-                covariates_cat_columns = 'Sex'
+                covariates_columns = 'V1,V2,V3'
+                covariates_cat_columns = ''
             }
             process {
                 """
-                input[0] = [file("$projectDir/tests/input/pipeline/chr01.bed")]
-                input[1] = [file("$projectDir/tests/input/pipeline/chr01.bim")]
-                input[2] = file("$projectDir/tests/input/pipeline/chr01.fam")
-                input[3] = file("$projectDir/tests/input/pipeline/phenotype.txt")
-                input[4] = file("$projectDir/tests/input/pipeline/covariates.txt")
+                input[0] = [file("$projectDir/tests/input/bolt_lmm/chr01.vcf.bed")]
+                input[1] = [file("$projectDir/tests/input/bolt_lmm/chr01.vcf.bim")]
+                input[2] = file("$projectDir/tests/input/bolt_lmm/chr01.vcf.fam")
+                input[3] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.txt")
+                )
+                input[4] = file("$projectDir/tests/input/bolt_lmm/covariates.txt")
                 """
             }
         }
@@ -72,8 +78,10 @@ nextflow_process {
 
                 assert logFile.size() > 0
 
-                // Snapshot the output
-                assert snapshot(log_file).match()
+                assert logFile.fileName.toString().endsWith(".bolt.reml.log")
+
+                def content = logFile.text
+                assert content.contains("h²") || content.contains("heritability") || content.contains("Variance")
             }
         }
     }

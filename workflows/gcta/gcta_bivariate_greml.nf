@@ -24,12 +24,10 @@ include { GCTA_GRM } from './gcta_grm'
 
 workflow GCTA_BIVARIATE_GREML {
     take:
-    phenotypes_file     // Path to phenotypes file (must contain both phenotypes)
+    phenotype_pairs_ch  // Channel: tuple(phenotype1_name, phenotype1_file, is_binary1, phenotype2_name, phenotype2_file, is_binary2)
     covariates_file     // Path to covariates file (optional, use [] if not provided)
     imputed_plink2_ch   // Channel with imputed PLINK2 files
     nparts_gcta         // Number of parts for GCTA GRM calculation
-    phenotype1_name     // Name of first phenotype column
-    phenotype2_name     // Name of second phenotype column
 
     main:
     // Handle empty snps_to_extract by creating an empty list channel
@@ -48,22 +46,30 @@ workflow GCTA_BIVARIATE_GREML {
     // Prepare phenotypes for bivariate analysis
     // Extracts FID, IID, phenotype1, phenotype2 in GCTA format
     PREPARE_PHENOCOV_BIVARIATE(
-        phenotypes_file,
-        covariates_file,
-        phenotype1_name,
-        phenotype2_name,
+        phenotype_pairs_ch.map { phenotype1_name, phenotype1_file, _is_binary1, phenotype2_name, phenotype2_file, _is_binary2 ->
+            def pair_name = "${phenotype1_name}__${phenotype2_name}"
+            tuple(phenotype1_file, phenotype2_file, covariates_file, phenotype1_name, phenotype2_name, pair_name)
+        }
     )
 
     // Get the covariates files or use empty channel if not available
     def quant_covariates = PREPARE_PHENOCOV_BIVARIATE.out.covariates_quant_noheader
+        .collect()
+        .map { files -> files ? files[0] : [] }
     def cat_covariates = PREPARE_PHENOCOV_BIVARIATE.out.covariates_cat_noheader
+        .collect()
+        .map { files -> files ? files[0] : [] }
+
+    bivariate_pairs = GCTA_GRM.out.grm_files.combine(PREPARE_PHENOCOV_BIVARIATE.out.phenotypes_file)
+    grm_for_bivar = bivariate_pairs.map { grm_tuple, _pheno_tuple -> grm_tuple }
+    pheno_for_bivar = bivariate_pairs.map { _grm_tuple, pheno_tuple -> pheno_tuple }
 
     // Run bivariate REML analysis for genetic correlation
     RUN_BIVARIATE_REML(
-        GCTA_GRM.out.grm_files,
-        PREPARE_PHENOCOV_BIVARIATE.out.phenotypes_file,
-        quant_covariates.ifEmpty([]),
-        cat_covariates.ifEmpty([]),
+        grm_for_bivar,
+        pheno_for_bivar,
+        quant_covariates,
+        cat_covariates,
     )
 
     emit:

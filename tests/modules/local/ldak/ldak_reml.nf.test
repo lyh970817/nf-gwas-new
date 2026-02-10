@@ -8,7 +8,7 @@ nextflow_process {
 
         when {
             params {
-                phenotypes_columns = 'Y1'
+                ldak_reml_prevalence = null
             }
             process {
                 """
@@ -21,7 +21,11 @@ nextflow_process {
                     file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.adjust")
                 )
                 input[1] = file("$projectDir/tests/input/ldak/filtered/ldak_grm.keep")  // Optional keep file
-                input[2] = file("$projectDir/tests/input/ldak/phenotype.noheader.txt")
+                input[2] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.noheader.txt"),
+                    false
+                )
                 input[3] = []  // No quantitative covariates (empty list)
                 input[4] = []  // No categorical covariates (empty list)
                 """
@@ -33,12 +37,17 @@ nextflow_process {
 
             with(process.out) {
                 assert reml_results
-                def remlFile = path(reml_results.get(0))
+                def remlFile = path(reml_results.get(0).get(1))
 
                 // Check REML result file exists and has content
-                assert remlFile.fileName.toString().startsWith("reml_ldak_grm")
+                assert remlFile.fileName.toString().startsWith("reml_Y1_ldak_grm")
                 assert remlFile.fileName.toString().endsWith(".reml")
                 assert remlFile.size() > 0
+
+                def commandFile = remlFile.parent.resolve('.command.sh')
+                assert commandFile.exists()
+                def commandText = commandFile.text
+                assert !commandText.readLines().any { it.trim().startsWith('--prevalence ') }
 
                 // Verify heritability estimate is present
                 def content = remlFile.text
@@ -51,7 +60,7 @@ nextflow_process {
 
         when {
             params {
-                phenotypes_columns = 'Y1'
+                ldak_reml_prevalence = null
             }
             process {
                 """
@@ -63,7 +72,11 @@ nextflow_process {
                     file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.adjust")
                 )
                 input[1] = file("$projectDir/tests/input/ldak/filtered/ldak_grm.keep")
-                input[2] = file("$projectDir/tests/input/ldak/phenotype.noheader.txt")
+                input[2] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.noheader.txt"),
+                    false
+                )
                 input[3] = file("$projectDir/tests/input/ldak/covariates.quant.noheader.txt")
                 input[4] = file("$projectDir/tests/input/ldak/covariates.cat.noheader.txt")
                 """
@@ -75,14 +88,62 @@ nextflow_process {
 
             with(process.out) {
                 assert reml_results
-                def remlFile = path(reml_results.get(0))
+                def remlFile = path(reml_results.get(0).get(1))
 
-                assert remlFile.fileName.toString().startsWith("reml_ldak_grm")
+                assert remlFile.fileName.toString().startsWith("reml_Y1_ldak_grm")
                 assert remlFile.size() > 0
+
+                def commandFile = remlFile.parent.resolve('.command.sh')
+                assert commandFile.exists()
+                def commandText = commandFile.text
+                assert !commandText.readLines().any { it.trim().startsWith('--prevalence ') }
 
                 // Verify covariate effect is accounted for
                 def content = remlFile.text
                 assert content.contains("Num_Covariates")
+            }
+        }
+    }
+
+    test("Should pass prevalence to REML only for binary trait when configured") {
+
+        when {
+            params {
+                ldak_reml_prevalence = 0.12
+            }
+            process {
+                """
+                input[0] = tuple(
+                    "ldak_grm",
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.bin"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.id"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.details"),
+                    file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.adjust")
+                )
+                input[1] = file("$projectDir/tests/input/ldak/filtered/ldak_grm.keep")
+                input[2] = tuple(
+                    "Y1_bin",
+                    file("$projectDir/tests/input/phenotypes/bin/phenotype_bin_Y1.noheader.txt"),
+                    true
+                )
+                input[3] = []
+                input[4] = []
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            with(process.out) {
+                assert reml_results
+                def remlFile = path(reml_results.get(0).get(1))
+                assert remlFile.exists()
+
+                def commandFile = remlFile.parent.resolve('.command.sh')
+                assert commandFile.exists()
+                def commandText = commandFile.text
+                assert commandText.contains('--prevalence 0.12')
             }
         }
     }

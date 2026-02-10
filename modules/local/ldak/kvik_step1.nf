@@ -28,41 +28,41 @@ process KVIK_STEP1 {
 
     input:
     // PLINK files for Step 1 (directly genotyped or thinned subset)
-    tuple val(genotype_name), path(bed), path(bim), path(fam)
-    path phenotype_file
-    path covariates_file    // Optional: [] if not provided
-    val phenotype_name      // For output naming
-    val is_binary           // Whether phenotype is binary (case-control)
-    val mpheno              // Which phenotype column (1, 2, ... or "ALL")
-    path extract_file       // Optional: SNP list to restrict analysis ([] if not provided)
+    tuple val(genotype_name), path(bed), path(bim), path(fam), path(phenotype_file), val(phenotype_name), val(is_binary), val(mpheno)
+    path quant_covariates_file
+    path cat_covariates_file
 
     output:
-    path "kvik.step1.*", emit: step1_outputs
-    path "kvik.step1.root", emit: step1_root
-    path "kvik.step1.loco.details", emit: step1_loco_details
-    path "kvik.step1.loco.prs", emit: step1_loco_prs
-    path "kvik.step1.effects", emit: step1_effects
+    tuple val(phenotype_name), path { "kvik_${phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')}.step1.*" }, emit: step1_outputs
+    tuple val(phenotype_name), path { "kvik_${phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')}.step1.root" }, emit: step1_root
+    tuple val(phenotype_name), path { "kvik_${phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')}.step1.loco.details" }, emit: step1_loco_details
+    tuple val(phenotype_name), path { "kvik_${phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')}.step1.loco.prs" }, emit: step1_loco_prs
+    tuple val(phenotype_name), path { "kvik_${phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')}.step1.effects" }, emit: step1_effects
 
     script:
     // Handle optional files
-    def covar_param = covariates_file ? "--covar ${covariates_file}" : ''
+    def covar_param = quant_covariates_file ? "--covar ${quant_covariates_file}" : ''
+    def factors_param = cat_covariates_file ? "--factors ${cat_covariates_file}" : ''
     def binary_param = is_binary ? "--binary YES" : ''
     def mpheno_param = mpheno ? "--mpheno ${mpheno}" : ''
-    def extract_param = extract_file ? "--extract ${extract_file}" : ''
+    def step1_optional_param = params.kvik_step1_optional ? params.kvik_step1_optional.trim() : ""
     def bfile_base = bed.baseName.replace('.bed', '')
+    def phenotype_slug = phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')
 
     """
     # LDAK-KVIK Step 1: Compute LOCO PRS using Elastic Net
     # Input: Directly genotyped or thinned SNPs (~500k recommended)
     # Output: LOCO PRS for each chromosome, used as offset in Step 2
 
-    ldak6 --kvik-step1 kvik \\
+    ldak6 --kvik-step1 kvik_${phenotype_slug} \\
         --bfile ${bfile_base} \\
         --pheno ${phenotype_file} \\
         ${covar_param} \\
+        ${factors_param} \\
         ${binary_param} \\
         ${mpheno_param} \\
-        ${extract_param} \\
+        ${step1_optional_param} \\
         --max-threads ${task.cpus}
+
     """
 }

@@ -1,0 +1,256 @@
+nextflow_workflow {
+
+    name "Test Workflow REGENIE"
+    script "workflows/regenie/regenie.nf"
+    workflow "REGENIE"
+
+    test("Should execute REGENIE workflow without covariates") {
+
+        when {
+            params {
+                covariates_columns = null
+                covariates_cat_columns = null
+                genotypes_prediction_chunks = 0
+                regenie_skip_predictions = false
+            }
+            workflow {
+                """
+                // Step 1 input: PLINK1 bed/bim/fam (tuple of files)
+                input[0] = Channel.of(tuple(
+                    "example",
+                    [
+                        file("$projectDir/tests/input/regenie/example.bed"),
+                        file("$projectDir/tests/input/regenie/example.bim"),
+                        file("$projectDir/tests/input/regenie/example.fam")
+                    ]
+                ))
+
+                input[1] = Channel.of(tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/basic/phenotype_Y1.txt"),
+                    false
+                ))
+                input[2] = []  // no covariates
+
+                // Step 2 input: association genotypes (single chromosome)
+                input[3] = Channel.of(tuple(
+                    1,
+                    "chr01.vcf",
+                    file("$projectDir/tests/input/regenie/step2/chr01.vcf.bed"),
+                    file("$projectDir/tests/input/regenie/step2/chr01.vcf.bim"),
+                    file("$projectDir/tests/input/regenie/step2/chr01.vcf.fam"),
+                    -1
+                ))
+                input[4] = "bed"
+                input[5] = false
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert regenie_step1_out_ch
+                def step1Tuple = regenie_step1_out_ch.get(0)
+                def step1Files = step1Tuple.get(1)
+                assert step1Files instanceof java.util.List
+                assert step1Files.size() > 0
+                assert step1Files.any { path(it).fileName.toString().endsWith('.loco.gz') }
+
+                assert regenie_step2_out
+                def step2Tuple = regenie_step2_out.get(0)
+                def step2Files = step2Tuple.get(1)
+                def step2List = step2Files instanceof java.util.List ? step2Files : [step2Files]
+                assert step2List.size() > 0
+                assert step2List.every { path(it).fileName.toString().endsWith('.regenie.gz') }
+
+                assert merged_results
+                def mergedTuple = merged_results.get(0)
+                def mergedFile = path(mergedTuple.get(1))
+                assert mergedFile.fileName.toString().endsWith('_merged.regenie.gz')
+                assert mergedFile.size() > 0
+
+                def gz = new java.util.zip.GZIPInputStream(new java.io.FileInputStream(mergedFile.toFile()))
+                def reader = new java.io.BufferedReader(new java.io.InputStreamReader(gz))
+                def header = reader.readLine()
+                reader.close()
+                assert header.contains("CHR") || header.contains("Chromosome")
+            }
+        }
+    }
+
+    test("Should execute REGENIE workflow with covariates") {
+
+        when {
+            params {
+                covariates_columns = 'V2,V3'
+                covariates_cat_columns = 'V1'
+                genotypes_prediction_chunks = 0
+                regenie_skip_predictions = false
+            }
+            workflow {
+                """
+                input[0] = Channel.of(tuple(
+                    "example",
+                    [
+                        file("$projectDir/tests/input/regenie/example.bed"),
+                        file("$projectDir/tests/input/regenie/example.bim"),
+                        file("$projectDir/tests/input/regenie/example.fam")
+                    ]
+                ))
+
+                input[1] = Channel.of(tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/basic/phenotype_Y1.txt"),
+                    false
+                ))
+                input[2] = file("$projectDir/tests/input/regenie/covariates.txt")
+
+                input[3] = Channel.of(tuple(
+                    1,
+                    "chr01.vcf",
+                    file("$projectDir/tests/input/regenie/step2/chr01.vcf.bed"),
+                    file("$projectDir/tests/input/regenie/step2/chr01.vcf.bim"),
+                    file("$projectDir/tests/input/regenie/step2/chr01.vcf.fam"),
+                    -1
+                ))
+                input[4] = "bed"
+                input[5] = false
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert merged_results
+                def mergedTuple = merged_results.get(0)
+                def mergedFile = path(mergedTuple.get(1))
+                assert mergedFile.fileName.toString().endsWith('_merged.regenie.gz')
+                assert mergedFile.size() > 0
+            }
+        }
+    }
+
+    test("Should execute REGENIE workflow with chunked Step 1 predictions") {
+
+        when {
+            params {
+                covariates_columns = null
+                covariates_cat_columns = null
+                genotypes_prediction_chunks = 2
+                regenie_skip_predictions = false
+            }
+            workflow {
+                """
+                input[0] = Channel.of(tuple(
+                    "example",
+                    [
+                        file("$projectDir/tests/input/regenie/step1_split/example.bed"),
+                        file("$projectDir/tests/input/regenie/step1_split/example.bim"),
+                        file("$projectDir/tests/input/regenie/step1_split/example.fam")
+                    ]
+                ))
+
+                input[1] = Channel.of(tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/basic/phenotype_Y1.txt"),
+                    false
+                ))
+                input[2] = []
+
+                input[3] = Channel.of(tuple(
+                    1,
+                    "chr01.vcf",
+                    file("$projectDir/tests/input/regenie/step2/chr01.vcf.bed"),
+                    file("$projectDir/tests/input/regenie/step2/chr01.vcf.bim"),
+                    file("$projectDir/tests/input/regenie/step2/chr01.vcf.fam"),
+                    -1
+                ))
+                input[4] = "bed"
+                input[5] = false
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert regenie_step1_out_ch
+                assert regenie_step1_out_ch.size() >= 2
+
+                def step1AllFiles = regenie_step1_out_ch.collectMany { step1Tuple ->
+                    def files = step1Tuple.get(1)
+                    files instanceof java.util.List ? files : [files]
+                }
+                assert step1AllFiles.any { path(it).fileName.toString().endsWith('.loco.gz') }
+                assert step1AllFiles.any { path(it).fileName.toString().endsWith('.list') }
+
+                assert merged_results
+                def mergedTuple = merged_results.get(0)
+                def mergedFile = path(mergedTuple.get(1))
+                assert mergedFile.fileName.toString().endsWith('_merged.regenie.gz')
+                assert mergedFile.size() > 0
+            }
+        }
+    }
+
+    test("Should execute REGENIE workflow with skipped predictions and empty step1 input") {
+
+        when {
+            params {
+                covariates_columns = null
+                covariates_cat_columns = null
+                genotypes_prediction_chunks = 0
+                regenie_skip_predictions = true
+            }
+            workflow {
+                """
+                input[0] = Channel.empty()
+
+                input[1] = Channel.of(tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/basic/phenotype_Y1.txt"),
+                    false
+                ))
+                input[2] = []
+
+                input[3] = Channel.of(tuple(
+                    1,
+                    "chr01.vcf",
+                    file("$projectDir/tests/input/regenie/step2/chr01.vcf.bed"),
+                    file("$projectDir/tests/input/regenie/step2/chr01.vcf.bim"),
+                    file("$projectDir/tests/input/regenie/step2/chr01.vcf.fam"),
+                    -1
+                ))
+                input[4] = "bed"
+                input[5] = true
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert regenie_step1_out_ch.size() == 0
+
+                assert regenie_step2_out
+                def step2Tuple = regenie_step2_out.get(0)
+                def step2Files = step2Tuple.get(1)
+                def step2List = step2Files instanceof java.util.List ? step2Files : [step2Files]
+                assert step2List.size() > 0
+
+                assert merged_results
+                def mergedTuple = merged_results.get(0)
+                def mergedFile = path(mergedTuple.get(1))
+                assert mergedFile.fileName.toString().endsWith('_merged.regenie.gz')
+                assert mergedFile.size() > 0
+            }
+        }
+    }
+
+}

@@ -17,17 +17,17 @@ nextflow_workflow {
                     tuple(
                         1,
                         "chr01.vcf",
-                        file("$projectDir/tests/input/chr01.vcf.pgen"),
-                        file("$projectDir/tests/input/chr01.vcf.psam"),
-                        file("$projectDir/tests/input/chr01.vcf.pvar"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.pgen"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.psam"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.pvar"),
                         null
                     ),
                     tuple(
                         2,
                         "chr02.vcf",
-                        file("$projectDir/tests/input/chr02.vcf.pgen"),
-                        file("$projectDir/tests/input/chr02.vcf.psam"),
-                        file("$projectDir/tests/input/chr02.vcf.pvar"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.pgen"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.psam"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.pvar"),
                         null
                     )
                 )
@@ -37,6 +37,11 @@ nextflow_workflow {
 
                 // SNP group channel (empty - no filtering)
                 input[2] = Channel.of(["0", []])
+
+                // Sparse GRM and relatedness filtering settings
+                input[3] = false
+                input[4] = 0.05
+                input[5] = false
                 """
             }
         }
@@ -46,7 +51,9 @@ nextflow_workflow {
 
             with(workflow.out) {
                 assert grm_files
-                assert snapshot(grm_files).match()
+                assert adjusted_grm_files
+                assert keep_file
+                assert snapshot(grm_files, adjusted_grm_files, keep_file).match()
             }
         }
     }
@@ -63,17 +70,17 @@ nextflow_workflow {
                     tuple(
                         1,
                         "chr01.vcf",
-                        file("$projectDir/tests/input/chr01.vcf.pgen"),
-                        file("$projectDir/tests/input/chr01.vcf.psam"),
-                        file("$projectDir/tests/input/chr01.vcf.pvar"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.pgen"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.psam"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.pvar"),
                         null
                     ),
                     tuple(
                         2,
                         "chr02.vcf",
-                        file("$projectDir/tests/input/chr02.vcf.pgen"),
-                        file("$projectDir/tests/input/chr02.vcf.psam"),
-                        file("$projectDir/tests/input/chr02.vcf.pvar"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.pgen"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.psam"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.pvar"),
                         null
                     )
                 )
@@ -81,13 +88,22 @@ nextflow_workflow {
                 input[1] = 1
 
                 input[2] = Channel.of(["0", []])
+
+                input[3] = false
+                input[4] = 0.05
+                input[5] = false
                 """
             }
         }
 
         then {
             assert workflow.success
-            assert snapshot(workflow.out.grm_files).match()
+            with(workflow.out) {
+                assert grm_files
+                assert adjusted_grm_files
+                assert keep_file
+                assert snapshot(grm_files, adjusted_grm_files, keep_file).match()
+            }
         }
     }
 }

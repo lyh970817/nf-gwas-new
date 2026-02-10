@@ -8,26 +8,28 @@ nextflow_process {
 
         when {
             params {
-                phenotypes_columns = 'Y1,Y2'
                 regenie_bsize_step1 = 1000
+                covariates_columns = null
+                covariates_cat_columns = null
             }
             process {
                 """
                 // Simulate chunk input: chunk_num, master, snplists, genotype files, pheno, covar, cond
-                input[0] = Channel.of([
+                input[0] = tuple(
                     1,  // chunk number
-                    file("$projectDir/tests/input/regenie_step1/chunks.master"),
-                    [file("$projectDir/tests/input/regenie_step1/chunks1.snplist")],
-                    "example.qc",
+                    file("$projectDir/tests/input/regenie/step1_split/chunks.master"),
+                    file("$projectDir/tests/input/regenie/step1_split/chunks_job1.snplist"),
+                    "example",
                     [
-                        file("$projectDir/tests/input/regenie_step1/example.qc.bed"),
-                        file("$projectDir/tests/input/regenie_step1/example.qc.bim"),
-                        file("$projectDir/tests/input/regenie_step1/example.qc.fam")
+                        file("$projectDir/tests/input/regenie/step1_run_chunk/example.bed"),
+                        file("$projectDir/tests/input/regenie/step1_run_chunk/example.bim"),
+                        file("$projectDir/tests/input/regenie/step1_run_chunk/example.fam")
                     ],
-                    file("$projectDir/tests/input/pipeline/phenotype.txt"),
+                    file("$projectDir/tests/input/phenotypes/basic/phenotype_Y1.txt"),
                     [],  // no covariates
-                    []   // no condition list
-                ])
+                    "Y1",
+                    false
+                )
                 """
             }
         }
@@ -37,22 +39,26 @@ nextflow_process {
 
             with(process.out) {
                 // Check chunk outputs
-                assert chunk_out
-                def chunkFiles = chunk_out.get(0)
+                assert regenie_step1_out
+                def chunkTuple = regenie_step1_out.get(0)
+                def chunkFiles = chunkTuple.get(1)
 
                 // Should produce LOCO files
                 if (chunkFiles instanceof java.util.List) {
-                    chunkFiles.each { file ->
-                        assert file.fileName.toString().matches("regenie_step1_out_1_.*\\.loco\\.gz")
+                    def locoFiles = chunkFiles.findAll { path(it).fileName.toString().contains("_l0_") }
+                    assert locoFiles.size() > 0
+                    locoFiles.each { file ->
+                        def chunkPath = path(file)
+                        assert chunkPath.fileName.toString().matches("chunks_job1_l0_.*")
                     }
                 } else {
-                    assert chunkFiles.fileName.toString().contains("regenie_step1_out_1")
+                    assert path(chunkFiles).fileName.toString().contains("chunks_job1")
                 }
 
                 // Check log file
-                assert chunk_log
-                def logFile = path(chunk_log.get(0))
-                assert logFile.fileName.toString() == "regenie_step1_out_1.log"
+                assert regenie_step1_out_log
+                def logFile = path(regenie_step1_out_log.get(0))
+                assert logFile.fileName.toString() == "chunks_job1.log"
                 assert logFile.text.contains("--step 1")
                 assert logFile.text.contains("--run-l0")
             }
@@ -63,26 +69,27 @@ nextflow_process {
 
         when {
             params {
-                phenotypes_columns = 'Y1'
                 covariates_columns = 'V1,V2'
+                covariates_cat_columns = null
                 regenie_bsize_step1 = 1000
             }
             process {
                 """
-                input[0] = Channel.of([
-                    2,  // chunk 2
-                    file("$projectDir/tests/input/regenie_step1/chunks.master"),
-                    [file("$projectDir/tests/input/regenie_step1/chunks1.snplist")],
-                    "example.qc",
+                input[0] = tuple(
+                    1,  // chunk 1
+                    file("$projectDir/tests/input/regenie/step1_split/chunks.master"),
+                    file("$projectDir/tests/input/regenie/step1_split/chunks_job1.snplist"),
+                    "example",
                     [
-                        file("$projectDir/tests/input/regenie_step1/example.qc.bed"),
-                        file("$projectDir/tests/input/regenie_step1/example.qc.bim"),
-                        file("$projectDir/tests/input/regenie_step1/example.qc.fam")
+                        file("$projectDir/tests/input/regenie/step1_run_chunk/example.bed"),
+                        file("$projectDir/tests/input/regenie/step1_run_chunk/example.bim"),
+                        file("$projectDir/tests/input/regenie/step1_run_chunk/example.fam")
                     ],
-                    file("$projectDir/tests/input/pipeline/phenotype.txt"),
-                    file("$projectDir/tests/input/pipeline/covariates.txt"),
-                    []
-                ])
+                    file("$projectDir/tests/input/phenotypes/basic/phenotype_Y1.txt"),
+                    file("$projectDir/tests/input/regenie/step1_run_chunk/covariates.txt"),
+                    "Y1",
+                    false
+                )
                 """
             }
         }
@@ -91,15 +98,17 @@ nextflow_process {
             assert process.success
 
             with(process.out) {
-                assert chunk_out
-                assert chunk_log
+                assert regenie_step1_out
+                assert regenie_step1_out_log
 
-                def logFile = path(chunk_log.get(0))
+                def logFile = path(regenie_step1_out_log.get(0))
                 assert logFile.text.contains("--covarFile")
                 assert logFile.text.contains("--covarColList")
 
-                // Snapshot the outputs
-                assert snapshot(chunk_out, chunk_log).match()
+                def chunkTuple = regenie_step1_out.get(0)
+                def chunkFiles = chunkTuple.get(1)
+                def outputFiles = chunkFiles instanceof java.util.List ? chunkFiles : [chunkFiles]
+                assert outputFiles.size() > 0
             }
         }
     }

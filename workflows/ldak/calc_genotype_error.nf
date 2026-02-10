@@ -15,7 +15,7 @@ include { CALC_GENOTYPE_ERROR_T2 } from '../../modules/local/ldak/calc_genotype_
 workflow CALC_GENOTYPE_ERROR {
     take:
     imputed_plink_ch   // Channel with imputed PLINK files (bed, bim, fam)
-    phenotype_file     // Path to phenotype file
+    phenotype_meta_ch  // Channel: tuple(phenotype_name, phenotype_file, is_binary)
     covariates_file    // Path to covariates file (optional)
     batch_subsets      // Tuple: [batch_subset_prefix, batch_subset_number, list_of_paths]
 
@@ -61,23 +61,38 @@ workflow CALC_GENOTYPE_ERROR {
 
     // Prepare phenotypes and covariates files (remove headers and split covariates)
     PREPARE_PHENOCOV(
-        phenotype_file,
+        phenotype_meta_ch.map { phenotype_name, phenotypes_file, _is_binary -> tuple(phenotype_name, phenotypes_file) },
         covariates_file
     )
 
     // Get the covariates files or use empty channel if not available
-    def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader.ifEmpty([])
-    def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader.ifEmpty([])
+    def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader
+        .toList()
+        .map { files -> files ? files[0] : [] }
+    def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader
+        .toList()
+        .map { files -> files ? files[0] : [] }
 
     // Extract batch subset parameters from the tuple
     def batch_subset_prefix = batch_subsets[0]
     def batch_subset_number = batch_subsets[1]
 
     // Run LDAK HE analysis with batch subset parameters
+    he_pairs = ADD_GRMS.out.combined_grm
+        .map { grm_name, bin, id, details, adjust -> [grm_name, bin, id, details, adjust, []] }
+        .combine(PREPARE_PHENOCOV.out.phenotypes_noheader)
+
+    he_grm = he_pairs.map { grm_name, grm_bin, grm_id, grm_details, grm_adjust, grm_root, _phenotype_name, _phenotype_file ->
+        tuple(grm_name, grm_bin, grm_id, grm_details, grm_adjust, grm_root)
+    }
+    he_pheno = he_pairs.map { _grm_name, _grm_bin, _grm_id, _grm_details, _grm_adjust, _grm_root, phenotype_name, phenotype_file ->
+        tuple(phenotype_name, phenotype_file)
+    }
+
     LDAK_HE(
-        ADD_GRMS.out.combined_grm,
+        he_grm,
         FILTER_RELATEDNESS.out.filtered_list,
-        PREPARE_PHENOCOV.out.phenotypes_noheader,
+        he_pheno,
         quant_covariates,
         cat_covariates,
         batch_subset_prefix,

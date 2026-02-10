@@ -1,0 +1,106 @@
+nextflow_workflow {
+
+    name "Test Workflow BOLT_LMM_REML"
+    script "workflows/bolt_lmm/bolt_lmm_reml.nf"
+    workflow "BOLT_LMM_REML"
+
+    test("Should execute BOLT-LMM REML workflow without covariates") {
+
+        when {
+            params {
+                covariates_columns = null
+                covariates_cat_columns = null
+            }
+            workflow {
+                """
+                input[0] = Channel.of(
+                    tuple(
+                        1,
+                        "chr01.vcf",
+                        file("$projectDir/tests/input/bolt_lmm/chr01.vcf.bed"),
+                        file("$projectDir/tests/input/bolt_lmm/chr01.vcf.bim"),
+                        file("$projectDir/tests/input/bolt_lmm/chr01.vcf.fam"),
+                        -1
+                    ),
+                    tuple(
+                        2,
+                        "chr02.vcf",
+                        file("$projectDir/tests/input/bolt_lmm/chr02.vcf.bed"),
+                        file("$projectDir/tests/input/bolt_lmm/chr02.vcf.bim"),
+                        file("$projectDir/tests/input/bolt_lmm/chr01.vcf.fam"),
+                        -1
+                    )
+                )
+
+                input[1] = Channel.of(tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.txt"),
+                    false
+                ))
+                input[2] = []  // No covariates
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert log_file
+                def logFile = path(log_file.get(0))
+
+                assert logFile.fileName.toString().endsWith(".bolt.reml.log")
+                assert logFile.size() > 0
+
+                def content = logFile.text
+                assert content.contains("h²") || content.contains("heritability") || content.contains("Variance")
+            }
+        }
+    }
+
+    test("Should execute BOLT-LMM REML workflow with covariates") {
+
+        when {
+            params {
+                covariates_columns = 'V1,V2,V3'
+                covariates_cat_columns = ''
+            }
+            workflow {
+                """
+                input[0] = Channel.of(
+                    tuple(
+                        1,
+                        "chr01.vcf",
+                        file("$projectDir/tests/input/bolt_lmm/chr01.vcf.bed"),
+                        file("$projectDir/tests/input/bolt_lmm/chr01.vcf.bim"),
+                        file("$projectDir/tests/input/bolt_lmm/chr01.vcf.fam"),
+                        -1
+                    )
+                )
+
+                input[1] = Channel.of(tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.txt"),
+                    false
+                ))
+                input[2] = file("$projectDir/tests/input/bolt_lmm/covariates.txt")
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert log_file
+                def logFile = path(log_file.get(0))
+
+                assert logFile.fileName.toString().endsWith(".bolt.reml.log")
+                assert logFile.size() > 0
+
+                def content = logFile.text
+                assert content.contains("h²") || content.contains("heritability") || content.contains("Variance")
+            }
+        }
+    }
+}

@@ -16,7 +16,7 @@ include { CALC_GENOTYPE_ERROR } from './calc_genotype_error'
 workflow LDAK_QC {
     take:
     imputed_plink_ch   // Channel with imputed PLINK files (bed, bim, fam)
-    phenotype_file     // Path to phenotype file
+    phenotype_meta_ch  // Channel: tuple(phenotype_name, phenotype_file, is_binary)
     covariates_file    // Path to covariates file (optional)
 
     main:
@@ -75,14 +75,18 @@ workflow LDAK_QC {
 
     // Prepare phenotypes and covariates files
     PREPARE_PHENOCOV(
-        phenotype_file,
+        phenotype_meta_ch.map { phenotype_name, phenotypes_file, _is_binary -> tuple(phenotype_name, phenotypes_file) },
         covariates_file
     )
 
     // Get the covariates files (optional outputs from PREPARE_PHENOCOV)
     // Use ifEmpty to provide empty list if no covariates exist
-    def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader.ifEmpty([])
-    def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader.ifEmpty([])
+    def quant_covariates = PREPARE_PHENOCOV.out.covariates_quant_noheader
+        .toList()
+        .map { files -> files ? files[0] : [] }
+    def cat_covariates = PREPARE_PHENOCOV.out.covariates_cat_noheader
+        .toList()
+        .map { files -> files ? files[0] : [] }
 
     // Group GRMs by quarter
     quarter_grms = CALC_KINS.out.ldak_grm
@@ -139,7 +143,7 @@ workflow LDAK_QC {
 
     LDAK_REML(
         imputed_plink_ch,
-        phenotype_file,
+        phenotype_meta_ch,
         covariates_file,
         "human_default"
     )
@@ -151,19 +155,59 @@ workflow LDAK_QC {
             tuple(filename, bin, id, details, adjust)
         }
 
+    // LDAK_REML.out.filtered_list emits (grm_name, keep, lose, maxrel)
+    // LDAK_REML_PROCESS expects a keep_file path
+    keep_files = LDAK_REML.out.filtered_list
+        .map { _name, keep, _lose, _maxrel -> keep }
+        .collect()
+        .map { files -> files ? files[0] : [] }
+
+    quarter_pairs = quarter_grm_tuples.combine(PREPARE_PHENOCOV.out.phenotypes_noheader)
+    phenotype_binary_flags = phenotype_meta_ch
+        .map { phenotype_name, _phenotypes_file, is_binary -> tuple(phenotype_name, is_binary) }
+
+    quarter_pairs_keyed = quarter_pairs
+        .map { grm_name, grm_bin, grm_id, grm_details, grm_adjust, phenotype_name, phenotype_file ->
+            tuple(phenotype_name, grm_name, grm_bin, grm_id, grm_details, grm_adjust, phenotype_file)
+        }
+
+    quarter_pairs_with_binary = quarter_pairs_keyed
+        .combine(phenotype_binary_flags)
+        .filter { phenotype_name, _grm_name, _grm_bin, _grm_id, _grm_details, _grm_adjust, _phenotype_file, binary_name, _is_binary ->
+            phenotype_name == binary_name
+        }
+        .map { phenotype_name, grm_name, grm_bin, grm_id, grm_details, grm_adjust, phenotype_file, _binary_name, is_binary ->
+            tuple(phenotype_name, grm_name, grm_bin, grm_id, grm_details, grm_adjust, phenotype_file, is_binary)
+        }
+
+    quarter_grm_for_reml = quarter_pairs_with_binary.map { _phenotype_name, grm_name, grm_bin, grm_id, grm_details, grm_adjust, _phenotype_file, _is_binary ->
+        tuple(grm_name, grm_bin, grm_id, grm_details, grm_adjust)
+    }
+    quarter_pheno_for_reml = quarter_pairs_with_binary.map { phenotype_name, _grm_name, _grm_bin, _grm_id, _grm_details, _grm_adjust, phenotype_file, is_binary ->
+        tuple(phenotype_name, phenotype_file, is_binary)
+    }
+
     LDAK_REML_PROCESS(
-        quarter_grm_tuples,
-        LDAK_REML.out.filtered_list,
-        PREPARE_PHENOCOV.out.phenotypes_noheader,
+        quarter_grm_for_reml,
+        keep_files,
+        quarter_pheno_for_reml,
         quant_covariates,
         cat_covariates
     )
     
 
     // Calculate inflation using quarter REML results and LDAK REML results
+    full_reml_by_pheno = LDAK_REML.out.reml_results
+    quarter_reml_by_pheno = LDAK_REML_PROCESS.out.reml_results.groupTuple()
+
+    inflation_inputs = full_reml_by_pheno
+        .join(quarter_reml_by_pheno, by: 0)
+        .map { phenotype_name, full_reml_file, quarter_files ->
+            tuple(phenotype_name, full_reml_file, quarter_files)
+        }
+
     CALC_INFLATION(
-        LDAK_REML.out.reml_results,
-        LDAK_REML_PROCESS.out.reml_results.collect()
+        inflation_inputs
     )
 
     // Calculate genotype error if batch subset parameters are provided
@@ -173,7 +217,7 @@ workflow LDAK_QC {
 
         CALC_GENOTYPE_ERROR(
             imputed_plink_ch,
-            phenotype_file,
+            phenotype_meta_ch,
             covariates_file,
             batch_subsets
         )

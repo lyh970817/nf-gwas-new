@@ -8,25 +8,29 @@ workflow REGENIE_STEP2 {
     regenie_step1_out_ch
     imputed_plink1_ch
     genotypes_association_format
-    phenotypes_file
+    phenotype_meta_ch
     covariates_file_validated
-    condition_list_file
 
     main:
-    if (!params.regenie_sample_file) {
-        sample_file = []
-    } else {
-        sample_file = file(params.regenie_sample_file, checkIfExists: true)
-    }
+
+    def step1_by_pheno = params.regenie_skip_predictions
+        ? phenotype_meta_ch.map { phenotype_name, _file, _is_binary -> tuple(phenotype_name, []) }
+        : regenie_step1_out_ch.groupTuple().map { phenotype_name, files -> tuple(phenotype_name, files.flatten()) }
+
+    step2_context_ch = step1_by_pheno
+        .join(phenotype_meta_ch, by: 0)
+        .map { phenotype_name, step1_files, phenotypes_file, is_binary ->
+            tuple(phenotype_name, step1_files, phenotypes_file, is_binary)
+        }
+
+    step2_inputs = step2_context_ch
+        .combine(imputed_plink1_ch)
+        .map { phenotype_name, step1_files, phenotypes_file, is_binary, chr_num, filename, plink1_bed_file, plink1_bim_file, plink1_fam_file, range ->
+            tuple(step1_files, chr_num, filename, plink1_bed_file, plink1_bim_file, plink1_fam_file, range, genotypes_association_format, phenotypes_file, covariates_file_validated, phenotype_name, is_binary)
+        }
 
     REGENIE_STEP2_RUN (
-        regenie_step1_out_ch.collect(),
-        imputed_plink1_ch,
-        genotypes_association_format,
-        phenotypes_file,
-        sample_file,
-        covariates_file_validated,
-        condition_list_file
+        step2_inputs
     )
 
     regenie_step2_out = REGENIE_STEP2_RUN.out.regenie_step2_out

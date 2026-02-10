@@ -34,6 +34,7 @@ ldak6 \
     --grm ${combined_grm_name} \
     ${quant_covar_param} \
     ${cat_covar_param} \
+    ${prevalence_param} \
     --max-threads ${task.cpus}
 ```
 
@@ -42,6 +43,7 @@ ldak6 \
 - `--keep`: Use only unrelated individuals
 - `--covar`: Quantitative covariates
 - `--factors`: Categorical covariates
+- `--prevalence`: Optional for binary traits (enabled via `params.ldak_reml_prevalence`)
 
 **Output Files**:
 ```

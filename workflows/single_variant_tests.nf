@@ -5,12 +5,11 @@ workflow SINGLE_VARIANT_TESTS {
 
     take:
     imputed_plink1_ch
-    phenotypes_file
+    phenotype_meta_ch
     covariates_file
     genotyped_plink_ch
     association_build
     genotypes_association_format
-    condition_list_file
     skip_predictions
 
     main:
@@ -25,9 +24,8 @@ workflow SINGLE_VARIANT_TESTS {
 
     REGENIE (
         genotyped_final_ch,
-        phenotypes_file,
+        phenotype_meta_ch,
         covariates_file,
-        condition_list_file.collect().ifEmpty([]),
         imputed_plink1_ch,
         genotypes_association_format,
         skip_predictions
@@ -40,4 +38,3 @@ workflow SINGLE_VARIANT_TESTS {
     munged_sumstats = REGENIE.out.munged_sumstats
 
 }
-

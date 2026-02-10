@@ -2,7 +2,10 @@
     "Should process phenotypes with both quantitative and categorical covariates": {
         "content": [
             [
-                "phenotype.noheader.txt:md5,ae84f81a8e0bdc6c5e347c08bdb9ab9a"
+                [
+                    "Y1",
+                    "phenotype_single.noheader.txt:md5,975120f092cdfd1353fef60884351b15"
+                ]
             ],
             [
                 "covariates.quant.noheader.txt:md5,308c115c6c84222a3748ef683e8a6f9d"

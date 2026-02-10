@@ -9,13 +9,14 @@ nextflow_process {
         when {
             process {
                 """
-                // Full genome REML result
-                input[0] = file("$projectDir/tests/input/ldak/reml_results/reml_ldak_grm.reml")
-                // Quarter REML results (using chromosome REML files as proxies for testing)
-                input[1] = [
-                    file("$projectDir/tests/input/ldak/reml_results/reml_chr01.vcf.reml"),
-                    file("$projectDir/tests/input/ldak/reml_results/reml_chr02.vcf.reml")
-                ]
+                input[0] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/ldak/reml_results/reml_ldak_grm.reml"),
+                    [
+                        file("$projectDir/tests/input/ldak/reml_results/reml_chr01.vcf.reml"),
+                        file("$projectDir/tests/input/ldak/reml_results/reml_chr02.vcf.reml")
+                    ]
+                )
                 """
             }
         }
@@ -25,9 +26,9 @@ nextflow_process {
 
             with(process.out) {
                 assert inflation_results
-                def inflationFile = path(inflation_results.get(0))
+                def inflationFile = path(inflation_results.get(0).get(1))
 
-                assert inflationFile.fileName.toString() == "inflation_results.txt"
+                assert inflationFile.fileName.toString() == "inflation_Y1.txt"
                 assert inflationFile.size() > 0
 
                 // Check file contains inflation values

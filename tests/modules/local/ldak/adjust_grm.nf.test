@@ -18,7 +18,10 @@ nextflow_process {
                     file("$projectDir/tests/input/ldak/combined_grm/ldak_grm.grm.adjust")
                 )
                 // Phenotype file (required for adjustment)
-                input[1] = file("$projectDir/tests/input/ldak/phenotype.noheader.txt")
+                input[1] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.noheader.txt")
+                )
                 // Quantitative covariates (required by LDAK --adjust-grm)
                 input[2] = file("$projectDir/tests/input/ldak/covariates.quant.noheader.txt")
                 // Categorical covariates (not supported by --adjust-grm, use empty list)
@@ -34,24 +37,27 @@ nextflow_process {
                 assert adjusted_grm
                 def adjustedTuple = adjusted_grm.get(0)
 
-                // Should have: grm_name_adj, grm.bin, grm.id, grm.details, grm.adjust, grm.root
-                assert adjustedTuple.size() == 6
+                // Should have: phenotype_name, grm_name_adj, grm.bin, grm.id, grm.details, grm.adjust, grm.root
+                assert adjustedTuple.size() == 7
 
-                def grmName = adjustedTuple.get(0)
-                assert grmName == "ldak_grm_adj"
+                def phenotypeName = adjustedTuple.get(0)
+                assert phenotypeName == "Y1"
 
-                def grmBin = path(adjustedTuple.get(1))
-                def grmId = path(adjustedTuple.get(2))
-                def grmDetails = path(adjustedTuple.get(3))
-                def grmAdjust = path(adjustedTuple.get(4))
-                def grmRoot = path(adjustedTuple.get(5))
+                def grmName = adjustedTuple.get(1)
+                assert grmName == "ldak_grm_Y1_adj"
+
+                def grmBin = path(adjustedTuple.get(2))
+                def grmId = path(adjustedTuple.get(3))
+                def grmDetails = path(adjustedTuple.get(4))
+                def grmAdjust = path(adjustedTuple.get(5))
+                def grmRoot = path(adjustedTuple.get(6))
 
                 // Verify all output files exist
-                assert grmBin.fileName.toString() == "ldak_grm_adj.grm.bin"
-                assert grmId.fileName.toString() == "ldak_grm_adj.grm.id"
-                assert grmDetails.fileName.toString() == "ldak_grm_adj.grm.details"
-                assert grmAdjust.fileName.toString() == "ldak_grm_adj.grm.adjust"
-                assert grmRoot.fileName.toString() == "ldak_grm_adj.grm.root"
+                assert grmBin.fileName.toString() == "ldak_grm_Y1_adj.grm.bin"
+                assert grmId.fileName.toString() == "ldak_grm_Y1_adj.grm.id"
+                assert grmDetails.fileName.toString() == "ldak_grm_Y1_adj.grm.details"
+                assert grmAdjust.fileName.toString() == "ldak_grm_Y1_adj.grm.adjust"
+                assert grmRoot.fileName.toString() == "ldak_grm_Y1_adj.grm.root"
 
                 // Verify files have content
                 assert grmBin.size() > 0

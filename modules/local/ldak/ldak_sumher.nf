@@ -4,7 +4,7 @@ process LDAK_SUMHER {
     label 'process_low'
 
     input:
-    tuple val(trait_name), path(summary_stats)
+    tuple val(trait_name), path(summary_stats), val(prevalence_override), val(ascertainment_override)
     path tagfile
 
     output:
@@ -15,7 +15,8 @@ process LDAK_SUMHER {
 
     script:
     def check_sums = params.ldak_sumher_check_sums ? "" : "--check-sums NO"
-    def prevalence = params.ldak_sumher_prevalence ? "--prevalence ${params.ldak_sumher_prevalence}" : ""
+    def prevalence = prevalence_override ? "--prevalence ${prevalence_override}" : ""
+    def ascertainment = ascertainment_override ? "--ascertainment ${ascertainment_override}" : ""
     def cutoff = params.ldak_sumher_cutoff ? "--cutoff ${params.ldak_sumher_cutoff}" : ""
 
     """
@@ -25,6 +26,7 @@ process LDAK_SUMHER {
         --tagfile ${tagfile} \\
         ${check_sums} \\
         ${prevalence} \\
+        ${ascertainment} \\
         ${cutoff} \\
         --max-threads ${task.cpus}
     """

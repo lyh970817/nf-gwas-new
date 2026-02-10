@@ -4,16 +4,16 @@ process IMPUTED_TO_PLINK2 {
     tuple val(chr_num), path(imputed_vcf_file)
     
     output:
-    tuple val(chr_num), val("${imputed_vcf_file.baseName}"), path("${imputed_vcf_file.baseName}.pgen"), path("${imputed_vcf_file.baseName}.psam"),path("${imputed_vcf_file.baseName}.pvar"), val(-1), emit: imputed_plink2
+    tuple val(chr_num), val("${imputed_vcf_file.simpleName}"), path("${imputed_vcf_file.simpleName}.pgen"), path("${imputed_vcf_file.simpleName}.psam"), path("${imputed_vcf_file.simpleName}.pvar"), val(-1), emit: imputed_plink2
 
     script:
-    def delimiter = params.vcf_conversion_split_id  ? "--id-delim" : '--double-id'
+    def imputed_vcf_prefix = imputed_vcf_file.simpleName
     """
     plink2 \
         --vcf $imputed_vcf_file dosage=DS \
         --make-pgen \
-        $delimiter \
-        --out ${imputed_vcf_file.baseName} \
+        --double-id \
+        --out ${imputed_vcf_prefix} \
         --threads ${task.cpus} \
         --memory ${task.memory.toMega()}
     """

@@ -9,8 +9,6 @@ nextflow_process {
         when {
             params {
                 ldak_sumcors_check_sums = false
-                ldak_sumcors_prevalence1 = null
-                ldak_sumcors_prevalence2 = null
             }
             process {
                 """
@@ -32,7 +30,51 @@ nextflow_process {
             // Check correlation results file exists
             with(process.out.correlation_results) {
                 assert size() == 1
-                assert path(get(0)).exists()
+                def corsFile = path(get(0))
+                assert corsFile.exists()
+
+                def commandFile = corsFile.parent.resolve('.command.sh')
+                assert commandFile.exists()
+                def commandText = commandFile.text
+                assert !commandText.contains('--prevalence')
+                assert !commandText.contains('--ascertainment')
+            }
+        }
+    }
+
+    test("Should ignore prevalence and ascertainment overrides for sum-cors") {
+
+        when {
+            params {
+                ldak_sumcors_check_sums = false
+            }
+            process {
+                """
+                input[0] = Channel.of([
+                    "trait1",
+                    file("${projectDir}/tests/input/ldak/sumher/test_gwas_summary.txt"),
+                    "trait2",
+                    file("${projectDir}/tests/input/ldak/sumher/test_gwas_summary2.txt")
+                ])
+                input[1] = file("${projectDir}/tests/input/ldak/sumher/test_thin.tagging")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.trace.tasks().size() == 1
+
+            with(process.out.correlation_results) {
+                assert size() == 1
+                def corsFile = path(get(0))
+                assert corsFile.exists()
+
+                def commandFile = corsFile.parent.resolve('.command.sh')
+                assert commandFile.exists()
+                def commandText = commandFile.text
+                assert !commandText.contains('--prevalence')
+                assert !commandText.contains('--ascertainment')
             }
         }
     }

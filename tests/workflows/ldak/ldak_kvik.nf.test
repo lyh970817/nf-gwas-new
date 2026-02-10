@@ -14,27 +14,26 @@ nextflow_workflow {
                 step1_plink_ch = Channel.of(
                     tuple(
                         "merged_chr",
-                        file("\$projectDir/tests/input/merged_chr.bed"),
-                        file("\$projectDir/tests/input/merged_chr.bim"),
-                        file("\$projectDir/tests/input/merged_chr.fam")
+                        file("\$projectDir/tests/input/ldak/merged_chr.bed"),
+                        file("\$projectDir/tests/input/ldak/merged_chr.bim"),
+                        file("\$projectDir/tests/input/ldak/merged_chr.fam")
                     )
                 )
 
                 // Step 2 input: Per-chromosome imputed PLINK files
                 imputed_plink_ch = Channel.of(
-                    tuple(1, "chr01.vcf", file("\$projectDir/tests/input/chr01.vcf.bed"), file("\$projectDir/tests/input/chr01.vcf.bim"), file("\$projectDir/tests/input/chr01.vcf.fam"), null),
-                    tuple(2, "chr02.vcf", file("\$projectDir/tests/input/chr02.vcf.bed"), file("\$projectDir/tests/input/chr02.vcf.bim"), file("\$projectDir/tests/input/chr02.vcf.fam"), null)
+                    tuple(1, "chr01.vcf", file("\$projectDir/tests/input/ldak/chr01.vcf.bed"), file("\$projectDir/tests/input/ldak/chr01.vcf.bim"), file("\$projectDir/tests/input/ldak/chr01.vcf.fam"), null),
+                    tuple(2, "chr02.vcf", file("\$projectDir/tests/input/ldak/chr02.vcf.bed"), file("\$projectDir/tests/input/ldak/chr02.vcf.bim"), file("\$projectDir/tests/input/ldak/chr02.vcf.fam"), null)
                 )
 
                 input[0] = step1_plink_ch
                 input[1] = imputed_plink_ch
-                input[2] = file("\$projectDir/tests/input/phenotype_single.txt")
-                input[3] = file("\$projectDir/tests/input/covariates.txt")
-                input[4] = false  // is_binary (quantitative trait)
-                input[5] = 1  // mpheno
-                input[6] = "test_quant"  // phenotype_name
-                input[7] = []  // no genefile (skip Step 3)
-                input[8] = []  // no extract_file
+                input[2] = Channel.of(tuple(
+                    "Y1",
+                    file("\$projectDir/tests/input/ldak/phenotype_single.txt"),
+                    false
+                ))
+                input[3] = file("\$projectDir/tests/input/ldak/covariates.txt")
                 """
             }
         }
@@ -52,8 +51,11 @@ nextflow_workflow {
                 assert merged_assoc
                 assert merged_summaries
 
-                // Step 3 should be empty (no genefile provided)
-                // step3_outputs should be empty channel
+
+                def assocFile = merged_assoc.get(0).get(1)
+                def assocPath = assocFile instanceof java.util.List ? path(assocFile[0]) : path(assocFile)
+                assert assocPath.text.contains("Chromosome")
+                assert assocPath.text.contains("Wald_P")
             }
         }
     }
@@ -67,26 +69,25 @@ nextflow_workflow {
                 step1_plink_ch = Channel.of(
                     tuple(
                         "merged_chr",
-                        file("\$projectDir/tests/input/merged_chr.bed"),
-                        file("\$projectDir/tests/input/merged_chr.bim"),
-                        file("\$projectDir/tests/input/merged_chr.fam")
+                        file("\$projectDir/tests/input/ldak/merged_chr.bed"),
+                        file("\$projectDir/tests/input/ldak/merged_chr.bim"),
+                        file("\$projectDir/tests/input/ldak/merged_chr.fam")
                     )
                 )
 
                 imputed_plink_ch = Channel.of(
-                    tuple(1, "chr01.vcf", file("\$projectDir/tests/input/chr01.vcf.bed"), file("\$projectDir/tests/input/chr01.vcf.bim"), file("\$projectDir/tests/input/chr01.vcf.fam"), null),
-                    tuple(2, "chr02.vcf", file("\$projectDir/tests/input/chr02.vcf.bed"), file("\$projectDir/tests/input/chr02.vcf.bim"), file("\$projectDir/tests/input/chr02.vcf.fam"), null)
+                    tuple(1, "chr01.vcf", file("\$projectDir/tests/input/ldak/chr01.vcf.bed"), file("\$projectDir/tests/input/ldak/chr01.vcf.bim"), file("\$projectDir/tests/input/ldak/chr01.vcf.fam"), null),
+                    tuple(2, "chr02.vcf", file("\$projectDir/tests/input/ldak/chr02.vcf.bed"), file("\$projectDir/tests/input/ldak/chr02.vcf.bim"), file("\$projectDir/tests/input/ldak/chr02.vcf.fam"), null)
                 )
 
                 input[0] = step1_plink_ch
                 input[1] = imputed_plink_ch
-                input[2] = file("\$projectDir/tests/input/phenotype_single.txt")
+                input[2] = Channel.of(tuple(
+                    "Y1",
+                    file("\$projectDir/tests/input/ldak/phenotype_single.txt"),
+                    false
+                ))
                 input[3] = []  // No covariates
-                input[4] = false
-                input[5] = 1
-                input[6] = "test_nocov"
-                input[7] = []
-                input[8] = []
                 """
             }
         }
@@ -97,6 +98,111 @@ nextflow_workflow {
             with(workflow.out) {
                 assert step1_outputs
                 assert merged_assoc
+
+                def assocFile = merged_assoc.get(0).get(1)
+                def assocPath = assocFile instanceof java.util.List ? path(assocFile[0]) : path(assocFile)
+                assert assocPath.text.contains("Chromosome")
+                assert assocPath.text.contains("Wald_P")
+            }
+        }
+    }
+
+    test("Should execute LDAK-KVIK workflow with categorical covariates") {
+
+        when {
+            params {
+                covariates_columns = 'V1,V2,V3'
+                covariates_cat_columns = 'V1'
+            }
+            workflow {
+                """
+                step1_plink_ch = Channel.of(
+                    tuple(
+                        "merged_chr",
+                        file("\$projectDir/tests/input/ldak/merged_chr.bed"),
+                        file("\$projectDir/tests/input/ldak/merged_chr.bim"),
+                        file("\$projectDir/tests/input/ldak/merged_chr.fam")
+                    )
+                )
+
+                imputed_plink_ch = Channel.of(
+                    tuple(1, "chr01.vcf", file("\$projectDir/tests/input/ldak/chr01.vcf.bed"), file("\$projectDir/tests/input/ldak/chr01.vcf.bim"), file("\$projectDir/tests/input/ldak/chr01.vcf.fam"), null),
+                    tuple(2, "chr02.vcf", file("\$projectDir/tests/input/ldak/chr02.vcf.bed"), file("\$projectDir/tests/input/ldak/chr02.vcf.bim"), file("\$projectDir/tests/input/ldak/chr02.vcf.fam"), null)
+                )
+
+                input[0] = step1_plink_ch
+                input[1] = imputed_plink_ch
+                input[2] = Channel.of(tuple(
+                    "Y1",
+                    file("\$projectDir/tests/input/ldak/phenotype_single.txt"),
+                    false
+                ))
+                input[3] = file("\$projectDir/tests/input/ldak/covariates.txt")
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert step1_outputs
+                assert merged_assoc
+
+                def assocFile = merged_assoc.get(0).get(1)
+                def assocPath = assocFile instanceof java.util.List ? path(assocFile[0]) : path(assocFile)
+                assert assocPath.text.contains("Chromosome")
+                assert assocPath.text.contains("Wald_P")
+            }
+        }
+    }
+
+    test("Should execute LDAK-KVIK workflow with categorical-only covariates") {
+
+        when {
+            params {
+                covariates_columns = 'V1'
+                covariates_cat_columns = 'V1'
+            }
+            workflow {
+                """
+                step1_plink_ch = Channel.of(
+                    tuple(
+                        "merged_chr",
+                        file("\$projectDir/tests/input/ldak/merged_chr.bed"),
+                        file("\$projectDir/tests/input/ldak/merged_chr.bim"),
+                        file("\$projectDir/tests/input/ldak/merged_chr.fam")
+                    )
+                )
+
+                imputed_plink_ch = Channel.of(
+                    tuple(1, "chr01.vcf", file("\$projectDir/tests/input/ldak/chr01.vcf.bed"), file("\$projectDir/tests/input/ldak/chr01.vcf.bim"), file("\$projectDir/tests/input/ldak/chr01.vcf.fam"), null),
+                    tuple(2, "chr02.vcf", file("\$projectDir/tests/input/ldak/chr02.vcf.bed"), file("\$projectDir/tests/input/ldak/chr02.vcf.bim"), file("\$projectDir/tests/input/ldak/chr02.vcf.fam"), null)
+                )
+
+                input[0] = step1_plink_ch
+                input[1] = imputed_plink_ch
+                input[2] = Channel.of(tuple(
+                    "Y1",
+                    file("\$projectDir/tests/input/ldak/phenotype_single.txt"),
+                    false
+                ))
+                input[3] = file("\$projectDir/tests/input/ldak/covariates.txt")
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            with(workflow.out) {
+                assert step1_outputs
+                assert merged_assoc
+
+                def assocFile = merged_assoc.get(0).get(1)
+                def assocPath = assocFile instanceof java.util.List ? path(assocFile[0]) : path(assocFile)
+                assert assocPath.text.contains("Chromosome")
+                assert assocPath.text.contains("Wald_P")
             }
         }
     }

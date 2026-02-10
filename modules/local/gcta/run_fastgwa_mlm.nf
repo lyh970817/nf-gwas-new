@@ -3,11 +3,7 @@ process RUN_FASTGWA_MLM {
     publishDir "${params.pubDir}/gcta_fastgwa", mode: 'copy', pattern: "*.fastGWA"
 
     input:
-    tuple val(chr_num), val(filename), path(plink_pgen), path(plink_psam), path(plink_pvar), val(range)
-    tuple path(sparse_grm_id), path(sparse_grm_sp)
-    path phenotypes_file
-    path qcovariates_file
-    path covariates_file
+    tuple val(phenotype_name), val(chr_num), val(filename), path(plink_pgen), path(plink_psam), path(plink_pvar), val(range), path(sparse_grm_id), path(sparse_grm_sp), path(phenotypes_file), path(qcovariates_file), path(covariates_file)
 
     output:
     path "*.fastGWA", emit: fastgwa_results
@@ -16,7 +12,8 @@ process RUN_FASTGWA_MLM {
     def qcovar_param = qcovariates_file ? "--qcovar ${qcovariates_file}" : ''
     def covar_param = covariates_file ? "--covar ${covariates_file}" : ''
     def grm_sparse_prefix = sparse_grm_id.baseName.split("\\.")[0]
-    def out = "${filename}_${phenotypes_file.baseName}"
+    def phenotype_slug = phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')
+    def out = "${filename}_${phenotype_slug}"
 
     """
     # Run GCTA fastgeWA-mlm analysis

@@ -5,673 +5,273 @@
   "description": "A Nextflow GWAS pipeline.",
   "type": "object",
   "$defs": {
-    "required_input_output_options": {
-      "title": "Input/output options",
+    "common_inputs": {
+      "title": "Common Inputs",
       "type": "object",
-      "fa_icon": "fas fa-terminal",
-      "description": "Define where the pipeline should find input data and save output data.",
-      "properties": {
-        "outdir": {
-          "type": "string",
-          "format": "directory-path",
-          "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure. 'Default' will create a folder under output/${params.project}",
-          "fa_icon": "fas fa-folder-open"
-        }
-      },
-      "required": ["outdir"]
-    },
-    "required_all_tests": {
-      "title": "All Tests",
-      "type": "object",
-      "description": "Required parameters for all tests performed by the pipeline.",
-      "default": "",
+      "description": "Shared input/output and metadata parameters used across workflows.",
       "properties": {
         "project": {
           "type": "string",
-          "description": "Name of the project",
-          "fa_icon": "fas fa-project-diagram"
+          "description": "Optional project name for external bookkeeping."
         },
-        "genotypes_association_vcf": {
+        "pubDir": {
           "type": "string",
-          "description": "VCF files for analysis (e.g., 'data/chr*.vcf.gz'). Converted to PLINK formats if genotypes_association_plink1/plink2 not provided.",
-          "fa_icon": "fas fa-project-diagram"
+          "description": "Pipeline publish directory for results."
         },
-        "genotypes_association_plink1": {
+        "genotyped_file": {
           "type": "string",
-          "description": "PLINK1 files (bed/bim/fam) for analysis (e.g., 'data/chr*.{bed,bim,fam}'). Used directly, skipping VCF conversion.",
-          "fa_icon": "fas fa-project-diagram"
+          "description": "Directly genotyped PLINK pattern (e.g. 'data/genotyped.{bed,bim,fam}')."
         },
-        "genotypes_association_plink2": {
+        "genotypes_build": {
           "type": "string",
-          "description": "PLINK2 files (pgen/psam/pvar) for analysis (e.g., 'data/chr*.{pgen,psam,pvar}'). Used directly, skipping VCF conversion.",
-          "fa_icon": "fas fa-project-diagram"
+          "description": "Optional genotype build label (e.g. hg19/hg38)."
         },
-        "association_build": {
+        "imputed_genotyped_files_vcf": {
           "type": "string",
-          "description": "Build of genotypes for association testing (hg19 or hg38).",
-          "fa_icon": "fas fa-project-diagram"
+          "description": "Imputed VCF pattern (e.g. 'data/chr*.vcf.gz')."
         },
-        "phenotypes_filename": {
+        "imputed_genotyped_files_plink1": {
           "type": "string",
-          "format": "file-path",
-          "mimetype": "text/txt",
-          "description": "Path to phenotype file",
-          "fa_icon": "fas fa-project-diagram"
+          "description": "Imputed PLINK1 pattern (e.g. 'data/chr*.{bed,bim,fam}')."
         },
-        "phenotypes_columns": {
+        "imputed_genotyped_files_plink2": {
           "type": "string",
-          "description": "Comma-separated list of phenotypes",
-          "fa_icon": "fas fa-project-diagram"
+          "description": "Imputed PLINK2 pattern (e.g. 'data/chr*.{pgen,psam,pvar}')."
         },
-        "genotypes_prediction": {
+        "phenotypes_dir": {
           "type": "string",
-          "description": "Path to the genomic predictions (e.g. array genotypes) as a merged file in plink format).",
-          "fa_icon": "fas fa-project-diagram"
+          "format": "directory-path",
+          "description": "Directory containing one phenotype file per trait."
         },
-        "phenotypes_binary_trait": {
-          "type": "boolean",
-          "default": false,
-          "description": "Binary trait",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "required": [
-        "project",
-        "phenotypes_filename",
-        "phenotypes_columns"
-      ],
-      "fa_icon": "fas fa-project-diagram"
-    },
-    "required_single_variant_tests_only": {
-      "title": "Single-variant tests only",
-      "type": "object",
-      "description": "Required parameters specifically for single-variant tests performed by the pipeline.",
-      "default": "",
-      "properties": {
-        "regenie_test": {
+        "summary_stats_dir": {
           "type": "string",
-          "description": "Define test. One of 'additive, 'recessive' or 'dominant'",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
-    },
-    "required_gene_based_tests_only": {
-      "title": "Gene-based tests only",
-      "type": "object",
-      "description": "Required parameters specifically for gene-based tests performed by the pipeline.",
-      "default": "",
-      "properties": {
-        "regenie_run_gene_based_tests": {
-          "type": "boolean",
-          "description": "Activate gene-based testing",
-          "fa_icon": "fas fa-project-diagram"
+          "format": "directory-path",
+          "description": "Directory containing summary statistics; association outputs are linked here for downstream workflows."
         },
-        "regenie_gene_anno": {
+        "grm_dir": {
           "type": "string",
-          "format": "file-path",
-          "description": "File with variant annotations for each set",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_gene_setlist": {
-          "type": "string",
-          "format": "file-path",
-          "description": "File listing variant sets",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_gene_masks": {
-          "type": "string",
-          "format": "file-path",
-          "description": "File with mask $defs using the annotations defined in regenie_gene_anno",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
-    },
-    "required_interaction_tests": {
-      "title": "Interaction tests",
-      "type": "object",
-      "description": "Required parameters for interaction tests. Starting from regenie v3.0, you can perform scans for interactions (either GxE or GxG)",
-      "default": "",
-      "properties": {
-        "regenie_run_interaction_tests": {
-          "type": "boolean",
-          "description": "Activate interaction testing",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_interaction": {
-          "type": "string",
-          "description": "To run GxE test specifying the interacting covariate",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_interaction_snp": {
-          "type": "string",
-          "description": "To run GxG test specifying the interacting variant",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
-    },
-    "required_conditional_analyses": {
-      "title": "Conditional analyses",
-      "type": "object",
-      "description": "Required parameters for conditional tests. Starting from regenie v3.0, you can specify genetic variants to add to the set of covariates when performing association testing.",
-      "default": "",
-      "properties": {
-        "regenie_condition_list": {
-          "type": "string",
-          "format": "file-path",
-          "description": "File with list of variants to condition on",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
-    },
-    "optional_general_options": {
-      "title": "General options",
-      "type": "object",
-      "description": "General parameters.",
-      "default": "",
-      "properties": {
-        "project_date": {
-          "type": "string",
-          "default": "`date`",
-          "description": "Date in report",
-          "fa_icon": "fas fa-project-diagram"
+          "format": "directory-path",
+          "description": "Directory containing reusable GRM symlinks; pipeline-generated GCTA/LDAK GRMs are linked into gcta_grm/ and ldak_grm/."
         },
         "covariates_filename": {
           "type": "string",
           "format": "file-path",
-          "description": "Path to covariates file",
-          "fa_icon": "fas fa-project-diagram"
+          "description": "Path to covariates file."
         },
         "covariates_columns": {
           "type": "string",
-          "description": "List of covariates",
-          "fa_icon": "fas fa-project-diagram"
+          "description": "Comma-separated quantitative covariate columns."
         },
         "covariates_cat_columns": {
           "type": "string",
-          "description": "List of categorical covariates",
-          "fa_icon": "fas fa-project-diagram"
+          "description": "Comma-separated categorical covariate columns."
         },
-        "phenotypes_delete_missings": {
-          "type": "boolean",
-          "description": "Remove samples with missing data at any of the phenotypes",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "phenotypes_apply_rint": {
-          "type": "boolean",
-          "description": "Apply Rank Inverse Normal Transformation (RINT) to quantitative phenotypes in both steps",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "genotypes_prediction_chunks": {
+        "max_cpus": {
           "type": "integer",
-          "default": 0,
-          "description": "Number of chunks for prediction files",
-          "fa_icon": "fas fa-project-diagram"
+          "default": 10
         },
-        "genotypes_association_chunk_size": {
-          "type": "integer",
-          "default": 0,
-          "description": "Chunksize for association files",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "genotypes_association_chunk_strategy": {
+        "max_memory": {
           "type": "string",
-          "default": "RANGE",
-          "description": "Chunk strategy ('RANGE' or 'VARIANTS') for association files.",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_step1_optional": {
-          "type": "string",
-          "description": "Optional REGENIE Step1 parameters.",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_step2_optional": {
-          "type": "string",
-          "description": "Optional REGENIE Step2 parameters.",
-          "fa_icon": "fas fa-project-diagram"
+          "default": "16.GB"
         }
-      },
-      "fa_icon": "fas fa-project-diagram"
+      }
     },
-    "optional_pruning_step": {
-      "title": "Pruning step",
+    "workflow_toggles": {
+      "title": "Workflow Toggles",
       "type": "object",
-      "description": "Optional parameters that can be set for the pruning step.",
-      "default": "",
+      "description": "Enable one or more workflows directly; methods are no longer mutually exclusive selectors.",
       "properties": {
-        "prune_enabled": {
-          "type": "boolean",
-          "description": "Enable pruning step",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "prune_maf": {
-          "type": "number",
-          "default": 0.01,
-          "description": "MAF filter",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "prune_window_kbsize": {
-          "type": "integer",
-          "default": 1000,
-          "description": "Window size",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "prune_step_size": {
-          "type": "integer",
-          "default": 100,
-          "description": "Step size (variant ct)",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "prune_r2_threshold": {
-          "type": "number",
-          "default": 0.9,
-          "description": "Unphased hardcall R2 threshold",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
+        "run_assoc_regenie": { "type": "boolean", "default": true },
+        "run_assoc_fastgwa": { "type": "boolean", "default": false },
+        "run_assoc_kvik": { "type": "boolean", "default": false },
+
+        "run_h2_gcta_grm": { "type": "boolean", "default": false },
+        "run_h2_ldak_grm": { "type": "boolean", "default": false },
+        "run_h2_gcta_greml": { "type": "boolean", "default": false },
+        "run_h2_gcta_greml_ldms": { "type": "boolean", "default": false },
+        "run_h2_bolt_lmm_reml": { "type": "boolean", "default": false },
+        "run_h2_ldak_reml": { "type": "boolean", "default": false },
+        "run_h2_ldak_he": { "type": "boolean", "default": false },
+        "run_h2_ldak_pcgc": { "type": "boolean", "default": false },
+        "run_h2_ldak_qc": { "type": "boolean", "default": false },
+        "run_h2_ldak_sumher": { "type": "boolean", "default": false },
+        "run_h2_ldsc_h2": { "type": "boolean", "default": false },
+
+        "run_rg_ldak_sumcors": { "type": "boolean", "default": false },
+        "run_rg_ldsc_rg": { "type": "boolean", "default": false },
+        "run_rg_gcta_bivariate_greml": { "type": "boolean", "default": false },
+        "run_rg_gcta_bivariate_greml_ldms": { "type": "boolean", "default": false },
+
+        "run_magma_gene_based": { "type": "boolean", "default": false },
+        "run_magma_gene_set": { "type": "boolean", "default": false },
+
+        "run_lava_local_rg": { "type": "boolean", "default": false },
+        "run_lcv_causal": { "type": "boolean", "default": false },
+
+        "run_munge_sumstats": { "type": "boolean", "default": false }
+      }
     },
-    "optional_quality_control_of_predictions": {
-      "title": "Quality control of predictions",
+    "association": {
+      "title": "GWAS Association",
       "type": "object",
-      "description": "Optional parameters that can be set for quality control of predictions.",
-      "default": "",
       "properties": {
-        "qc_maf": {
-          "type": "number",
-          "default": 0.01,
-          "description": "Minor allele frequency (MAF) filter",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "qc_mac": {
-          "type": "integer",
-          "default": 100,
-          "description": "Minor allele count (MAC) filter",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "qc_geno": {
-          "type": "number",
-          "default": 0.1,
-          "description": "Genotype missingess",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "qc_hwe": {
-          "type": "string",
-          "default": "1e-15",
-          "description": "Hardy-Weinberg equilibrium (HWE) filter",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "qc_mind": {
-          "type": "number",
-          "default": 0.1,
-          "description": "Sample missigness",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
+        "regenie_skip_predictions": { "type": "boolean", "default": false },
+        "phenotypes_apply_rint": { "type": "boolean", "default": false },
+        "regenie_test": { "type": "string", "default": "additive" },
+        "regenie_force_step1": { "type": "boolean", "default": false },
+        "regenie_low_mem": { "type": "boolean", "default": false },
+        "regenie_firth": { "type": "boolean", "default": false },
+        "regenie_firth_approx": { "type": "boolean", "default": false },
+        "regenie_bsize_step1": { "type": "integer", "default": 1000 },
+        "regenie_bsize_step2": { "type": "integer", "default": 200 },
+        "regenie_step1_optional": { "type": "string" },
+        "regenie_step2_optional": { "type": "string" },
+        "kvik_step1_optional": { "type": "string" },
+        "kvik_step2_optional": { "type": "string" },
+        "genotypes_prediction_chunks": { "type": "integer", "default": 0 }
+      }
     },
-    "optional_vcf_to_plink_conversion": {
-      "title": "VCF to PLINK conversion",
+    "sumstats_shared": {
+      "title": "Shared Sumstats Columns",
       "type": "object",
-      "description": "Optional parameters that can be set for the VCF to PLINK conversion.",
-      "default": "",
+      "description": "Shared summary-statistics column definitions reused by MAGMA and LDSC.",
       "properties": {
-        "vcf_conversion_split_id": {
-          "type": "boolean",
-          "help_text": "If false, family and individual IDs are set to the sample ID (using plink2 --double-id option). If true, split VCF by \u201c_\u201d into FID and IID (--id-delim)",
-          "description": "Set family and individual IDs to the sample ID",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
+        "sumstats_snp_col": { "type": "string", "default": "Predictor" },
+        "sumstats_a1_col": { "type": "string", "default": "A1" },
+        "sumstats_a2_col": { "type": "string", "default": "A2" },
+        "sumstats_p_col": { "type": "string", "default": "P" },
+        "sumstats_log10p_col": { "type": "string" },
+        "sumstats_n_col": { "type": "string", "default": "n" },
+        "sumstats_n": { "type": "number" },
+        "ldsc_munge_signed_sumstats": { "type": "string" }
+      }
     },
-    "optional_prediction_step_regenie_step_1": {
-      "title": "Prediction step (Regenie Step 1)",
+    "heritability_individual": {
+      "title": "Heritability (Individual Level)",
       "type": "object",
-      "description": "Optional regenie specific parameters for the prediction step.",
-      "default": "",
       "properties": {
-        "regenie_skip_predictions": {
-          "type": "boolean",
-          "description": "Skip Regenie Step 1 predictions",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_force_step1": {
-          "type": "boolean",
-          "description": "Run regenie step 1 when >1M genotyped variants are used (not recommended)",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_bsize_step1": {
-          "type": "integer",
-          "default": 1000,
-          "description": "Size of the genotype blocks",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "nparts_gcta": {
-          "type": "integer",
-          "default": 10,
-          "description": "Number of parts to split the GCTA GRM calculation",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_low_mem": {
-          "type": "boolean",
-          "default": true,
-          "description": "Run regenie step 1 with low_mem option",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
+        "heritability_model": { "type": "string", "default": "human_default" },
+        "nparts_gcta": { "type": "integer", "default": 15 },
+        "gcta_create_sparse_grm": { "type": "boolean", "default": false },
+        "gcta_sparse_cutoff": { "type": "number", "default": 0.05 },
+        "ldak_adjust_grm": { "type": "boolean", "default": false },
+
+        "gcta_grm_prefix": { "type": "string", "default": "${projectDir}/grm/gcta_grm/gcta_grm_0_adj_unrel05" },
+        "gcta_mgrm_file": { "type": "string", "format": "file-path", "default": "${projectDir}/grm/gcta_grm_ldms/gcta_grm_ldms.mgrm" },
+        "gcta_sparse_grm_prefix": { "type": "string", "default": "${projectDir}/grm/gcta_grm_sparse/gcta_grm_0_adj_unrel05_sp" },
+        "ldak_grm_prefix": { "type": "string", "default": "${projectDir}/grm/ldak_grm/ldak_grm" },
+        "ldak_adjusted_grm_prefix": { "type": "string", "default": "${projectDir}/grm/ldak_grm_adjusted/ldak_grm_adj" },
+
+        "ldak_he_subset_prefix": { "type": "string" },
+        "ldak_he_subset_number": { "type": "integer" },
+        "ldak_reml_prevalence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "ldak_pcgc_prevalence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "batch_subset_prefix": { "type": "string" },
+        "batch_subset_number": { "type": "integer" }
+      }
     },
-    "optional_single_variant_and_gene_based_tests_regenie_step_2": {
-      "title": "Single-variant and gene-based tests (Regenie Step 2)",
+    "heritability_sumstats": {
+      "title": "Heritability (Sumstats)",
       "type": "object",
-      "description": "Optional regenie specific parameters for single-variant and gene-based tests.",
-      "default": "",
       "properties": {
-        "regenie_bsize_step2": {
-          "type": "integer",
-          "default": 400,
-          "description": "Size of the genotype blocks",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_firth": {
-          "type": "boolean",
-          "default": true,
-          "description": "Use Firth likelihood ratio test (LRT) as fallback for p-values less than threshold",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_firth_approx": {
-          "type": "boolean",
-          "default": true,
-          "description": "Use approximate Firth LRT for computational speedup",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
+        "ldak_sumher_tagfile": { "type": "string", "format": "file-path" },
+        "ldak_sumher_check_sums": { "type": "boolean", "default": false },
+        "ldak_sumher_prevalence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "ldak_sumher_prevalence_map": { "type": "string", "format": "file-path" },
+        "ldak_sumher_ascertainment": { "type": "number", "minimum": 0, "maximum": 1 },
+        "ldak_sumher_ascertainment_map": { "type": "string", "format": "file-path" },
+        "ldak_sumher_cutoff": { "type": "number" },
+
+        "ldak_sumstats_liftover": { "type": "boolean", "default": false },
+        "ldak_sumstats_target_build": { "type": "string", "default": "GRCh37" },
+        "ldak_sumstats_source_build": { "type": "string", "default": "auto" },
+        "ldak_sumstats_frq_filter": { "type": "number", "default": 0.01 },
+
+        "ldsc_ref_ld_chr": { "type": "string" },
+        "ldsc_w_ld_chr": { "type": "string" },
+        "ldsc_h2_extra_args": { "type": "string" },
+        "ldsc_munge_extra_args": { "type": "string" }
+      }
     },
-    "optional_single_variant_tests_only": {
-      "title": "Single-variant tests only",
+    "genetic_correlation": {
+      "title": "Genetic Correlation",
       "type": "object",
-      "description": "Optional regenie specific parameters for single-variant tests only.",
-      "default": "",
       "properties": {
-        "regenie_sample_file": {
-          "type": "string",
-          "format": "file-path",
-          "description": "Sample file (not used as BGEN format is no longer supported)",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_min_imputation_score": {
-          "type": "number",
-          "default": 0,
-          "description": "Minimum imputation info score (IMPUTE/MACH R^2)",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_min_mac": {
-          "type": "integer",
-          "default": 5,
-          "description": "Minimum minor allele count",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_ref_first": {
-          "type": "boolean",
-          "help_text": "Specify to use the first allele as the reference allele for BGEN or PLINK bed/bim/fam file input [default is to use the last allele as the reference]",
-          "description": "Use the first allele as the reference allele",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
+        "ldak_sumcors_tagfile": { "type": "string", "format": "file-path" },
+        "ldak_sumcors_check_sums": { "type": "boolean", "default": false },
+        "ldak_sumcors_summary_stats1": { "type": "string", "format": "file-path" },
+        "ldak_sumcors_summary_stats2": { "type": "string", "format": "file-path" },
+        "ldsc_rg_extra_args": { "type": "string" },
+        "gcta_bivariate_phenotype1": { "type": "string" },
+        "gcta_bivariate_phenotype2": { "type": "string" }
+      }
     },
-    "optional_gene_based_tests_only": {
-      "title": "Gene-based tests only",
+    "magma": {
+      "title": "Gene-Based Associations (MAGMA)",
       "type": "object",
-      "description": "Optional regenie specific parameters for gene-based tests only.",
-      "default": "",
       "properties": {
-        "regenie_gene_aaf": {
-          "type": "number",
-          "description": "Comma-separated list of AAF upper bounds to use when building masks",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_gene_test": {
+        "magma_reference_plink": { "type": "string" },
+        "magma_gene_annot": { "type": "string", "format": "file-path" },
+        "magma_gene_loc": { "type": "string", "format": "file-path" },
+        "magma_set_annot": { "type": "string", "format": "file-path" },
+        "magma_gene_results_dir": { "type": "string", "format": "directory-path" },
+
+        "magma_gene_input_mode": {
           "type": "string",
-          "description": "Comma-separated list of SKAT/ACAT-type tests to run",
-          "fa_icon": "fas fa-project-diagram"
+          "default": "sumstats",
+          "enum": ["sumstats", "raw"]
         },
-        "regenie_gene_joint": {
-          "type": "string",
-          "description": "Comma-separated list of joint tests to apply on the generated burden masks",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_gene_build_mask": {
-          "type": "string",
-          "help_text": "Build masks using the maximum number of ALT alleles across sites, or the sum of ALT alleles (\u2018sum\u2019), or thresholding the sum to 2 (\u2018comphet\u2019)",
-          "description": "Build masks using the maximum number of ALT alleles across sites, or the sum of ALT alleles (\u2018sum\u2019), or thresholding the sum to 2 (\u2018comphet\u2019)",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_write_bed_masks": {
-          "type": "boolean",
-          "description": "Write mask to PLINK bed format",
-          "help_text": "Does not work when building masks with \u2018sum\u2019",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_gene_vc_mac_thr": {
-          "type": "integer",
-          "description": "MAC threshold below which to collapse variants in SKAT/ACAT-type tests",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_gene_vc_max_aaf": {
-          "type": "integer",
-          "description": "AAF upper bound to use for SKAT/ACAT-type tests",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
+        "magma_raw_extra_args": { "type": "string" },
+
+        "magma_window_up_kb": { "type": "integer", "default": 35 },
+        "magma_window_down_kb": { "type": "integer", "default": 10 },
+        "magma_gene_model": { "type": "string" },
+        "magma_gene_extra_args": { "type": "string" },
+        "magma_set_model": { "type": "string" },
+        "magma_set_extra_args": { "type": "string" }
+      }
     },
-    "optional_interaction_tests_only": {
-      "title": "Interaction tests only",
+    "other_workflows": {
+      "title": "Other Workflows",
       "type": "object",
-      "description": "Optional regenie specific parameters for interaction tests only.",
-      "default": "",
       "properties": {
-        "regenie_rare_mac": {
-          "type": "integer",
-          "default": 1000,
-          "description": "Minor allele count (MAC) threshold below which to use HLM method for QTs",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_no_condtl": {
-          "type": "boolean",
-          "description": "Print out all the main effects from the interaction model",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_force_condtl": {
-          "type": "boolean",
-          "description": "Include the interacting SNP as a covariate in the marginal test",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
+        "lava_analysis_id": { "type": "string", "default": "lava_local_rg" },
+        "lava_ref_plink": { "type": "string" },
+        "lava_loci_file": { "type": "string", "format": "file-path" },
+        "lava_sample_overlap_file": { "type": "string", "format": "file-path" },
+        "lava_univ_threshold": { "type": "number", "default": 0.05 },
+
+        "lcv_analysis_id": { "type": "string", "default": "lcv_causal" },
+        "lcv_ldscores_file": { "type": "string", "format": "file-path" },
+        "lcv_sumstats_trait1": { "type": "string", "format": "file-path" },
+        "lcv_sumstats_trait2": { "type": "string", "format": "file-path" },
+        "lcv_trait1_name": { "type": "string" },
+        "lcv_trait2_name": { "type": "string" },
+        "lcv_no_blocks": { "type": "integer", "default": 100 },
+        "lcv_sig_threshold": { "type": "number", "default": 30 },
+        "lcv_crosstrait_intercept": { "type": "number", "default": 1 },
+        "lcv_ldsc_intercept": { "type": "number", "default": 1 }
+      }
     },
-    "optional_r_report": {
-      "title": "R report",
+    "utilities": {
+      "title": "Utilities",
       "type": "object",
-      "description": "Optional parameters that can be set for the R report.",
-      "default": "",
       "properties": {
-        "annotation_min_log10p": {
-          "type": "number",
-          "default": 7.3,
-          "description": "Filter and annotate results with logp10 >= 7.35",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "annotation_peak_pval": {
-          "type": "number",
-          "default": 1.5,
-          "description": "Detect peaks with log10 >= 1.5",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "annotation_max_genes": {
-          "type": "integer",
-          "default": 20,
-          "description": "Maximal number of annotated genes in Manhattan plot",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "plot_ylimit": {
-          "type": "integer",
-          "description": "Limit y axis in Manhattan/QQ plot for large p-values",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "manhattan_annotation_enabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "Use annotation for Manhattan plot",
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
-    },
-    "optional_other_options": {
-      "title": "Other options",
-      "type": "object",
-      "description": "Other optional parameters.",
-      "default": "",
-      "properties": {
-        "genotypes_build": {
-          "type": "string",
-          "description": "[DEPRECATED]",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "target_build": {
-          "type": "string",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "regenie_range": {
-          "type": "string",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "genotypes_array": {
-          "type": "string",
-          "description": "[DEPRECATED] Please use --genotypes_prediction instead.",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "genotypes_imputed": {
-          "type": "string",
-          "description": "[DEPRECATED] Please use --genotypes_association_vcf instead.",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "genotypes_imputed_format": {
-          "type": "string",
-          "description": "[DEPRECATED] No longer needed - supply files directly via genotypes_association_vcf/plink1/plink2.",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "genotypes_association": {
-          "type": "string",
-          "description": "[DEPRECATED] Please use --genotypes_association_vcf instead.",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "genotypes_association_format": {
-          "type": "string",
-          "description": "[DEPRECATED] No longer needed - supply files directly via genotypes_association_vcf/plink1/plink2.",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "batch_subset_prefix": {
-          "type": "string",
-          "description": "Prefix for batch subset files used in LDAK genotype error estimation. Each batch file should be named as '<prefix><batch_number>' (e.g., 'Batch_1', 'Batch_2'). Required for genotype error QC with LDAK.",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "batch_subset_number": {
-          "type": "integer",
-          "description": "Number of genotyping batches for LDAK genotype error estimation. Used with --batch_subset_prefix to test for batch-specific genotyping errors. Values typically range from 2-20 batches.",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "ldak_use_he_regression": {
-          "type": "boolean",
-          "default": false,
-          "description": "Use Haseman-Elston regression instead of REML for LDAK heritability estimation. Faster for large datasets (N > 100k) but less precise. Useful for initial QC and genotype error estimation.",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "ldak_he_subset_prefix": {
-          "type": "string",
-          "description": "Prefix for batch subset files used in LDAK HE genotype error estimation. Only used with --ldak_use_he_regression=true. Format: '<prefix><batch_number>' (e.g., 'Batch_1').",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "ldak_he_subset_number": {
-          "type": "integer",
-          "description": "Number of batches for LDAK HE genotype error estimation. Only used with --ldak_use_he_regression=true and --ldak_he_subset_prefix.",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "ldak_run_pcgc": {
-          "type": "boolean",
-          "default": false,
-          "description": "Use PCGC regression for binary trait heritability estimation on liability scale instead of standard REML. Critical for case-control studies.",
-          "fa_icon": "fas fa-project-diagram"
-        },
-        "ldak_pcgc_prevalence": {
-          "type": "number",
-          "description": "Disease prevalence (0-1) for PCGC regression. Required when --ldak_run_pcgc=true. Example: 0.05 for 5% prevalence.",
-          "minimum": 0,
-          "maximum": 1,
-          "fa_icon": "fas fa-project-diagram"
-        }
-      },
-      "fa_icon": "fas fa-project-diagram"
+        "munge_genome_build": { "type": "string", "default": "GRCh38" },
+        "munge_dbsnp_version": { "type": "integer", "default": 0 }
+      }
     }
   },
   "allOf": [
-    {
-      "$ref": "#/$defs/required_input_output_options"
-    },
-    {
-      "$ref": "#/$defs/required_all_tests"
-    },
-    {
-      "$ref": "#/$defs/required_single_variant_tests_only"
-    },
-    {
-      "$ref": "#/$defs/required_gene_based_tests_only"
-    },
-    {
-      "$ref": "#/$defs/required_interaction_tests"
-    },
-    {
-      "$ref": "#/$defs/required_conditional_analyses"
-    },
-    {
-      "$ref": "#/$defs/optional_general_options"
-    },
-    {
-      "$ref": "#/$defs/optional_pruning_step"
-    },
-    {
-      "$ref": "#/$defs/optional_quality_control_of_predictions"
-    },
-    {
-      "$ref": "#/$defs/optional_vcf_to_plink_conversion"
-    },
-    {
-      "$ref": "#/$defs/optional_prediction_step_regenie_step_1"
-    },
-    {
-      "$ref": "#/$defs/optional_single_variant_and_gene_based_tests_regenie_step_2"
-    },
-    {
-      "$ref": "#/$defs/optional_single_variant_tests_only"
-    },
-    {
-      "$ref": "#/$defs/optional_gene_based_tests_only"
-    },
-    {
-      "$ref": "#/$defs/optional_interaction_tests_only"
-    },
-    {
-      "$ref": "#/$defs/optional_r_report"
-    },
-    {
-      "$ref": "#/$defs/optional_other_options"
-    }
+    { "$ref": "#/$defs/common_inputs" },
+    { "$ref": "#/$defs/workflow_toggles" },
+    { "$ref": "#/$defs/association" },
+    { "$ref": "#/$defs/sumstats_shared" },
+    { "$ref": "#/$defs/heritability_individual" },
+    { "$ref": "#/$defs/heritability_sumstats" },
+    { "$ref": "#/$defs/genetic_correlation" },
+    { "$ref": "#/$defs/magma" },
+    { "$ref": "#/$defs/other_workflows" },
+    { "$ref": "#/$defs/utilities" }
   ]
 }

@@ -83,8 +83,7 @@ nextflow run main.nf \
     --run_heritability_estimation true \
     --heritability_method gcta_greml \
     --genotypes_association_plink2 "data/chr*.{pgen,psam,pvar}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --phenotypes_dir phenotypes/ \
     -profile singularity
 ```
 
@@ -96,8 +95,7 @@ nextflow run main.nf \
     --run_association_analysis true \
     --association_method gcta_fastgwa \
     --genotypes_association_plink2 "data/chr*.{pgen,psam,pvar}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --phenotypes_dir phenotypes/ \
     -profile singularity
 ```
 
@@ -110,7 +108,7 @@ nextflow run main.nf \
 | File | Description | Format |
 |------|-------------|--------|
 | **Genotypes** | SNP data | PLINK2 (pgen/psam/pvar) preferred |
-| **Phenotypes** | Trait values | Tab-separated text |
+| **Phenotypes** | Trait values (one file per trait) | Tab-separated text |
 
 ### Optional Files
 
@@ -120,11 +118,18 @@ nextflow run main.nf \
 
 ### File Format Examples
 
-**Phenotype File**:
+**Phenotype Files (one per trait)**:
 ```
-FID    IID    height    bmi
-1001   1001   175.5     24.3
-1002   1002   162.3     22.1
+phenotypes/
+├── height.txt
+└── bmi.txt
+```
+
+Each file:
+```
+FID    IID    height
+1001   1001   175.5
+1002   1002   162.3
 ```
 
 **Covariate File**:
@@ -150,8 +155,7 @@ Higher values increase parallelization but also I/O overhead. Recommended: 10-20
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `--phenotypes_filename` | Phenotype file path | Required |
-| `--phenotypes_columns` | Phenotype column names | Required |
+| `--phenotypes_dir` | Directory of phenotype files (one trait per file) | Required |
 | `--covariates_filename` | Covariate file path | Optional |
 | `--covariates_columns` | Quantitative covariates | Optional |
 | `--covariates_cat_columns` | Categorical covariates | Optional |
@@ -176,8 +180,7 @@ nextflow run main.nf \
     --run_heritability_estimation true \
     --heritability_method gcta_greml \
     --genotypes_association_plink2 "data/chr*.{pgen,psam,pvar}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --phenotypes_dir phenotypes/ \
     --covariates_filename covariates.txt \
     --covariates_columns age,PC1,PC2,PC3,PC4,PC5 \
     --covariates_cat_columns sex \
@@ -194,8 +197,7 @@ nextflow run main.nf \
     --heritability_method gcta_greml_ldms \
     --genotypes_association_plink2 "data/chr*.{pgen,psam,pvar}" \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --phenotypes_dir phenotypes/ \
     -profile slurm,singularity
 ```
 
@@ -209,8 +211,7 @@ nextflow run main.nf \
     --run_association_analysis true \
     --association_method gcta_fastgwa \
     --genotypes_association_plink2 "data/chr*.{pgen,psam,pvar}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height,bmi \
+    --phenotypes_dir phenotypes/ \
     --covariates_filename covariates.txt \
     --covariates_columns age,sex,PC1,PC2,PC3 \
     --gcta_sparse_cutoff 0.05 \
@@ -225,8 +226,7 @@ nextflow run main.nf \
     --run_genetic_correlation true \
     --genetic_correlation_method gcta_bivariate \
     --genotypes_association_plink2 "data/chr*.{pgen,psam,pvar}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height,bmi \
+    --phenotypes_dir phenotypes/ \
     -profile slurm,singularity
 ```
 
@@ -238,8 +238,7 @@ nextflow run main.nf \
     --run_heritability_estimation true \
     --heritability_method gcta_greml \
     --genotypes_association_plink2 "data/chr*.{pgen,psam,pvar}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height,bmi,waist,hip,weight \
+    --phenotypes_dir phenotypes/ \
     -profile slurm,singularity
 ```
 

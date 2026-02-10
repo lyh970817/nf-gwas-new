@@ -3,27 +3,25 @@ process REGENIE_STEP1_RUN_CHUNK {
     publishDir "${params.pubDir}/logs", mode: 'copy', pattern: "chunks_job_${chunk}.log"
 
     input:
-    tuple val(chunk), path(master), path(chunk_snpllist), val(genotyped_plink_filename), path(genotyped_plink_file), path(phenotypes_file), path(covariates_file), path(condition_list_file)
+    tuple val(chunk), path(master), path(chunk_snpllist), val(genotyped_plink_filename), path(genotyped_plink_file), path(phenotypes_file), path(covariates_file), val(phenotype_name), val(is_binary)
 
     output:
-    path "chunks_job${chunk}*", emit: regenie_step1_out
-    path "chunks_job_${chunk}.log", emit: regenie_step1_out_log
+    tuple val(phenotype_name), path("chunks_job${chunk}*"), emit: regenie_step1_out
+    path "chunks_job${chunk}.log", emit: regenie_step1_out_log
 
     script:
     def covariants = covariates_file ? "--covarFile $covariates_file" : ''
     def quant_covariants = params.covariates_columns ? "--covarColList ${params.covariates_columns}" : ''
     def cat_covariants = params.covariates_cat_columns ? "--catCovarList ${params.covariates_cat_columns}" : ''
-    def deleteMissings = params.phenotypes_delete_missings  ? "--strict" : ''
     def apply_rint = params.phenotypes_apply_rint ? "--apply-rint" : ''
     def forceStep1 = params.regenie_force_step1  ? "--force-step1" : ''
-    def refFirst = params.regenie_ref_first  ? "--ref-first" : ''
-    def condition_list = params.regenie_condition_list ? "--condition-list $condition_list_file" : ''
     def lowMemory = params.regenie_low_mem ? "--lowmem --lowmem-prefix tmp_rg" : ""
     def step1_optional = params.regenie_step1_optional  ? "$params.regenie_step1_optional":''
+    def binary_trait = is_binary ? '--bt' : ''
 
     // Create symbolic links to the PLINK files
     // def plink_base = genotyped_plink_filename
-    // def plink_files = "$projectDir/tests/input/pipeline/${plink_base}"
+    // def plink_files = "$projectDir/tests/input/regenie/${plink_base}"
 
     """
     # qcfiles path required for keep and extract (but not actually set below)
@@ -31,22 +29,19 @@ process REGENIE_STEP1_RUN_CHUNK {
         --step 1 \
         --bed ${genotyped_plink_filename} \
         --phenoFile ${phenotypes_file} \
-        --phenoColList  ${params.phenotypes_columns} \
+        --phenoColList ${phenotype_name} \
         $covariants \
         $quant_covariants \
         $cat_covariants \
-        $condition_list \
-        $deleteMissings \
         $apply_rint \
         $forceStep1 \
-        $refFirst \
         --bsize ${params.regenie_bsize_step1} \
-        ${params.phenotypes_binary_trait ? '--bt' : ''} \
+        $binary_trait \
         $lowMemory \
         --gz \
         --threads ${task.cpus} \
         --run-l0 ${master},${chunk} \
-        --out chunks_job_${chunk} \
+        --out chunks_job${chunk} \
         --use-relative-path \
         $step1_optional
     """

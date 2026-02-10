@@ -8,7 +8,6 @@ nextflow_workflow {
 
         when {
             params {
-                phenotypes_columns = 'Y1'
                 nparts_gcta = 2
             }
             workflow {
@@ -18,26 +17,30 @@ nextflow_workflow {
                     tuple(
                         1,
                         "chr01.vcf",
-                        file("$projectDir/tests/input/chr01.vcf.pgen"),
-                        file("$projectDir/tests/input/chr01.vcf.psam"),
-                        file("$projectDir/tests/input/chr01.vcf.pvar"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.pgen"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.psam"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.pvar"),
                         null
                     ),
                     tuple(
                         2,
                         "chr02.vcf",
-                        file("$projectDir/tests/input/chr02.vcf.pgen"),
-                        file("$projectDir/tests/input/chr02.vcf.psam"),
-                        file("$projectDir/tests/input/chr02.vcf.pvar"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.pgen"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.psam"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.pvar"),
                         null
                     )
                 )
 
-                // Phenotype file
-                input[1] = file("$projectDir/tests/input/phenotype_single.txt")
+                // Phenotype meta channel
+                input[1] = Channel.of(tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/gcta/phenotype_single.txt"),
+                    false
+                ))
 
                 // Covariate file
-                input[2] = ""
+                input[2] = []
 
                 // nparts_gcta
                 input[3] = 2
@@ -50,7 +53,12 @@ nextflow_workflow {
 
         then {
             assert workflow.success
-            assert snapshot(workflow.out.fastgwa_results).match()
+            with(workflow.out) {
+                assert grm_files
+                assert sparse_grm_files
+                assert fastgwa_results
+                assert snapshot(grm_files, sparse_grm_files, fastgwa_results).match()
+            }
         }
     }
 
@@ -58,7 +66,6 @@ nextflow_workflow {
 
         when {
             params {
-                phenotypes_columns = 'Y1'
                 covariates_columns = 'V1,V2,V3'
                 covariates_cat_columns = 'V1'
                 nparts_gcta = 2
@@ -69,23 +76,27 @@ nextflow_workflow {
                     tuple(
                         1,
                         "chr01.vcf",
-                        file("$projectDir/tests/input/chr01.vcf.pgen"),
-                        file("$projectDir/tests/input/chr01.vcf.psam"),
-                        file("$projectDir/tests/input/chr01.vcf.pvar"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.pgen"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.psam"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.pvar"),
                         null
                     ),
                     tuple(
                         2,
                         "chr02.vcf",
-                        file("$projectDir/tests/input/chr02.vcf.pgen"),
-                        file("$projectDir/tests/input/chr02.vcf.psam"),
-                        file("$projectDir/tests/input/chr02.vcf.pvar"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.pgen"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.psam"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.pvar"),
                         null
                     )
                 )
 
-                input[1] = file("$projectDir/tests/input/phenotype_single.txt")
-                input[2] = file("$projectDir/tests/input/covariates.txt")
+                input[1] = Channel.of(tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/gcta/phenotype_single.txt"),
+                    false
+                ))
+                input[2] = file("$projectDir/tests/input/gcta/covariates.txt")
                 input[3] = 2
                 input[4] = 0.05
                 """
@@ -94,7 +105,12 @@ nextflow_workflow {
 
         then {
             assert workflow.success
-            assert snapshot(workflow.out.fastgwa_results).match()
+            with(workflow.out) {
+                assert grm_files
+                assert sparse_grm_files
+                assert fastgwa_results
+                assert snapshot(grm_files, sparse_grm_files, fastgwa_results).match()
+            }
         }
     }
 
@@ -102,7 +118,6 @@ nextflow_workflow {
 
         when {
             params {
-                phenotypes_columns = 'Y1'
                 nparts_gcta = 2
             }
             workflow {
@@ -111,23 +126,27 @@ nextflow_workflow {
                     tuple(
                         1,
                         "chr01.vcf",
-                        file("$projectDir/tests/input/chr01.vcf.pgen"),
-                        file("$projectDir/tests/input/chr01.vcf.psam"),
-                        file("$projectDir/tests/input/chr01.vcf.pvar"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.pgen"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.psam"),
+                        file("$projectDir/tests/input/gcta/chr01.vcf.pvar"),
                         null
                     ),
                     tuple(
                         2,
                         "chr02.vcf",
-                        file("$projectDir/tests/input/chr02.vcf.pgen"),
-                        file("$projectDir/tests/input/chr02.vcf.psam"),
-                        file("$projectDir/tests/input/chr02.vcf.pvar"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.pgen"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.psam"),
+                        file("$projectDir/tests/input/gcta/chr02.vcf.pvar"),
                         null
                     )
                 )
 
-                input[1] = file("$projectDir/tests/input/phenotype_single.txt")
-                input[2] = ""
+                input[1] = Channel.of(tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/gcta/phenotype_single.txt"),
+                    false
+                ))
+                input[2] = []
                 input[3] = 2
                 // Use stricter sparse cutoff (0.02)
                 input[4] = 0.02
@@ -137,7 +156,12 @@ nextflow_workflow {
 
         then {
             assert workflow.success
-            assert snapshot(workflow.out.fastgwa_results).match()
+            with(workflow.out) {
+                assert grm_files
+                assert sparse_grm_files
+                assert fastgwa_results
+                assert snapshot(grm_files, sparse_grm_files, fastgwa_results).match()
+            }
         }
     }
 }

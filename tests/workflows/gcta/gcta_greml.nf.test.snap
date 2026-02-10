@@ -2,37 +2,64 @@
     "Should handle single phenotype with different nparts value": {
         "content": [
             [
-                "phenotype_single.noheader.hsq:md5,ada22ba2ba9202834bf2819463757e94"
+                [
+                    "0",
+                    "gcta_grm_0_adj_unrel05",
+                    "gcta_grm_0_adj_unrel05.grm.id:md5,78d2027a9e05085ca53d59f8578bf968",
+                    "gcta_grm_0_adj_unrel05.grm.bin:md5,338c202e279369908fb1e65350a2d7eb",
+                    "gcta_grm_0_adj_unrel05.grm.N.bin:md5,0a8ce2f24d85934e6b1bdb09ae4b0bf1"
+                ]
+            ],
+            [
+                "Y1.hsq:md5,ada22ba2ba9202834bf2819463757e94"
             ]
         ],
         "meta": {
             "nf-test": "0.9.3",
             "nextflow": "24.08.0"
         },
-        "timestamp": "2025-12-15T14:00:29.502809"
+        "timestamp": "2026-02-03T19:45:35.120795"
     },
     "Should perform GREML with quantitative and categorical covariates": {
         "content": [
             [
-                "phenotype_single.noheader.hsq:md5,3234bc24affdc05855a8e51b3dd690ab"
+                [
+                    "0",
+                    "gcta_grm_0_adj_unrel05",
+                    "gcta_grm_0_adj_unrel05.grm.id:md5,78d2027a9e05085ca53d59f8578bf968",
+                    "gcta_grm_0_adj_unrel05.grm.bin:md5,338c202e279369908fb1e65350a2d7eb",
+                    "gcta_grm_0_adj_unrel05.grm.N.bin:md5,0a8ce2f24d85934e6b1bdb09ae4b0bf1"
+                ]
+            ],
+            [
+                "Y1.hsq:md5,ee89bfdf76d183d4dc1ee1715c0e00e6"
             ]
         ],
         "meta": {
             "nf-test": "0.9.3",
             "nextflow": "24.08.0"
         },
-        "timestamp": "2025-12-15T13:48:33.741915"
+        "timestamp": "2026-02-03T19:45:30.062102"
     },
     "Should perform GREML heritability estimation without covariates": {
         "content": [
             [
-                "phenotype_single.noheader.hsq:md5,6bd3fdd1ed3f5cbac479486906650ac7"
+                [
+                    "0",
+                    "gcta_grm_0_adj_unrel05",
+                    "gcta_grm_0_adj_unrel05.grm.id:md5,78d2027a9e05085ca53d59f8578bf968",
+                    "gcta_grm_0_adj_unrel05.grm.bin:md5,338c202e279369908fb1e65350a2d7eb",
+                    "gcta_grm_0_adj_unrel05.grm.N.bin:md5,0a8ce2f24d85934e6b1bdb09ae4b0bf1"
+                ]
+            ],
+            [
+                "Y1.hsq:md5,ada22ba2ba9202834bf2819463757e94"
             ]
         ],
         "meta": {
             "nf-test": "0.9.3",
             "nextflow": "24.08.0"
         },
-        "timestamp": "2025-12-15T14:00:19.630079"
+        "timestamp": "2026-02-03T19:45:24.606466"
     }
 }

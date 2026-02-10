@@ -14,7 +14,7 @@ This process runs the BOLT-LMM REML analysis on the provided genotype data.
 
 #### Inputs:
 - Genotype data in PLINK1 format (bed/bim/fam) from IMPUTED_TO_PLINK process
-- Phenotype file
+- Phenotype file (one trait per file; header includes the phenotype name)
 - Quantitative covariates file (optional)
 - Categorical covariates file (optional)
 
@@ -27,7 +27,6 @@ This process runs the BOLT-LMM REML analysis on the provided genotype data.
 The following parameters can be set in the Nextflow configuration:
 
 - `params.pubDir`: Output directory for published results
-- `params.phenotype_column`: Column name in the phenotype file to use for analysis
 - `params.covariates_columns`: Comma-separated list of all covariate column names
 - `params.covariates_cat_columns`: Comma-separated list of categorical covariate column names
 - `params.modelSnps`: File containing SNPs to include in the model (optional)
@@ -48,7 +47,7 @@ The BOLT-LMM module is included in the main nf-gwas workflow and can be run as p
 ### Example:
 
 ```nextflow
-nextflow run main.nf --phenotypes_filename phenotypes.txt --covariates_filename covariates.txt --genotypes_association "path/to/genotypes/*.vcf.gz" --ldscoresFile "path/to/LDSCORE.1000G_EUR.tab.gz" --geneticMapFile "path/to/genetic_map_hg19.txt.gz"
+nextflow run main.nf --phenotypes_dir phenotypes/ --covariates_filename covariates.txt --genotypes_association "path/to/genotypes/*.vcf.gz" --ldscoresFile "path/to/LDSCORE.1000G_EUR.tab.gz" --geneticMapFile "path/to/genetic_map_hg19.txt.gz"
 ```
 
 ## References

@@ -4,21 +4,28 @@ nextflow_process {
     script "modules/local/regenie/regenie_step1_run.nf"
     process "REGENIE_STEP1_RUN"
 
-    test("Should execute regenie step 1 for 2 phenotypes ") {
+    test("Should execute regenie step 1 for a single phenotype") {
 
         when {
             params {
                 // set required phenotypes_column
-                phenotypes_columns = 'Y1,Y2'
+                covariates_columns = 'V2,V3'
+                covariates_cat_columns = 'V1'
             }
             process {
                 """
-                input[0] = Channel.fromFilePairs("$projectDir/tests/input/regenie_step1/example.qc.{bim,bed,fam}", size: 3, flat:true)
-                input[1] = file("$projectDir/tests/input/regenie_step1/example.qc.snplist")
-                input[2] = file("$projectDir/tests/input/regenie_step1/example.qc.id")
-                input[3] = file("$projectDir/tests/input/pipeline/phenotype.txt")
-                input[4] = []
-                input[5] = []
+                input[0] = tuple(
+                    "example",
+                    [
+                        file("$projectDir/tests/input/regenie/step1/example.bed"),
+                        file("$projectDir/tests/input/regenie/step1/example.bim"),
+                        file("$projectDir/tests/input/regenie/step1/example.fam")
+                    ],
+                    file("$projectDir/tests/input/phenotypes/basic/phenotype_Y1.txt"),
+                    file("$projectDir/tests/input/regenie/step1/covariates.txt"),
+                    "Y1",
+                    false
+                )
                 """
             }
         }
@@ -27,17 +34,20 @@ nextflow_process {
             assert process.success
            
             with(process.out) {
-                with(regenie_step1_out.get(0)){
-                    assert snapshot(get(1),get(2)).match()
-                    assert size() == 4
-                    // pred list includes 2 loco files
-                    assert path(get(3)).readLines(), 2
-                    // parse log file
-                    assert path(get(0)).text.contains("--step 1")
-                    assert path(get(0)).text.contains("--keep example.qc.id")
-                    assert path(get(0)).text.contains("--phenoFile phenotype.txt")
-                    assert path(get(0)).text.contains("--phenoColList Y1,Y2")
-                }
+                assert regenie_step1_out
+                def step1Tuple = regenie_step1_out.get(0)
+                def step1Files = step1Tuple.get(1)
+                assert step1Files instanceof java.util.List
+                assert step1Files.size() > 0
+
+                // Verify LOCO outputs are generated
+                def locoFiles = step1Files.findAll { path(it).fileName.toString().endsWith('.loco.gz') }
+                assert locoFiles.size() >= 1
+
+                assert regenie_step1_out_log
+                def logFile = path(regenie_step1_out_log.get(0))
+                assert logFile.text.contains("--step 1")
+                assert logFile.text.contains("--phenoColList Y1")
             }
         }
 

@@ -30,7 +30,6 @@ REGENIE uses a two-step approach:
 
 - **Scalable**: Handles 100k+ samples efficiently
 - **Flexible**: Supports quantitative and binary traits
-- **Comprehensive**: Single-variant, gene-based, and interaction tests
 - **Robust**: Firth correction for rare variant association
 
 ---
@@ -40,9 +39,7 @@ REGENIE uses a two-step approach:
 | Scenario | Recommendation |
 |----------|----------------|
 | Large biobank (N > 50k) | **Recommended** |
-| Gene-based burden tests | **Recommended** |
 | Case-control imbalance | **Recommended** (Firth correction) |
-| Interaction tests (GxE, GxG) | **Recommended** |
 | Small samples (N < 5k) | Consider GCTA GREML |
 | Summary statistics only | Use LDAK SumHer/SumCors instead |
 
@@ -57,8 +54,7 @@ nextflow run main.nf \
     --run_association_analysis true \
     --genotypes_association_vcf "data/chr*.vcf.gz" \
     --genotypes_prediction "data/array.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height,bmi \
+    --phenotypes_dir phenotypes/ \
     --regenie_test additive \
     -profile singularity
 ```
@@ -73,24 +69,29 @@ nextflow run main.nf \
 |------|-------------|--------|
 | **Genotypes (Association)** | Imputed genotypes for testing | VCF (`*.vcf.gz`) |
 | **Genotypes (Prediction)** | Array genotypes for Step 1 | PLINK (`*.bed,*.bim,*.fam`) |
-| **Phenotypes** | Trait values | Tab-separated text |
+| **Phenotypes** | Trait values (one file per trait) | Tab-separated text |
 
 ### Optional Files
 
 | File | Description | Format |
 |------|-------------|--------|
 | **Covariates** | Adjustment variables | Tab-separated text |
-| **Condition List** | SNPs for conditional analysis | Text (one SNP per line) |
-| **Gene Annotations** | For gene-based tests | REGENIE format |
 
 ### File Format Examples
 
-**Phenotype File**:
+**Phenotype Files (one per trait)**:
 ```
-FID    IID    height    bmi    disease
-1001   1001   175.5     24.3   0
-1002   1002   162.3     22.1   1
-1003   1003   NA        26.5   1
+phenotypes/
+├── height.txt
+└── bmi.txt
+```
+
+Each file:
+```
+FID    IID    height
+1001   1001   175.5
+1002   1002   162.3
+1003   1003   NA
 ```
 - Missing values: `NA` or `-9`
 - Binary traits: `0`/`1` or `1`/`2` coding
@@ -112,8 +113,7 @@ FID    IID    age    sex    PC1       PC2       PC3
 |-----------|-------------|---------|
 | `--genotypes_association_vcf` | VCF files for association testing | Required |
 | `--genotypes_prediction` | PLINK files for Step 1 | Required (unless skipping) |
-| `--phenotypes_filename` | Phenotype file path | Required |
-| `--phenotypes_columns` | Comma-separated phenotype names | Required |
+| `--phenotypes_dir` | Directory of phenotype files (one trait per file) | Required |
 | `--regenie_test` | Test type: `additive`, `recessive`, `dominant` | `additive` |
 
 ### Step 1 Parameters
@@ -133,14 +133,10 @@ FID    IID    age    sex    PC1       PC2       PC3
 | `--regenie_bsize_step2` | Block size for Step 2 | `400` |
 | `--regenie_firth` | Use Firth correction | `true` |
 | `--regenie_firth_approx` | Approximate Firth (faster) | `true` |
-| `--regenie_min_mac` | Minimum minor allele count | `5` |
-| `--regenie_min_imputation_score` | Minimum INFO score | `0` |
 
-### Binary Trait Parameters
+### Binary Traits
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `--phenotypes_binary_trait` | Flag for case-control analysis | `false` |
+Binary traits are auto-detected per phenotype file (values like 0/1 or 1/2).
 
 ---
 
@@ -154,8 +150,7 @@ nextflow run main.nf \
     --run_association_analysis true \
     --genotypes_association_vcf "imputed/chr*.vcf.gz" \
     --genotypes_prediction "array/genotypes.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --phenotypes_dir phenotypes/ \
     --covariates_filename covariates.txt \
     --covariates_columns age,sex,PC1,PC2,PC3,PC4,PC5 \
     --regenie_test additive \
@@ -170,9 +165,7 @@ nextflow run main.nf \
     --run_association_analysis true \
     --genotypes_association_vcf "imputed/chr*.vcf.gz" \
     --genotypes_prediction "array/genotypes.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns disease_status \
-    --phenotypes_binary_trait true \
+    --phenotypes_dir phenotypes/ \
     --regenie_firth true \
     --regenie_firth_approx true \
     -profile slurm,singularity
@@ -186,8 +179,7 @@ nextflow run main.nf \
     --run_association_analysis true \
     --genotypes_association_vcf "imputed/chr*.vcf.gz" \
     --genotypes_prediction "array/genotypes.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height,bmi,waist_circumference,hip_circumference \
+    --phenotypes_dir phenotypes/ \
     -profile slurm,singularity
 ```
 
@@ -199,9 +191,7 @@ nextflow run main.nf \
     --run_association_analysis true \
     --genotypes_association_vcf "imputed/chr*.vcf.gz" \
     --genotypes_prediction "array/genotypes.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns rare_disease \
-    --phenotypes_binary_trait true \
+    --phenotypes_dir phenotypes/ \
     --regenie_test recessive \
     -profile slurm,singularity
 ```
@@ -215,8 +205,7 @@ nextflow run main.nf \
     --project gwas_no_step1 \
     --run_association_analysis true \
     --genotypes_association_vcf "imputed/chr*.vcf.gz" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns trait \
+    --phenotypes_dir phenotypes/ \
     --regenie_skip_predictions true \
     -profile singularity
 ```
@@ -264,64 +253,7 @@ output/project_name/
 
 ## Advanced Features
 
-### Gene-Based Tests
-
-Run burden and SKAT tests:
-
-```bash
-nextflow run main.nf \
-    --project gene_tests \
-    --run_association_analysis true \
-    --genotypes_association_vcf "imputed/chr*.vcf.gz" \
-    --genotypes_prediction "array/genotypes.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns trait \
-    --regenie_run_gene_based_tests true \
-    --regenie_gene_anno annotations.txt \
-    --regenie_gene_setlist setlist.txt \
-    --regenie_gene_masks masks.txt \
-    --regenie_gene_aaf "0.01,0.05" \
-    --regenie_gene_test "skat,skato,acatv" \
-    -profile slurm,singularity
-```
-
-### Interaction Tests (GxE)
-
-Test gene-environment interactions:
-
-```bash
-nextflow run main.nf \
-    --project gxe_analysis \
-    --run_association_analysis true \
-    --genotypes_association_vcf "imputed/chr*.vcf.gz" \
-    --genotypes_prediction "array/genotypes.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns trait \
-    --covariates_filename covariates.txt \
-    --covariates_columns age,sex,smoking \
-    --regenie_run_interaction_tests true \
-    --regenie_interaction smoking \
-    -profile slurm,singularity
-```
-
-### Conditional Analysis
-
-Condition on known variants:
-
-```bash
-# Create condition list file
-echo -e "rs12345\nrs67890" > condition_snps.txt
-
-nextflow run main.nf \
-    --project conditional_gwas \
-    --run_association_analysis true \
-    --genotypes_association_vcf "imputed/chr*.vcf.gz" \
-    --genotypes_prediction "array/genotypes.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns trait \
-    --regenie_condition_list condition_snps.txt \
-    -profile slurm,singularity
-```
+Note: REGENIE gene-based association is no longer available in this pipeline.
 
 ### Chunked Step 1 (Memory-Limited Systems)
 
@@ -333,8 +265,7 @@ nextflow run main.nf \
     --run_association_analysis true \
     --genotypes_association_vcf "imputed/chr*.vcf.gz" \
     --genotypes_prediction "array/genotypes.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns trait \
+    --phenotypes_dir phenotypes/ \
     --genotypes_prediction_chunks 10 \
     -profile slurm,singularity
 ```
@@ -355,7 +286,7 @@ nextflow run main.nf \
 
 | Scenario | Recommendation |
 |----------|----------------|
-| Many phenotypes | Run all in single job (parallelized internally) |
+| Many phenotypes | Provide all files in `--phenotypes_dir` (pipeline runs per phenotype) |
 | Large datasets | Use HPC cluster with `--profile slurm,singularity` |
 | Binary traits | Use `--regenie_firth_approx true` (default) |
 
@@ -393,9 +324,7 @@ Solution: Enable --regenie_low_mem true or use --genotypes_prediction_chunks
 **Error**: "No variants pass filtering"
 ```
 Solution:
-- Check --regenie_min_mac threshold (try lowering to 1)
 - Verify VCF files contain variants
-- Check INFO score filter --regenie_min_imputation_score
 ```
 
 ### Binary Trait Issues

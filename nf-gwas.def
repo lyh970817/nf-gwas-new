@@ -9,6 +9,7 @@ From: ubuntu:22.04
     export PATH=/opt/jbang/bin:${PATH}
     export PATH=/opt/regenie:${PATH}
     export PATH=/opt/ldak:${PATH}
+    export PATH=/opt/magma:${PATH}
     export JAVA_TOOL_OPTIONS="-Djdk.lang.Process.launchMechanism=vfork"
     export GENOMIC_UTILS_VERSION="v0.3.7"
     export REGENIE_VERSION="v3.4"
@@ -89,9 +90,23 @@ From: ubuntu:22.04
     # Install LDAK
     cd /opt
     mkdir -p ldak && cd ldak
-    wget https://github.com/dougspeed/LDAK/raw/main/ldak6.1.linux
-    chmod +x ldak6.1.linux
-    ln -s ldak6.1.linux ldak6
+    wget https://raw.githubusercontent.com/dougspeed/LDAK/main/ldak6.2.linux
+    chmod +x ldak6.2.linux
+    ln -s ldak6.2.linux ldak6
+
+    # Install MAGMA (official Linux binary)
+    cd /opt
+    MAGMA_URL="https://vu.data.surf.nl/index.php/s/lxDgt2dNdNr6DYt/download"
+    MAGMA_SHA256="d8b20778b773f47b4fb0f1020baefebc92b11ee65946e708a618d494d6819e39"
+    wget -O magma.zip "${MAGMA_URL}"
+    echo "${MAGMA_SHA256}  magma.zip" | sha256sum -c -
+    unzip -q magma.zip -d /opt/magma
+    rm magma.zip
+    chmod +x /opt/magma/magma
+    /opt/magma/magma --version || /opt/magma/magma || true
+
+    # Install LDSC (Python package)
+    /opt/conda/bin/pip install 'pandas<3' ldsc==2.0.1
 
 %runscript
     exec "$@"
@@ -108,6 +123,7 @@ From: ubuntu:22.04
     - LAVA R package for local genetic correlation analysis
     - Java tools (jbang, genomic-utils)
     - Regenie for GWAS analysis
+    - MAGMA for gene and gene-set analyses
     - MungeSumstats (Bioconductor) for standardizing GWAS summary statistics
 
     Usage:

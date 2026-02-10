@@ -8,7 +8,6 @@ nextflow_process {
 
         when {
             params {
-                phenotypes_columns = 'Y1'
                 ldak_pcgc_prevalence = 0.2
             }
             process {
@@ -24,7 +23,10 @@ nextflow_process {
                 )
                 input[1] = []  // No keep file needed (GRM already filtered)
                 // Use binary phenotype for PCGC
-                input[2] = file("$projectDir/tests/input/phenotype_bin.txt")
+                input[2] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/bin/phenotype_bin_Y1.noheader.txt")
+                )
                 input[3] = []  // No quantitative covariates (empty list)
                 input[4] = []  // No categorical covariates (empty list)
                 """
@@ -36,10 +38,10 @@ nextflow_process {
 
             with(process.out) {
                 assert pcgc_results
-                def pcgcFile = path(pcgc_results.get(0))
+                def pcgcFile = path(pcgc_results.get(0).get(1))
 
                 // Check PCGC result file exists and has content
-                assert pcgcFile.fileName.toString().startsWith("pcgc_ldak_grm_adj")
+                assert pcgcFile.fileName.toString().startsWith("pcgc_Y1_ldak_grm_adj")
                 assert pcgcFile.fileName.toString().endsWith(".pcgc")
                 assert pcgcFile.size() > 0
 
@@ -54,7 +56,6 @@ nextflow_process {
 
         when {
             params {
-                phenotypes_columns = 'Y1'
                 ldak_pcgc_prevalence = 0.2
             }
             process {
@@ -68,7 +69,10 @@ nextflow_process {
                     file("$projectDir/tests/input/ldak/adjusted_grm/ldak_grm_adj.grm.root")
                 )
                 input[1] = []  // No keep file needed (GRM already filtered)
-                input[2] = file("$projectDir/tests/input/phenotype_bin.txt")
+                input[2] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/bin/phenotype_bin_Y1.noheader.txt")
+                )
                 input[3] = file("$projectDir/tests/input/ldak/covariates.quant.noheader.txt")
                 input[4] = file("$projectDir/tests/input/ldak/covariates.cat.noheader.txt")
                 """
@@ -80,9 +84,9 @@ nextflow_process {
 
             with(process.out) {
                 assert pcgc_results
-                def pcgcFile = path(pcgc_results.get(0))
+                def pcgcFile = path(pcgc_results.get(0).get(1))
 
-                assert pcgcFile.fileName.toString().startsWith("pcgc_ldak_grm_adj")
+                assert pcgcFile.fileName.toString().startsWith("pcgc_Y1_ldak_grm_adj")
                 assert pcgcFile.size() > 0
 
                 // Verify covariate adjustment

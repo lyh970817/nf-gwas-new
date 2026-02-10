@@ -2,13 +2,13 @@
     "Should execute multi-component REML with covariates": {
         "content": [
             [
-                "phenotype.noheader.hsq:md5,dfe0ccb26266ad515d633f243331906d"
+                "Y1.hsq:md5,17c88fb496a2a3c500ed17dc8d40f164"
             ]
         ],
         "meta": {
             "nf-test": "0.9.3",
             "nextflow": "24.08.0"
         },
-        "timestamp": "2025-12-15T12:43:14.783195"
+        "timestamp": "2026-02-03T21:02:47.141531"
     }
 }

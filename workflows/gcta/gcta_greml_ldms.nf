@@ -23,7 +23,7 @@ include { GCTA_REML_LDMS_ANALYSIS } from './gcta_reml_ldms_analysis'
 
 workflow GCTA_GREML_LDMS {
     take:
-    phenotypes_file     // Path to phenotypes file
+    phenotype_meta_ch   // Channel: tuple(phenotype_name, phenotype_file, is_binary)
     covariates_file     // Path to covariates file (optional)
     imputed_plink2_ch   // Channel with imputed PLINK2 files (for GRM)
     imputed_plink_ch    // Channel with imputed PLINK1 files (for LD scores)
@@ -41,7 +41,7 @@ workflow GCTA_GREML_LDMS {
     GCTA_REML_LDMS_ANALYSIS(
         GCTA_GRM_LDMS.out.mgrm_file,
         GCTA_GRM_LDMS.out.all_grm_files,
-        phenotypes_file,
+        phenotype_meta_ch,
         covariates_file,
     )
 

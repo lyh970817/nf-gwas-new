@@ -18,7 +18,7 @@ nextflow_process {
                 input[3] = file("\${projectDir}/tests/input/lcv/ldscores.txt")
                 input[4] = "trait1"  // trait1_name
                 input[5] = "trait2"  // trait2_name
-                input[6] = 100       // no_blocks
+                input[6] = 10        // no_blocks
                 input[7] = 30        // sig_threshold
                 input[8] = 1         // crosstrait_intercept
                 input[9] = 1         // ldsc_intercept
@@ -35,14 +35,20 @@ nextflow_process {
                 def resultsFile = path(get(0))
                 assert resultsFile.exists()
                 assert resultsFile.size() > 0
-                // Check header and content
-                def content = resultsFile.text
-                assert content.contains("analysis_id")
-                assert content.contains("trait1")
-                assert content.contains("trait2")
-                assert content.contains("gcp")
-                assert content.contains("rho")
-                assert content.contains("test_lcv")
+                def lines = resultsFile.readLines()
+                assert lines.size() == 2
+                assert lines[0].startsWith("analysis_id\ttrait1\ttrait2")
+                def fields = lines[1].split("\t")
+                assert fields[0] == "test_lcv"
+                assert fields[1] == "trait1"
+                assert fields[2] == "trait2"
+                assert fields[3] == "5000"
+                assert Math.abs(fields[4].toDouble() + 1.0) < 1e-9
+                assert Math.abs(fields[5].toDouble()) < 1e-9
+                assert Math.abs(fields[6].toDouble()) < 1e-6
+                assert Math.abs(fields[9].toDouble() - 0.999998686956694) < 1e-6
+                assert fields[10].toDouble() < -10
+                assert fields[11].toDouble() < -10
             }
 
             // Check log file

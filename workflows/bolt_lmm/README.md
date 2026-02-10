@@ -61,8 +61,7 @@ nextflow run main.nf \
     --run_heritability_estimation true \
     --heritability_method bolt_lmm \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --phenotypes_dir phenotypes/ \
     -profile singularity
 ```
 
@@ -75,7 +74,7 @@ nextflow run main.nf \
 | File | Description | Format |
 |------|-------------|--------|
 | **Genotypes** | SNP data | PLINK1 (bed/bim/fam) only |
-| **Phenotypes** | Trait values | Tab-separated text |
+| **Phenotypes** | Trait values (one file per trait) | Tab-separated text |
 
 ### Optional Files
 
@@ -87,11 +86,18 @@ nextflow run main.nf \
 
 **Important**: BOLT-LMM requires PLINK1 format (bed/bim/fam). The pipeline will automatically convert from VCF if needed.
 
-**Phenotype File**:
+**Phenotype Files (one per trait)**:
 ```
-FID    IID    height    bmi
-1001   1001   175.5     24.3
-1002   1002   162.3     22.1
+phenotypes/
+├── height.txt
+└── bmi.txt
+```
+
+Each file:
+```
+FID    IID    height
+1001   1001   175.5
+1002   1002   162.3
 ```
 
 **Covariate File**:
@@ -110,8 +116,7 @@ FID    IID    age    sex    PC1       PC2
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `--genotypes_association_plink1` | PLINK1 files | Required |
-| `--phenotypes_filename` | Phenotype file | Required |
-| `--phenotypes_columns` | Phenotype column names | Required |
+| `--phenotypes_dir` | Directory of phenotype files (one trait per file) | Required |
 
 ### Covariate Parameters
 
@@ -137,8 +142,7 @@ nextflow run main.nf \
     --run_heritability_estimation true \
     --heritability_method bolt_lmm \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --phenotypes_dir phenotypes/ \
     -profile singularity
 ```
 
@@ -150,8 +154,7 @@ nextflow run main.nf \
     --run_heritability_estimation true \
     --heritability_method bolt_lmm \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --phenotypes_dir phenotypes/ \
     --covariates_filename covariates.txt \
     --covariates_columns age,sex,PC1,PC2,PC3,PC4,PC5 \
     --covariates_cat_columns sex \
@@ -166,8 +169,7 @@ nextflow run main.nf \
     --run_heritability_estimation true \
     --heritability_method bolt_lmm \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height,bmi,waist_circumference \
+    --phenotypes_dir phenotypes/ \
     -profile slurm,singularity
 ```
 
@@ -179,9 +181,7 @@ nextflow run main.nf \
     --run_heritability_estimation true \
     --heritability_method bolt_lmm \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns disease_status \
-    --phenotypes_binary_trait true \
+    --phenotypes_dir phenotypes/ \
     -profile singularity
 ```
 

@@ -2,13 +2,10 @@ process PREPARE_PHENOCOV_BIVARIATE {
     tag "bivariate_${phenotype1_name}_${phenotype2_name}"
 
     input:
-    path phenotypes_file
-    path covariates_file
-    val phenotype1_name
-    val phenotype2_name
+    tuple path(phenotype1_file), path(phenotype2_file), path(covariates_file), val(phenotype1_name), val(phenotype2_name), val(pair_name)
 
     output:
-    path "phenotypes_bivariate.txt", emit: phenotypes_file
+    tuple val(pair_name), path("phenotypes_bivariate.txt"), emit: phenotypes_file
     path "mpheno_indices.txt", emit: mpheno_indices
     path "*.quant.noheader.txt", optional: true, emit: covariates_quant_noheader
     path "*.cat.noheader.txt", optional: true, emit: covariates_cat_noheader
@@ -23,7 +20,8 @@ process PREPARE_PHENOCOV_BIVARIATE {
     # Prepare bivariate phenotype file using R script
     # Extracts FID, IID, phenotype1, phenotype2 in GCTA format (no header)
     Rscript ${projectDir}/bin/prepare_bivariate_phenotypes.R \\
-        ${phenotypes_file} \\
+        ${phenotype1_file} \\
+        ${phenotype2_file} \\
         "${phenotype1_name}" \\
         "${phenotype2_name}" \\
         phenotypes_bivariate.txt \\

@@ -2,7 +2,7 @@
     "Should execute REML with covariates": {
         "content": [
             [
-                "phenotype.noheader.hsq:md5,0b0c3ecb2ddec4b09297ac619361235a"
+                "Y1.hsq:md5,0b0c3ecb2ddec4b09297ac619361235a"
             ]
         ],
         "meta": {

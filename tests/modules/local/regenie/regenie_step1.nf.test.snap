@@ -1,13 +1,16 @@
 {
     "Should execute regenie step 1 for 2 phenotypes ": {
         "content": [
-            "regenie_step1_out_1.loco.gz:md5,5e3f3bd230d519c0740ae158d2ba2f41",
-            "regenie_step1_out_2.loco.gz:md5,ff2327b54520a6885df85ad27cebcd19"
+            [
+                "regenie_step1_out_1.loco.gz:md5,e5302d60606d73dc3aa22447df839cd1",
+                "regenie_step1_out_2.loco.gz:md5,434f5cd1f0ddbf366f10ec36cac9df14",
+                "regenie_step1_out_pred.list:md5,d7bec612204b04931f704a04b373b3c5"
+            ]
         ],
         "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "23.04.3"
+            "nf-test": "0.9.3",
+            "nextflow": "24.08.0"
         },
-        "timestamp": "2023-12-14T15:05:10.807967"
+        "timestamp": "2026-02-04T00:14:29.526731"
     }
 }

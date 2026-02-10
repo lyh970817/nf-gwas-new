@@ -5,18 +5,11 @@ process REGENIE_STEP2_RUN {
     tag "${plink1_bed_file.simpleName}"
 
     input:
-    path step1_out
-    tuple val(chr_num), val(filename), path(plink1_bed_file), path(plink1_bim_file), path(plink1_fam_file), val(range)
-    val assoc_format
-    path phenotypes_file
-    path sample_file
-    path covariates_file
-    path condition_list_file
+    tuple path(step1_out), val(chr_num), val(filename), path(plink1_bed_file), path(plink1_bim_file), path(plink1_fam_file), val(range), val(assoc_format), path(phenotypes_file), path(covariates_file), val(phenotype_name), val(is_binary)
 
     output:
     tuple val(filename), path("*regenie.gz"), emit: regenie_step2_out
     path "*regenie.Ydict", emit: regenie_step2_ydict, optional: true
-    tuple val(filename), path("*regenie.gz"), emit: regenie_step2_out_interaction, optional: true
     path "${filename}*.log", emit: regenie_step2_out_log
 
     script:
@@ -26,20 +19,13 @@ process REGENIE_STEP2_RUN {
     def test = "--test $params.regenie_test"
     def firthApprox = params.regenie_firth_approx ? "--approx" : ""
     def firth = params.regenie_firth ? "--firth $firthApprox" : ""
-    def binaryTrait =  params.phenotypes_binary_trait ? "--bt $firth " : ""
+    def binaryTrait =  is_binary ? "--bt $firth " : ""
     def covariants = covariates_file ? "--covarFile $covariates_file" : ''
     def quant_covariants = params.covariates_columns ? "--covarColList ${params.covariates_columns}" : ''
     def cat_covariants = params.covariates_cat_columns ? "--catCovarList ${params.covariates_cat_columns}" : ''
-    def deleteMissingData = params.phenotypes_delete_missings  ? "--strict" : ''
     def predictions = params.regenie_skip_predictions  ? '--ignore-pred' : ""
-    def refFirst = params.regenie_ref_first  ? "--ref-first" : ''
+    def pred_list = params.regenie_skip_predictions ? '' : '--pred regenie_step1_out_pred.list'
     def apply_rint = params.phenotypes_apply_rint ? "--apply-rint" : ''
-    def interaction = params.regenie_interaction ? "--interaction $params.regenie_interaction" : ''
-    def interaction_snp = params.regenie_interaction_snp ? "--interaction-snp $params.regenie_interaction_snp" : ''
-    def rare_mac = params.regenie_rare_mac ? "--rare-mac $params.regenie_rare_mac" : ''
-    def no_condtl = params.regenie_no_condtl ? "--no-condtl" : ''
-    def force_condtl = params.regenie_force_condtl ? "--force-condtl" : ''
-    def condition_list = params.regenie_condition_list ? "--condition-list $condition_list_file" : ''
     // Only use --range if a proper range string is provided (format: CHR:START-END)
     // The 'range' input variable contains the range string, or -1 if not specified
     // Note: chr_num is just a sequential index, not suitable for --range
@@ -54,12 +40,10 @@ process REGENIE_STEP2_RUN {
         --step 2 \
         $format ${filename}${extension} \
         --phenoFile ${phenotypes_file} \
-        --phenoColList  ${params.phenotypes_columns} \
+        --phenoColList ${phenotype_name} \
         --bsize ${params.regenie_bsize_step2} \
-        --pred regenie_step1_out_pred.list \
+        $pred_list \
         --threads ${task.cpus} \
-        --minMAC ${params.regenie_min_mac} \
-        --minINFO ${params.regenie_min_imputation_score} \
         --gz \
         $binaryTrait \
         $test \
@@ -68,16 +52,8 @@ process REGENIE_STEP2_RUN {
         $covariants \
         $quant_covariants \
         $cat_covariants \
-        $condition_list \
-        $deleteMissingData \
         $predictions \
-        $refFirst \
         $apply_rint \
-        $interaction \
-        $interaction_snp \
-        $rare_mac \
-        $no_condtl \
-        $force_condtl \
         --out $output_name \
         $step2_optional
     """

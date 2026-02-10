@@ -21,10 +21,10 @@ workflow LDAK_SUMCORS_WORKFLOW {
 
     main:
     // Determine if liftover is needed (LDAK tagfiles are typically GRCh37)
-    def run_liftover = params.ldak_sumcors_liftover ?: false
-    def target_build = params.ldak_sumcors_target_build ?: 'GRCh37'
-    def source_build = params.ldak_sumcors_source_build ?: 'auto'
-    def frq_filter = params.ldak_sumcors_frq_filter ?: 0.01
+    def run_liftover = params.ldak_sumstats_liftover ?: false
+    def target_build = params.ldak_sumstats_target_build ?: 'GRCh37'
+    def source_build = params.ldak_sumstats_source_build ?: 'auto'
+    def frq_filter = params.ldak_sumstats_frq_filter ?: 0.01
 
     if (run_liftover) {
         // Extract trait 1 summary stats with pair context
@@ -60,6 +60,9 @@ workflow LDAK_SUMCORS_WORKFLOW {
             }
             .join(LIFTOVER_TRAIT2.out.lifted_sumstats, by: 0)  // Join by trait2_name
             .map { trait2_name, trait1_name, lifted_stats1, lifted_stats2 ->
+                tuple(trait1_name, lifted_stats1, trait2_name, lifted_stats2)
+            }
+            .map { trait1_name, lifted_stats1, trait2_name, lifted_stats2 ->
                 tuple(trait1_name, lifted_stats1, trait2_name, lifted_stats2)
             }
     } else {

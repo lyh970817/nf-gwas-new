@@ -35,6 +35,8 @@ LDAK implements several key methods:
 | **LDAK SumHer** | Heritability | Summary statistics |
 | **LDAK SumCors** | Genetic correlation | Summary statistics |
 
+Note: LDSC summary-statistics workflows are implemented separately under `workflows/ldsc/` (`ldsc_h2` and `ldsc_rg`).
+
 ### Key Advantages
 
 - **LD-aware**: Accounts for linkage disequilibrium patterns
@@ -96,8 +98,7 @@ nextflow run main.nf \
     --association_method ldak_kvik \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
     --genotypes_prediction "data/merged.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --phenotypes_dir phenotypes/ \
     -profile singularity
 ```
 
@@ -109,8 +110,7 @@ nextflow run main.nf \
     --run_heritability_estimation true \
     --heritability_method ldak_he \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --phenotypes_dir phenotypes/ \
     -profile singularity
 ```
 
@@ -123,9 +123,7 @@ nextflow run main.nf \
     --heritability_method ldak_pcgc \
     --ldak_pcgc_prevalence 0.05 \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns disease \
-    --phenotypes_binary_trait true \
+    --phenotypes_dir phenotypes/ \
     -profile singularity
 ```
 
@@ -138,7 +136,7 @@ nextflow run main.nf \
 | File | Description | Format |
 |------|-------------|--------|
 | **Genotypes** | SNP data | PLINK1 (bed/bim/fam) |
-| **Phenotypes** | Trait values | Tab-separated text |
+| **Phenotypes** | Trait values (one file per trait) | Tab-separated text |
 | **Covariates** | Adjustment variables (optional) | Tab-separated text |
 
 ### Summary Statistics (SumHer/SumCors)
@@ -150,11 +148,18 @@ nextflow run main.nf \
 
 ### File Format Examples
 
-**Phenotype File**:
+**Phenotype Files (one per trait)**:
 ```
-FID    IID    height    disease
-1001   1001   175.5     0
-1002   1002   162.3     1
+phenotypes/
+├── height.txt
+└── disease.txt
+```
+
+Each file:
+```
+FID    IID    height
+1001   1001   175.5
+1002   1002   162.3
 ```
 
 **Summary Statistics** (for SumHer):
@@ -180,8 +185,7 @@ Required columns:
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `--heritability_model` | Kinship model | `human_default` |
-| `--phenotypes_filename` | Phenotype file | Required |
-| `--phenotypes_columns` | Phenotype columns | Required |
+| `--phenotypes_dir` | Directory of phenotype files (one trait per file) | Required |
 
 ### LDAK-KVIK Parameters
 
@@ -189,12 +193,20 @@ Required columns:
 |-----------|-------------|---------|
 | `--genotypes_prediction` | Merged PLINK files for Step 1 | Required |
 | `--genotypes_association_plink1` | Per-chromosome PLINK files | Required |
+| `--covariates_columns` | Quantitative covariates passed to KVIK as `--covar` (if omitted, all non-categorical columns are used) | Optional |
+| `--covariates_cat_columns` | Categorical covariates passed to KVIK as `--factors` | Optional |
 
 ### HE Regression Parameters
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `--ldak_use_he_regression` | Enable HE regression | `false` |
+
+### REML Binary-Trait Parameter
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `--ldak_reml_prevalence` | Optional population prevalence for binary traits when using `ldak_reml`; passed as `--prevalence` only for traits marked binary | `null` |
 
 ### PCGC Parameters
 
@@ -207,9 +219,12 @@ Required columns:
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `--ldak_sumher_summary_stats` | Summary statistics file | Required |
+| `--summary_stats_dir` | Summary statistics directory | Required |
 | `--ldak_sumher_tagfile` | Tagging file | Required |
 | `--ldak_sumher_prevalence` | Disease prevalence (binary) | Optional |
+| `--ldak_sumher_ascertainment` | Sample case fraction / ascertainment (binary) | Optional |
+| `--ldak_sumher_prevalence_map` | Optional file mapping summary stats filename to prevalence (`<filename> <prevalence>`) | Optional |
+| `--ldak_sumher_ascertainment_map` | Optional file mapping summary stats filename to ascertainment (`<filename> <ascertainment>`) | Optional |
 
 ### QC Parameters
 
@@ -233,8 +248,7 @@ nextflow run main.nf \
     --association_method ldak_kvik \
     --genotypes_prediction "data/merged.{bed,bim,fam}" \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --phenotypes_dir phenotypes/ \
     --covariates_filename covariates.txt \
     --covariates_columns age,sex,PC1,PC2,PC3 \
     -profile slurm,singularity
@@ -250,11 +264,25 @@ nextflow run main.nf \
     --run_heritability_estimation true \
     --heritability_method ldak_reml \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --phenotypes_dir phenotypes/ \
     --heritability_model human_default \
     -profile slurm,singularity
 ```
+
+For binary traits with REML, optionally provide population prevalence:
+
+```bash
+nextflow run main.nf \
+    --project h2_reml_binary \
+    --run_heritability_estimation true \
+    --heritability_method ldak_reml \
+    --ldak_reml_prevalence 0.05 \
+    --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
+    --phenotypes_dir phenotypes/ \
+    -profile slurm,singularity
+```
+
+Note: `--ldak_reml_prevalence` is only applied to traits detected as binary by phenotype metadata.
 
 ### LDAK HE Regression (Fast)
 
@@ -266,8 +294,7 @@ nextflow run main.nf \
     --run_heritability_estimation true \
     --heritability_method ldak_he \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height,bmi,weight \
+    --phenotypes_dir phenotypes/ \
     -profile slurm,singularity
 ```
 
@@ -282,9 +309,7 @@ nextflow run main.nf \
     --heritability_method ldak_pcgc \
     --ldak_pcgc_prevalence 0.05 \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns type2_diabetes \
-    --phenotypes_binary_trait true \
+    --phenotypes_dir phenotypes/ \
     -profile slurm,singularity
 ```
 
@@ -300,8 +325,7 @@ nextflow run main.nf \
     --run_qc true \
     --qc_method ldak_qc \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height \
+    --phenotypes_dir phenotypes/ \
     -profile singularity
 ```
 
@@ -314,10 +338,45 @@ nextflow run main.nf \
     --project sumher_h2 \
     --run_heritability_estimation true \
     --heritability_method ldak_sumher \
-    --ldak_sumher_summary_stats gwas_results.txt \
+    --summary_stats_dir gwas_stats/ \
     --ldak_sumher_tagfile bld.ldak.hapmap.gbr.tagging \
     -profile singularity
 ```
+
+For mixed continuous/binary traits, provide per-file prevalence mapping:
+
+```bash
+nextflow run main.nf \
+    --project sumher_h2 \
+    --run_heritability_estimation true \
+    --heritability_method ldak_sumher \
+    --summary_stats_dir gwas_stats/ \
+    --ldak_sumher_tagfile bld.ldak.hapmap.gbr.tagging \
+    --ldak_sumher_prevalence_map prevalence_map.txt \
+    --ldak_sumher_ascertainment_map ascertainment_map.txt \
+    -profile singularity
+```
+
+`prevalence_map.txt` format (whitespace-separated, `#` comments allowed):
+
+```text
+# filename prevalence
+trait1.sumstats.txt 0.07
+trait2.sumstats.txt 0.02
+```
+
+Matching is done by summary stats basename. If no entry exists for a file, prevalence is not passed for that trait.
+If a prevalence map is provided, legacy global prevalence flag (`--ldak_sumher_prevalence`) is ignored.
+
+`ascertainment_map.txt` uses the same format:
+
+```text
+# filename ascertainment
+trait1.sumstats.txt 0.50
+trait2.sumstats.txt 0.18
+```
+
+If an ascertainment map is provided, legacy global ascertainment flag (`--ldak_sumher_ascertainment`) is ignored.
 
 ### SumCors (Genetic Correlation)
 
@@ -328,11 +387,12 @@ nextflow run main.nf \
     --project genetic_corr \
     --run_genetic_correlation true \
     --genetic_correlation_method ldak_sumcors \
-    --ldak_sumcors_summary_stats1 height_gwas.txt \
-    --ldak_sumcors_summary_stats2 bmi_gwas.txt \
+    --summary_stats_dir gwas_stats/ \
     --ldak_sumcors_tagfile bld.ldak.hapmap.gbr.tagging \
     -profile singularity
 ```
+
+Note: LDAK `--sum-cors` does not accept `--prevalence` / `--ascertainment` flags.
 
 ### Multiple Phenotypes
 
@@ -344,8 +404,7 @@ nextflow run main.nf \
     --run_heritability_estimation true \
     --heritability_method ldak_he \
     --genotypes_association_plink1 "data/chr*.{bed,bim,fam}" \
-    --phenotypes_filename phenotypes.txt \
-    --phenotypes_columns height,bmi,waist_circumference,hip_circumference \
+    --phenotypes_dir phenotypes/ \
     -profile slurm,singularity
 ```
 
@@ -377,7 +436,7 @@ output/project_name/
 │   ├── kvik/
 │   │   ├── kvik.step1.root         # Step 1 model
 │   │   ├── kvik.step2.assoc        # GWAS results
-│   │   └── kvik.step3.remls.all    # Gene-based results (optional)
+│   │   └── kvik.step2.summaries    # Optional merged per-chromosome summaries
 │   │
 │   ├── sumher/
 │   │   ├── trait.hers              # Heritability estimates

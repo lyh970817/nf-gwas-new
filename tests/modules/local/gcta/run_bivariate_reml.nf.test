@@ -19,7 +19,10 @@ nextflow_process {
                     file("$projectDir/tests/input/gcta/run_bivariate_reml/gcta_grm_0.grm.N.bin")
                 )
                 // Phenotypes file (bivariate format: FID IID Y1 Y2, no header)
-                input[1] = file("$projectDir/tests/input/gcta/run_bivariate_reml/phenotype.noheader.txt")
+                input[1] = tuple(
+                    "Y1__Y2",
+                    file("$projectDir/tests/input/gcta/run_bivariate_reml/phenotype.noheader.txt")
+                )
                 // No covariates
                 input[2] = []
                 input[3] = []
@@ -58,7 +61,10 @@ nextflow_process {
                     file("$projectDir/tests/input/gcta/run_bivariate_reml/gcta_grm_0.grm.bin"),
                     file("$projectDir/tests/input/gcta/run_bivariate_reml/gcta_grm_0.grm.N.bin")
                 )
-                input[1] = file("$projectDir/tests/input/gcta/run_bivariate_reml/phenotype.noheader.txt")
+                input[1] = tuple(
+                    "Y1__Y2",
+                    file("$projectDir/tests/input/gcta/run_bivariate_reml/phenotype.noheader.txt")
+                )
                 input[2] = file("$projectDir/tests/input/gcta/run_bivariate_reml/covariates.quant.noheader.txt")
                 input[3] = []
                 """

@@ -12,6 +12,8 @@ RUN conda install -n root -y -c conda-forge mamba && \
     mamba env update -n base -f environment.yml && \
     mamba clean --all -y
 
+RUN pip install 'pandas<3' ldsc==2.0.1
+
 # RUN conda update -y conda && \
 #     conda env update -n root -f environment.yml && \
 #     conda clean --all
@@ -59,6 +61,17 @@ RUN mkdir regenie && cd regenie && \
     chmod +x regenie
 
 ENV PATH="/opt/regenie/:${PATH}"
+
+# Install MAGMA (official Linux binary)
+WORKDIR "/opt"
+ENV MAGMA_URL="https://vu.data.surf.nl/index.php/s/lxDgt2dNdNr6DYt/download"
+ENV MAGMA_SHA256="d8b20778b773f47b4fb0f1020baefebc92b11ee65946e708a618d494d6819e39"
+RUN wget -O magma.zip "${MAGMA_URL}" && \
+    echo "${MAGMA_SHA256}  magma.zip" | sha256sum -c - && \
+    unzip -q magma.zip -d /opt/magma && \
+    rm magma.zip && \
+    chmod +x /opt/magma/magma
+ENV PATH="/opt/magma:${PATH}"
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \

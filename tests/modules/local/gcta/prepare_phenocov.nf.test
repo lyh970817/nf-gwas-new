@@ -12,7 +12,10 @@ nextflow_process {
             }
             process {
                 """
-                input[0] = file("$projectDir/tests/input/phenotype.txt")
+                input[0] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/gcta/prepare_phenocov/phenotype_single.txt")
+                )
                 input[1] = []  // No covariates (empty list)
                 """
             }
@@ -24,14 +27,14 @@ nextflow_process {
             with(process.out) {
                 // Check phenotypes_noheader output exists
                 assert phenotypes_noheader
-                def phenoFile = path(phenotypes_noheader.get(0))
+                def phenoFile = path(phenotypes_noheader.get(0).get(1))
 
-                assert phenoFile.fileName.toString() == "phenotype.noheader.txt"
+                assert phenoFile.fileName.toString() == "phenotype_single.noheader.txt"
                 assert phenoFile.size() > 0
 
                 // Check that header is removed
                 def content = phenoFile.text
-                assert !content.contains("FID IID Y1 Y2")
+                assert !content.contains("FID IID Y1")
 
                 // Check first line starts with sample ID
                 def firstLine = content.split("\n")[0]
@@ -53,8 +56,11 @@ nextflow_process {
             }
             process {
                 """
-                input[0] = file("$projectDir/tests/input/phenotype.txt")
-                input[1] = file("$projectDir/tests/input/covariates.txt")
+                input[0] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/gcta/prepare_phenocov/phenotype_single.txt")
+                )
+                input[1] = file("$projectDir/tests/input/gcta/prepare_phenocov/covariates.txt")
                 """
             }
         }
@@ -65,7 +71,7 @@ nextflow_process {
             with(process.out) {
                 // Check phenotypes output
                 assert phenotypes_noheader
-                def phenoFile = path(phenotypes_noheader.get(0))
+                def phenoFile = path(phenotypes_noheader.get(0).get(1))
                 assert phenoFile.size() > 0
 
                 // Check quantitative covariates output
@@ -98,8 +104,11 @@ nextflow_process {
             }
             process {
                 """
-                input[0] = file("$projectDir/tests/input/phenotype.txt")
-                input[1] = file("$projectDir/tests/input/covariates.txt")
+                input[0] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/gcta/prepare_phenocov/phenotype_single.txt")
+                )
+                input[1] = file("$projectDir/tests/input/gcta/prepare_phenocov/covariates.txt")
                 """
             }
         }
@@ -110,8 +119,8 @@ nextflow_process {
             with(process.out) {
                 // Check phenotypes output
                 assert phenotypes_noheader
-                def phenoFile = path(phenotypes_noheader.get(0))
-                assert phenoFile.fileName.toString() == "phenotype.noheader.txt"
+                def phenoFile = path(phenotypes_noheader.get(0).get(1))
+                assert phenoFile.fileName.toString() == "phenotype_single.noheader.txt"
                 assert phenoFile.size() > 0
 
                 // Check quantitative covariates output (V2, V3 - excluding V1)
@@ -156,8 +165,11 @@ nextflow_process {
             }
             process {
                 """
-                input[0] = file("$projectDir/tests/input/phenotype_single.txt")
-                input[1] = file("$projectDir/tests/input/covariates.txt")
+                input[0] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/gcta/prepare_phenocov/phenotype_single.txt")
+                )
+                input[1] = file("$projectDir/tests/input/gcta/prepare_phenocov/covariates.txt")
                 """
             }
         }
@@ -167,7 +179,7 @@ nextflow_process {
 
             with(process.out) {
                 assert phenotypes_noheader
-                def phenoFile = path(phenotypes_noheader.get(0))
+                def phenoFile = path(phenotypes_noheader.get(0).get(1))
 
                 assert phenoFile.fileName.toString() == "phenotype_single.noheader.txt"
                 assert phenoFile.size() > 0

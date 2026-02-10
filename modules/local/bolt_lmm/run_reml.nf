@@ -6,11 +6,11 @@ process RUN_BOLT_REML {
     path bed_plink_files
     path bim_plink_files
     path fam_plink_file
-    path phenotypes_file
+    tuple val(phenotype_name), path(phenotypes_file)
     path covariates_file
 
   output:
-    path "${phenotypes_file.baseName}.bolt.reml.log", emit: log_file
+    path { "${phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')}.bolt.reml.log" }, emit: log_file
 
   script:
   // Build a single space-separated string:
@@ -22,11 +22,8 @@ process RUN_BOLT_REML {
        }
        .join(' ')
 
-  // Phenotype columns → one --phenoCol per column
-  def phenoCols = params.phenotypes_columns
-                     .split(',')
-                     .collect { "--phenoCol=${it}" }
-                     .join(' ')
+  // Phenotype column (single phenotype per file)
+  def phenoCols = "--phenoCol=${phenotype_name}"
 
   // Covariates: categorical vs quantitative (handle null covariates)
   def covarCols = ""
@@ -34,7 +31,7 @@ process RUN_BOLT_REML {
 
   if (params.covariates_columns != null && params.covariates_columns != "") {
     def allCovars  = params.covariates_columns.split(',')
-    def catCovars  = params.covariates_cat_columns != null ? params.covariates_cat_columns.split(',') : []
+    def catCovars  = (params.covariates_cat_columns != null && params.covariates_cat_columns != "") ? params.covariates_cat_columns.split(',') : []
 
     covarCols  = catCovars
                        .collect { "--covarCol=${it}" }
@@ -45,7 +42,8 @@ process RUN_BOLT_REML {
                        .join(' ')
   }
 
-  def outPrefix = phenotypes_file.baseName
+  def phenotype_slug = phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')
+  def outPrefix = phenotype_slug
 
   // Build covariate flags only if covariates exist
   def covarFileFlag = (params.covariates_columns != null && params.covariates_columns != "") ? "--covarFile ${covariates_file}" : ""

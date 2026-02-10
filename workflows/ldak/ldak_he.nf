@@ -32,7 +32,7 @@ include { LDAK_HE_ANALYSIS } from './ldak_he_analysis'
 workflow LDAK_HE_WORKFLOW {
     take:
     imputed_plink_ch     // Channel with imputed PLINK files (bed, bim, fam)
-    phenotype_file       // Path to phenotype file
+    phenotype_meta_ch    // Channel: tuple(phenotype_name, phenotype_file, is_binary)
     covariates_file      // Path to covariates file (optional)
     heritability_model   // Heritability model parameter (optional)
 
@@ -48,7 +48,7 @@ workflow LDAK_HE_WORKFLOW {
     LDAK_HE_ANALYSIS(
         LDAK_GRM.out.filtered_grm,  // Pass filtered GRM (5-tuple, will be adjusted internally)
         [],                          // No keep_file needed (GRM already filtered)
-        phenotype_file,
+        phenotype_meta_ch,
         covariates_file
     )
 

@@ -5,7 +5,7 @@ process RUN_BIVARIATE_REML {
 
     input:
     tuple val(snp_group), val(prefix), path(grm_id), path(grm_bin), path(grm_n_bin)
-    path phenotypes_file
+    tuple val(pair_name), path(phenotypes_file)
     path qcovariates_file
     path covariates_file
 
@@ -14,7 +14,8 @@ process RUN_BIVARIATE_REML {
     path "*.log", emit: log_file
 
     script:
-    def out = phenotypes_file.baseName
+    def pair_slug = pair_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')
+    def out = pair_slug
     def qcovar_param = qcovariates_file ? "--qcovar ${qcovariates_file}" : ''
     def covar_param = covariates_file ? "--covar ${covariates_file}" : ''
 

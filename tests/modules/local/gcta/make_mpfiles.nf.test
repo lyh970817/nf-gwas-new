@@ -12,9 +12,9 @@ nextflow_process {
                 input[0] = tuple(
                     1,
                     "chr01.vcf",
-                    file("$projectDir/tests/input/chr01.vcf.pgen"),
-                    file("$projectDir/tests/input/chr01.vcf.psam"),
-                    file("$projectDir/tests/input/chr01.vcf.pvar"),
+                    file("$projectDir/tests/input/gcta/make_mpfiles/chr01.vcf.pgen"),
+                    file("$projectDir/tests/input/gcta/make_mpfiles/chr01.vcf.psam"),
+                    file("$projectDir/tests/input/gcta/make_mpfiles/chr01.vcf.pvar"),
                     null
                 )
                 """
@@ -53,9 +53,9 @@ nextflow_process {
                 input[0] = tuple(
                     2,
                     "chr02.vcf",
-                    file("$projectDir/tests/input/chr02.vcf.pgen"),
-                    file("$projectDir/tests/input/chr02.vcf.psam"),
-                    file("$projectDir/tests/input/chr02.vcf.pvar"),
+                    file("$projectDir/tests/input/gcta/make_mpfiles/chr02.vcf.pgen"),
+                    file("$projectDir/tests/input/gcta/make_mpfiles/chr02.vcf.psam"),
+                    file("$projectDir/tests/input/gcta/make_mpfiles/chr02.vcf.pvar"),
                     null
                 )
                 """

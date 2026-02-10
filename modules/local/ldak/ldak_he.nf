@@ -3,18 +3,18 @@ process LDAK_HE {
     publishDir "${params.pubDir}/ldak/he", mode: 'copy'
 
     input:
-    // Adjusted GRM (must include .grm.root file for HE regression)
+    // GRM tuple; grm_root is [] for unadjusted GRMs
     // Should already contain only unrelated individuals if derived from filtered_grm
     tuple val(grm_name), path(grm_bin), path(grm_id), path(grm_details), path(grm_adjust), path(grm_root)
     path keep_file  // Optional: .keep file for sample filtering (use [] if GRM is already filtered)
-    path phenotype_file
+    tuple val(phenotype_name), path(phenotype_file)
     path quant_covariates_file
     path cat_covariates_file
     val subset_prefix
     val subset_number
 
     output:
-    path "he_*.*", emit: he_results
+    tuple val(phenotype_name), path("he_*.*"), emit: he_results
 
     script:
     // Handle optional files: check if truthy (not empty list [])
@@ -25,12 +25,13 @@ process LDAK_HE {
     def subset_number_param = subset_number ? "--subset-number ${subset_number}" : ''
     // Extract basename from grm_id for output file naming (in case grm_name is a full path)
     def grm_basename = grm_id.baseName.replace('.grm', '')
+    def phenotype_slug = phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')
 
     """
     # Run LDAK HE analysis with adjusted GRM
     # If GRM is already filtered (unrelated individuals only), no --keep is needed
     # Note: grm_basename is extracted from grm_id filename to handle full path grm_name values
-    ldak6 --he he_${grm_basename} \\
+    ldak6 --he he_${phenotype_slug}_${grm_basename} \\
         --pheno ${phenotype_file} \\
         --mpheno 1 \\
         --grm ${grm_bin.baseName.replace('.grm', '')} \\

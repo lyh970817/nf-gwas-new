@@ -8,7 +8,6 @@ nextflow_process {
 
         when {
             params {
-                phenotypes_columns = 'Y1'
             }
             process {
                 """
@@ -21,7 +20,10 @@ nextflow_process {
                     file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_2.grm.bin"),
                     file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_2.grm.N.bin")
                 ]
-                input[2] = file("$projectDir/tests/input/gcta/run_reml_ldms/phenotype.noheader.txt")
+                input[2] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.noheader.txt")
+                )
                 input[3] = []  // no qcovariates
                 input[4] = []  // no covariates
                 """
@@ -51,7 +53,6 @@ nextflow_process {
 
         when {
             params {
-                phenotypes_columns = 'Y1'
             }
             process {
                 """
@@ -64,7 +65,10 @@ nextflow_process {
                     file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_2.grm.bin"),
                     file("$projectDir/tests/input/gcta/run_reml_ldms/gcta_grm_2.grm.N.bin")
                 ]
-                input[2] = file("$projectDir/tests/input/gcta/run_reml_ldms/phenotype.noheader.txt")
+                input[2] = tuple(
+                    "Y1",
+                    file("$projectDir/tests/input/phenotypes/single/phenotype_single_Y1.noheader.txt")
+                )
                 input[3] = file("$projectDir/tests/input/gcta/run_reml_ldms/covariates.quant.noheader.txt")
                 input[4] = file("$projectDir/tests/input/gcta/run_reml_ldms/covariates.cat.noheader.txt")
                 """

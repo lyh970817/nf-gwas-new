@@ -9,13 +9,25 @@
                     "gcta_grm_0_adj_unrel05.grm.bin:md5,338c202e279369908fb1e65350a2d7eb",
                     "gcta_grm_0_adj_unrel05.grm.N.bin:md5,0a8ce2f24d85934e6b1bdb09ae4b0bf1"
                 ]
+            ],
+            [
+                [
+                    "0",
+                    "gcta_grm_0_adj",
+                    "gcta_grm_0_adj.grm.id:md5,cf62b27fc06fbabf367a8b177bc0830c",
+                    "gcta_grm_0_adj.grm.bin:md5,e96bcbb3d892d39508268a28154c1288",
+                    "gcta_grm_0_adj.grm.N.bin:md5,6b1d8866d2277749b3a0cff5e9efa44c"
+                ]
+            ],
+            [
+                "gcta_grm_0_adj_unrel05.grm.id:md5,78d2027a9e05085ca53d59f8578bf968"
             ]
         ],
         "meta": {
             "nf-test": "0.9.3",
             "nextflow": "24.08.0"
         },
-        "timestamp": "2025-12-15T13:35:37.762616"
+        "timestamp": "2026-02-03T19:45:45.948075"
     },
     "Should calculate GRM without SNP group filtering": {
         "content": [
@@ -23,16 +35,28 @@
                 [
                     "0",
                     "gcta_grm_0_adj_unrel05",
-                    "gcta_grm_0_adj_unrel05.grm.id:md5,c7274f594049a3f8760032c41b1f2117",
-                    "gcta_grm_0_adj_unrel05.grm.bin:md5,2a363bc91b737d9907e1bbefbc1dc899",
-                    "gcta_grm_0_adj_unrel05.grm.N.bin:md5,7466cae198eab6274db32905cbce14bf"
+                    "gcta_grm_0_adj_unrel05.grm.id:md5,78d2027a9e05085ca53d59f8578bf968",
+                    "gcta_grm_0_adj_unrel05.grm.bin:md5,338c202e279369908fb1e65350a2d7eb",
+                    "gcta_grm_0_adj_unrel05.grm.N.bin:md5,0a8ce2f24d85934e6b1bdb09ae4b0bf1"
                 ]
+            ],
+            [
+                [
+                    "0",
+                    "gcta_grm_0_adj",
+                    "gcta_grm_0_adj.grm.id:md5,cf62b27fc06fbabf367a8b177bc0830c",
+                    "gcta_grm_0_adj.grm.bin:md5,e96bcbb3d892d39508268a28154c1288",
+                    "gcta_grm_0_adj.grm.N.bin:md5,6b1d8866d2277749b3a0cff5e9efa44c"
+                ]
+            ],
+            [
+                "gcta_grm_0_adj_unrel05.grm.id:md5,78d2027a9e05085ca53d59f8578bf968"
             ]
         ],
         "meta": {
             "nf-test": "0.9.3",
             "nextflow": "24.08.0"
         },
-        "timestamp": "2025-12-15T13:41:00.455915"
+        "timestamp": "2026-02-03T19:45:41.101128"
     }
 }

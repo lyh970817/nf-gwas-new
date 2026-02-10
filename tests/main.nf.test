@@ -3,988 +3,294 @@ nextflow_pipeline {
     name "Test Workflow main.nf"
     script "main.nf"
 
-    // BGEN format is no longer supported, so this test has been removed
-    // test("Should execute gene-based test pipeline with bgen files")
+    test("Pipeline guard: fail when no workflows are enabled") {
 
-
-   test("Should execute gene-based test pipeline with specified parameters with sum") {
-
-    when {
-
-        params {
-            project                       = 'test-gene-based-test'
-            genotypes_build               = 'hg19'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
-            phenotypes_binary_trait       = true
-            phenotypes_columns            = 'Y1,Y2'
-            covariates_filename           = "$projectDir/tests/input/pipeline/covariates.txt"
-            covariates_columns            = 'V1,V2,V3'
-            regenie_run_gene_based_tests  = true
-            regenie_gene_anno             = "$projectDir/tests/input/gene_based_tests/example.annotation"
-            regenie_gene_setlist          = "$projectDir/tests/input/gene_based_tests/example.setlist"
-            regenie_gene_masks            = "$projectDir/tests/input/gene_based_tests/example.masks"
-            regenie_gene_test             = 'skat'
-            regenie_gene_aaf              = 0.01
-            regenie_gene_vc_max_aaf       = 100
-            regenie_gene_vc_mac_thr       = 10
-            regenie_gene_build_mask       = 'sum'
-            outdir                        = "$outputDir"
-         }
-    }
-
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-
-}
-
-test("Should execute gene-based test pipeline") {
-
-    when {
-
-        params {
-            project                       = 'test-gene-based-test'
-            genotypes_build               = 'hg19'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
-            phenotypes_binary_trait       = true
-            phenotypes_columns            = 'Y1,Y2'
-            covariates_filename           = "$projectDir/tests/input/pipeline/covariates.txt"
-            covariates_columns            = 'V1,V2,V3'
-            regenie_run_gene_based_tests  = true
-            regenie_gene_anno             = "$projectDir/tests/input/gene_based_tests/example.annotation"
-            regenie_gene_setlist          = "$projectDir/tests/input/gene_based_tests/example.setlist"
-            regenie_gene_masks            = "$projectDir/tests/input/gene_based_tests/example.masks"
-            regenie_gene_test             = 'skat'
-            regenie_gene_aaf              = 0.01
-            regenie_gene_vc_max_aaf       = 100
-            regenie_gene_vc_mac_thr       = 10
-            regenie_gene_build_mask       = 'max'
-            regenie_write_bed_masks       = true
-            outdir                        = "$outputDir"
-        }
-    }
-
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-
-}
-
-test("Should execute GWAS with pruning pipeline") {
-
-    when {
-
-        params {
-            project                       = "test-gwas-add-pruning"
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_columns            = 'Y1,Y2'
-            phenotypes_binary_trait       = false
-            regenie_test                  = 'additive'
-            prune_enabled                 = true
-            outdir                        = "$outputDir"
-        }
-    }
-
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-
-}
-
-test("Should execute GWAS with additive test and multiple chromosomes") {
-
-    when {
-
-        params {
-            project                       = 'test-gwas-additive-2chromosomes'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/chr*.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_binary_trait       = false
-            phenotypes_columns            = 'Y1,Y2'
-            regenie_test                  = 'additive'
-            annotation_min_log10p         = 2
-            outdir                        = "$outputDir"
-        }
-    }
-
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-
-}
-
-test("Should execute liftover and GWAS pipeline with array results") {
-
-    when {
-
-        params {
-            project                       = 'test-gwas-liftover-array-results'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/1000g_lpa_hg38.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/1000g_lpa_hg38.vcf.gz"
-            association_build             = 'hg38'
-            target_build                  = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_1000g_lpa.txt"
-            phenotypes_binary_trait       = false
-            phenotypes_columns            = 'Y1,Y2'
-            regenie_test                  = 'additive'
-            annotation_min_log10p         = 1
-            outdir                        = "$outputDir"
-        }
-    }
-
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-
-}
-
-test("Should execute liftover and GWAS pipeline") {
-
-    when {
-
-        params {
-            project                       = 'test-gwas-liftover'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/1000g_lpa_hg38.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/1000g_lpa_hg38.vcf.gz"
-            association_build             = 'hg38'
-            target_build                  = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_1000g_lpa.txt"
-            phenotypes_binary_trait       = false
-            phenotypes_columns            = 'Y1,Y2'
-            regenie_test                  = 'additive'
-            annotation_min_log10p         = 1
-            outdir                        = "$outputDir"
-        }
-    }
-
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-
-}
-
-test("Should execute GWAS with additive test and RSIDs") {
-
-    when {
-
-        params {
-            project                       = 'test-gwas-additive-rsids'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_binary_trait       = false
-            phenotypes_columns            = 'Y1,Y2'
-            regenie_test                  = 'additive'
-            annotation_min_log10p         = 2
-            outdir                        = "$outputDir"
-        }
-    }
-
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-
-}
-
-    test("Should execute pipeline applying an additive model") {
+        tag "main_pipeline"
+        tag "main_negative"
 
         when {
-
             params {
-                project                       = 'gwas-additive'
-                genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-                genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-                genotypes_build               = 'hg19'
-                genotypes_imputed_format      = 'vcf'
-                phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-                phenotypes_binary_trait       = false
-                phenotypes_columns            = 'Y1,Y2'
-                regenie_test                  = 'additive'
-                outdir                        = "$outputDir"
-                annotation_min_log10p         = 2
-                outdir                        = "$outputDir"
+                pubDir                            = "$outputDir/results"
+                run_assoc_regenie                 = false
+                run_assoc_fastgwa                 = false
+                run_assoc_kvik                    = false
+                run_h2_gcta_grm                   = false
+                run_h2_ldak_grm                   = false
+                run_h2_gcta_greml                 = false
+                run_h2_gcta_greml_ldms            = false
+                run_h2_bolt_lmm_reml              = false
+                run_h2_ldak_reml                  = false
+                run_h2_ldak_he                    = false
+                run_h2_ldak_pcgc                  = false
+                run_h2_ldak_qc                    = false
+                run_h2_ldak_sumher                = false
+                run_h2_ldsc_h2                    = false
+                run_rg_ldak_sumcors               = false
+                run_rg_ldsc_rg                    = false
+                run_rg_gcta_bivariate_greml       = false
+                run_rg_gcta_bivariate_greml_ldms  = false
+                run_magma_gene_based              = false
+                run_magma_gene_set                = false
+                run_lava_local_rg                 = false
+                run_lcv_causal                    = false
             }
         }
 
         then {
-            assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), workflow.trace).match()
-            assert workflow.success
+            assert workflow.failed
+            assert workflow.trace.tasks().isEmpty()
         }
-
     }
 
- test("Should execute pipeline for binary trait") {
+    test("Pipeline guard: fail on removed legacy parameter") {
+
+        tag "main_pipeline"
+        tag "main_negative"
 
         when {
-
             params {
-                project                       = "test-gwas-binary"
-                genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-                genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-                genotypes_build               = 'hg19'
-                genotypes_imputed_format      = 'vcf'
-                phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
-                phenotypes_columns            = 'Y1,Y2'
-                phenotypes_binary_trait       = true
-                regenie_test                  = 'additive'
-                outdir                        = "$outputDir"
-                    annotation_min_log10p         = 2
-                outdir                        = "$outputDir"
+                pubDir                            = "$outputDir/results"
+                run_magma_gene_set                = true
+                run_gene_set_analysis             = true
+                magma_set_annot                   = "$projectDir/tests/input/magma/geneset/set_annot.sets.annot"
+                magma_gene_results_dir            = "$projectDir/tests/input/magma/gene_results"
             }
         }
 
         then {
-            assert workflow.success
-            assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-        }
-
-    }
-
-test("Should execute GWAS with binary trait (no Firth approximation)") {
-    when {
-        params {
-            project                       = "test-gwas-binary-no-approx"
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.bgen"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'bgen'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
-            phenotypes_columns            = 'Y1,Y2'
-            phenotypes_binary_trait       = true
-            regenie_test                  = 'additive'
-            regenie_firth_approx          = false
-            outdir                        = "$outputDir"
+            assert workflow.failed
+            assert workflow.trace.tasks().isEmpty()
         }
     }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
 
-test("Should execute GWAS with binary trait (no Firth)") {
-    when {
-        params {
-            project                       = "test-gwas-binary-no-firth"
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
-            phenotypes_columns            = 'Y1,Y2'
-            phenotypes_binary_trait       = true
-            regenie_test                  = 'additive'
-            regenie_firth                 = false
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
+    test("Pipeline guard: fail on removed REGENIE gene-based flag") {
 
-test("Should execute GWAS with binary trait (with missing data)") {
-    when {
-        params {
-            project                       = "test-gwas-binary-with-NA"
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin_wNA.txt"
-            phenotypes_columns            = 'Y1,Y2'
-            phenotypes_binary_trait       = true
-            regenie_test                  = 'additive'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with additive test on 2 chromosomes") {
-    when {
-        params {
-            project                       = 'test-gwas-additive-2chromosomes'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/chr*.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_binary_trait       = false
-            phenotypes_columns            = 'Y1,Y2'
-            // Chunking is no longer supported as BGEN format has been removed
-            regenie_test                  = 'additive'
-            annotation_min_log10p         = 2
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-// Continue adding more test configurations for the remaining parameter sets...
-
-
-test("Should execute GWAS with header in phenotype file with chunking") {
-    when {
-        params {
-            project                       = 'test-gwas-header'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            // Chunking is no longer supported as BGEN format has been removed
-            // genotypes_association_chunk_size = 100
-            // genotypes_association_chunk_strategy = 'VARIANTS'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_header.txt"
-            phenotypes_columns            = 'PHENO1,PHENO2'
-            phenotypes_binary_trait       = false
-            regenie_test                  = 'additive'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/PHENO1.regenie.gz"), new File("$outputDir/results/PHENO2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with header in phenotype file (custom batch size)") {
-    when {
-        params {
-            project                       = 'test-gwas-header'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            // Chunking is no longer supported as BGEN format has been removed
-            // genotypes_association_chunk_size = 100
-            genotypes_prediction_chunks   = 5
-            regenie_bsize_step1           = 100
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_header.txt"
-            phenotypes_columns            = 'PHENO1,PHENO2'
-            phenotypes_binary_trait       = false
-            regenie_test                  = 'additive'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/PHENO1.regenie.gz"), new File("$outputDir/results/PHENO2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with header in phenotype file (default batch size)") {
-    when {
-        params {
-            project                       = 'test-gwas-header'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            // Chunking is no longer supported as BGEN format has been removed
-            // genotypes_association_chunk_size = 100
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_header.txt"
-            phenotypes_columns            = 'PHENO1,PHENO2'
-            phenotypes_binary_trait       = false
-            regenie_test                  = 'additive'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/PHENO1.regenie.gz"), new File("$outputDir/results/PHENO2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with condition file") {
-    when {
-        params {
-            project                       = 'test-gwas-condition-file'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_columns            = 'Y1,Y2'
-            phenotypes_binary_trait       = false
-            covariates_filename           = "$projectDir/tests/input/pipeline/covariates.txt"
-            covariates_columns            = 'V1,V2'
-            regenie_test                  = 'additive'
-            regenie_condition_list        = "$projectDir/tests/input/pipeline/condition_snps.txt"
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with covariates file") {
-    when {
-        params {
-            project                       = 'test-gwas-covariates-file'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_columns            = 'Y1,Y2'
-            phenotypes_binary_trait       = false
-            covariates_filename           = "$projectDir/tests/input/pipeline/covariates.txt"
-            covariates_columns            = 'V1,V2'
-            regenie_test                  = 'additive'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with deletion of missing phenotype data") {
-    when {
-        params {
-            project                       = 'test-gwas-delete-missing-phenotype-data'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_columns            = 'Y1,Y2'
-            phenotypes_binary_trait       = false
-            phenotypes_delete_missings    = true
-            regenie_test                  = 'additive'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with dominant test") {
-    when {
-        params {
-            project                       = 'test-gwas-dominant'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_binary_trait       = false
-            phenotypes_columns            = 'Y1,Y2'
-            regenie_test                  = 'dominant'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with force step 1") {
-    when {
-        params {
-            project                       = 'test-gwas-force-step1'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_binary_trait       = false
-            phenotypes_columns            = 'Y1,Y2'
-            regenie_test                  = 'additive'
-            regenie_force_step1           = true
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with header in phenotype file") {
-    when {
-        params {
-            project                       = 'test-gwas-header'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_header.txt"
-            phenotypes_columns            = 'PHENO1,PHENO2'
-            phenotypes_binary_trait       = false
-            regenie_test                  = 'additive'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/PHENO1.regenie.gz"), new File("$outputDir/results/PHENO2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with liftover to hg38 and annotation") {
-    when {
-        params {
-            project                       = 'test-gwas-hg38-annotate'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example_hg38.vcf.gz"
-            genotypes_build               = 'hg38'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_binary_trait       = false
-            phenotypes_columns            = 'Y1,Y2'
-            regenie_test                  = 'additive'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with interaction tests") {
-    when {
-        params {
-            project                       = 'test-gwas-interaction'
-            regenie_run_interaction_tests = true
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_columns            = 'Y1,Y2'
-            phenotypes_binary_trait       = false
-            covariates_filename           = "$projectDir/tests/input/pipeline/covariates.txt"
-            covariates_columns            = 'V1,V2,V3'
-            regenie_test                  = 'additive'
-            regenie_interaction_snp       = '100'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with interaction tests (interaction term)") {
-    when {
-        params {
-            project                       = 'test-gwas-interaction'
-            regenie_run_interaction_tests = true
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_columns            = 'Y1,Y2'
-            phenotypes_binary_trait       = false
-            covariates_filename           = "$projectDir/tests/input/pipeline/covariates.txt"
-            covariates_columns            = 'V1,V2'
-            regenie_test                  = 'additive'
-            regenie_interaction           = 'V3'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with custom Manhattan plot y-limit") {
-    when {
-        params {
-            project                       = 'test-gwas-manhattan-limit'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_binary_trait       = false
-            phenotypes_columns            = 'Y1,Y2'
-            regenie_test                  = 'additive'
-            plot_ylimit                   = 2
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with phenotype file in tabs format") {
-    when {
-        params {
-            project                       = 'test-gwas-phenotype-tabs'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.tabs.txt"
-            phenotypes_binary_trait       = false
-            phenotypes_columns            = 'Y1,Y2'
-            regenie_test                  = 'additive'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with phenotype file containing three empty values") {
-    when {
-        params {
-            project                       = 'test-gwas-phenotype-three-empty-values'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_with_three_empty_values.txt"
-            phenotypes_binary_trait       = false
-            phenotypes_columns            = 'Y1,Y2'
-            regenie_test                  = 'additive'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with range filter") {
-    when {
-        params {
-            project                       = 'test-gwas-range'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_binary_trait       = false
-            phenotypes_columns            = 'Y1,Y2'
-            regenie_range                 = '1:100-200'
-            regenie_test                  = 'additive'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with recessive test") {
-    when {
-        params {
-            project                       = 'test-gwas-recessive'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_columns            = 'Y1,Y2'
-            phenotypes_binary_trait       = false
-            regenie_test                  = 'recessive'
-            regenie_ref_first             = true
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute GWAS with skipped predictions") {
-    when {
-        params {
-            project                       = 'test-gwas-skip-predictions'
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-            phenotypes_columns            = 'Y1,Y2'
-            phenotypes_binary_trait       = false
-            regenie_skip_predictions      = true
-            regenie_test                  = 'additive'
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-test("Should execute pipeline for binary trait with optional regenie params") {
+        tag "main_pipeline"
+        tag "main_negative"
 
         when {
-
             params {
-                project                       = "test-gwas-binary"
-                genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-                genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-                genotypes_build               = 'hg19'
-                genotypes_imputed_format      = 'vcf'
-                phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
-                phenotypes_columns            = 'Y1,Y2'
-                phenotypes_binary_trait       = true
-                regenie_test                  = 'additive'
-                outdir                        = "$outputDir"
-                    annotation_min_log10p         = 2
-                regenie_step2_optional        = "--maxCatLevels 3"
-                outdir                        = "$outputDir"
+                pubDir                            = "$outputDir/results"
+                run_magma_gene_set                = true
+                magma_set_annot                   = "$projectDir/tests/input/magma/geneset/set_annot.sets.annot"
+                magma_gene_results_dir            = "$projectDir/tests/input/magma/gene_results"
+                regenie_step2_optional            = "--anno-file removed_feature_input"
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.trace.tasks().isEmpty()
         }
     }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
 
-test("Should execute pipeline for binary trait with optional regenie step1 param") {
+    test("Pipeline guard: fail on invalid MAGMA input mode") {
+
+        tag "main_pipeline"
+        tag "main_negative"
 
         when {
-
             params {
-                project                       = "test-gwas-binary"
-                genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-                genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-                genotypes_build               = 'hg19'
-                genotypes_imputed_format      = 'vcf'
-                phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
-                phenotypes_columns            = 'Y1,Y2'
-                phenotypes_binary_trait       = true
-                regenie_test                  = 'additive'
-                outdir                        = "$outputDir"
-                    annotation_min_log10p         = 2
-                regenie_step1_optional        = "--pThresh 0.01"
-                outdir                        = "$outputDir"
+                pubDir                            = "$outputDir/results"
+                run_magma_gene_based              = true
+                magma_gene_input_mode             = 'invalid-mode'
+            }
         }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/Y1.regenie.gz"), new File("$outputDir/results/Y2.regenie.gz") , workflow.trace).match()
-    }
-}
 
-test("Should GWAS with chunking and optional step 1 param") {
-    when {
-        params {
-            project                       = 'test-gwas-header'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_build               = 'hg19'
-            // Chunking is no longer supported as BGEN format has been removed
-            // genotypes_association_chunk_size = 100
-            genotypes_prediction_chunks   = 5
-            regenie_bsize_step1           = 100
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_header.txt"
-            phenotypes_columns            = 'PHENO1,PHENO2'
-            phenotypes_binary_trait       = false
-            regenie_test                  = 'additive'
-            regenie_step1_optional        = "--pThresh 0.01"
-            outdir                        = "$outputDir"
-        }
-    }
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/PHENO1.regenie.gz"), new File("$outputDir/results/PHENO2.regenie.gz") , workflow.trace).match()
-    }
-}
-
-
-   test("Should execute gene-based-test with only one output file") {
-
-    when {
-
-        params {
-            project                       = 'test-gene-based-test'
-            genotypes_build               = 'hg19'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-            genotypes_association_format  = 'vcf'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
-            phenotypes_binary_trait       = true
-            phenotypes_columns            = 'Y1'
-            covariates_filename           = "$projectDir/tests/input/pipeline/covariates.txt"
-            covariates_columns            = 'V1,V2,V3'
-            regenie_run_gene_based_tests  = true
-            regenie_gene_anno             = "$projectDir/tests/input/gene_based_tests/example.annotation"
-            regenie_gene_setlist          = "$projectDir/tests/input/gene_based_tests/example.setlist"
-            regenie_gene_masks            = "$projectDir/tests/input/gene_based_tests/example.masks"
-            regenie_gene_test             = 'skat'
-            regenie_gene_aaf              = 0.01
-            regenie_gene_vc_max_aaf       = 100
-            regenie_gene_vc_mac_thr       = 10
-            regenie_gene_build_mask       = 'sum'
-            outdir                        = "$outputDir"
-         }
-    }
-
-    then {
-        assert workflow.success
-        snapshot(new File("$outputDir/results/Y1.regenie.gz"), workflow.trace).match()
-    }
-
-}
-
-
-   test("Should fail since no phenotype is specified") {
-
-    when {
-
-        params {
-            project                       = 'test-gene-based-test'
-            genotypes_build               = 'hg19'
-            genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association         = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-            genotypes_association_format  = 'bed'
-            phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
-            phenotypes_binary_trait       = true
-            phenotypes_columns            = ''
-            covariates_filename           = "$projectDir/tests/input/pipeline/covariates.txt"
-            covariates_columns            = 'V1,V2,V3'
-            regenie_run_gene_based_tests  = true
-            regenie_gene_anno             = "$projectDir/tests/input/gene_based_tests/example.annotation"
-            regenie_gene_setlist          = "$projectDir/tests/input/gene_based_tests/example.setlist"
-            regenie_gene_masks            = "$projectDir/tests/input/gene_based_tests/example.masks"
-            regenie_gene_test             = 'skat'
-            regenie_gene_aaf              = 0.01
-            regenie_gene_vc_max_aaf       = 100
-            regenie_gene_vc_mac_thr       = 10
-            regenie_gene_build_mask       = 'sum'
-            outdir                        = "$outputDir"
-         }
-    }
-
-    then {
-        assert workflow.stderr.contains("* Missing required parameter: --phenotypes_columns")
-        assert workflow.failed
-        snapshot(workflow.trace).match()
-    }
-
-    }
-
-
-   test("Should execute GWAS with additive testing with no significant hits") {
-
-    when {
-
-            params {
-                project                       = "test-gwas-binary"
-                genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-                genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-                genotypes_build               = 'hg19'
-                genotypes_imputed_format      = 'vcf'
-                phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_bin.txt"
-                phenotypes_columns            = 'Y1,Y2'
-                phenotypes_binary_trait       = true
-                regenie_test                  = 'additive'
-                outdir                        = "$outputDir"
-                    annotation_min_log10p         = 100
-                regenie_step1_optional        = "--pThresh 0.01"
-                outdir                        = "$outputDir"
+        then {
+            assert workflow.failed
+            assert workflow.trace.tasks().isEmpty()
         }
     }
 
-    then {
-        assert workflow.success
-        assert snapshot(new File("$outputDir/results/tophits/Y1.regenie.filtered.gz"), new File("$outputDir/results/tophits/Y2.regenie.filtered.gz"), workflow.trace).match()
-    }
-   }
+    test("Pipeline guard: fail when raw MAGMA is missing phenotypes") {
 
-   test("Execute a GWAS and report number of samples") {
+        tag "main_pipeline"
+        tag "main_negative"
 
-    when {
-
+        when {
             params {
-                project                       = "test-gwas-binary"
-                genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-                genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-                genotypes_build               = 'hg19'
-                genotypes_imputed_format      = 'vcf'
-                phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype.txt"
-                phenotypes_columns            = 'Y1,Y2'
-                phenotypes_binary_trait       = false
-                outdir                        = "$outputDir"
-                }
+                pubDir                            = "$outputDir/results"
+                run_magma_gene_based              = true
+                magma_gene_input_mode             = 'raw'
+                phenotypes_dir                    = null
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.trace.tasks().isEmpty()
+        }
     }
 
-    then {
-        assert workflow.success
-        def gzCsvFile = path("$outputDir/results/tophits/Y1.regenie.filtered.gz").csv(decompress: true, sep: "\t")
-        assert gzCsvFile.rows[1]['N'] == 500
-    }
-   }
+    test("Pipeline guard: fail when raw MAGMA is missing genotype files") {
 
-   test("Execute a stratified GWAS and report number of samples") {
+        tag "main_pipeline"
+        tag "main_negative"
 
-    when {
-
+        when {
             params {
-                project                       = "test-gwas-binary"
-                genotypes_prediction          = "$projectDir/tests/input/pipeline/example.{bim,bed,fam}"
-                genotypes_association         = "$projectDir/tests/input/pipeline/example.vcf.gz"
-                genotypes_build               = 'hg19'
-                genotypes_imputed_format      = 'vcf'
-                phenotypes_filename           = "$projectDir/tests/input/pipeline/phenotype_stratified.txt"
-                phenotypes_columns            = 'Y1,Y2'
-                phenotypes_binary_trait       = false
-                outdir                        = "$outputDir"
-                }
+                pubDir                            = "$outputDir/results"
+                run_magma_gene_based              = true
+                magma_gene_input_mode             = 'raw'
+                phenotypes_dir                    = "$projectDir/tests/input/phenotypes/single"
+                imputed_genotyped_files_vcf       = null
+                imputed_genotyped_files_plink1    = null
+                imputed_genotyped_files_plink2    = null
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.trace.tasks().isEmpty()
+        }
     }
 
-    then {
-        assert workflow.success
-        def gzCsvFile = path("$outputDir/results/tophits/Y1.regenie.filtered.gz").csv(decompress: true, sep: "\t")
-        assert gzCsvFile.rows[1]['N'] == 492
-    }
-   }
+    test("Pipeline guard: fail on removed magma_use_regenie_merged parameter") {
 
+        tag "main_pipeline"
+        tag "main_negative"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+                run_magma_gene_based              = true
+                magma_use_regenie_merged          = true
+                magma_reference_plink             = "$projectDir/tests/input/magma/ref.{bed,bim,fam}"
+                magma_gene_loc                    = "$projectDir/tests/input/magma/genes.loc"
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.trace.tasks().isEmpty()
+        }
+    }
+
+    test("Pipeline guard: fail when gene-set has no pipeline run and no external gene results") {
+
+        tag "main_pipeline"
+        tag "main_negative"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+                run_magma_gene_based              = false
+                run_magma_gene_set                = true
+                magma_set_annot                   = "$projectDir/tests/input/magma/geneset/set_annot.sets.annot"
+                magma_gene_results_dir            = null
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.trace.tasks().isEmpty()
+        }
+    }
+
+    test("Pipeline guard: fail on removed magma_use_pipeline_gene_results parameter") {
+
+        tag "main_pipeline"
+        tag "main_negative"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+                run_magma_gene_set                = true
+                magma_set_annot                   = "$projectDir/tests/input/magma/geneset/set_annot.sets.annot"
+                magma_use_pipeline_gene_results   = true
+                magma_gene_results_dir            = "$projectDir/tests/input/magma/gene_results"
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.trace.tasks().isEmpty()
+        }
+    }
+
+    test("Pipeline guard: fail when genetic-correlation has fewer than two summary stats") {
+
+        tag "main_pipeline"
+        tag "main_negative"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+                run_rg_ldsc_rg                    = true
+                summary_stats_dir                 = "$projectDir/tests/input/magma/gene_results"
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.trace.tasks().isEmpty()
+        }
+    }
+
+    test("Pipeline guard: fail when MAGMA sumstats mode has no reference PLINK") {
+
+        tag "main_pipeline"
+        tag "main_negative"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+                run_magma_gene_based              = true
+                run_magma_gene_set                = false
+                magma_gene_input_mode             = 'sumstats'
+                magma_reference_plink             = null
+                magma_gene_loc                    = "$projectDir/tests/input/magma/genes.loc"
+                summary_stats_dir                 = "$projectDir/tests/input/magma/sumstats"
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.trace.tasks().isEmpty()
+        }
+    }
+
+    test("Pipeline guard: fail when KVIK is enabled without genotyped input") {
+
+        tag "main_pipeline"
+        tag "main_negative"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+                run_assoc_regenie                 = false
+                run_assoc_kvik                    = true
+                genotyped_file                    = null
+                imputed_genotyped_files_vcf       = "$projectDir/tests/input/chr01.vcf.gz"
+                phenotypes_dir                    = "$projectDir/tests/input/phenotypes/single"
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.trace.tasks().isEmpty()
+        }
+    }
+
+    test("Pipeline guard: fail on removed use_precomputed_grm parameter") {
+
+        tag "main_pipeline"
+        tag "main_negative"
+
+        when {
+            params {
+                pubDir                            = "$outputDir/results"
+                run_h2_gcta_greml                 = true
+                use_precomputed_grm               = true
+                phenotypes_dir                    = "$projectDir/tests/input/phenotypes/single"
+                imputed_genotyped_files_vcf       = "$projectDir/tests/input/chr01.vcf.gz"
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.trace.tasks().isEmpty()
+        }
+    }
 }

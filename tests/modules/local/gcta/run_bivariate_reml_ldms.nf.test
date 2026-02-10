@@ -23,7 +23,10 @@ nextflow_process {
                     file("$projectDir/tests/input/gcta/run_bivariate_reml_ldms/gcta_grm.grm.N.bin")
                 ]
                 // Phenotypes file (bivariate format)
-                input[2] = file("$projectDir/tests/input/gcta/run_bivariate_reml_ldms/phenotype.noheader.txt")
+                input[2] = tuple(
+                    "Y1__Y2",
+                    file("$projectDir/tests/input/gcta/run_bivariate_reml_ldms/phenotype.noheader.txt")
+                )
                 // No covariates
                 input[3] = []
                 input[4] = []

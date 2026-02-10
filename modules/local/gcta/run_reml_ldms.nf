@@ -5,7 +5,7 @@ process RUN_REML_LDMS {
   input:
   path mgrm_file
   path grm_files
-  path phenotypes_file
+  tuple val(phenotype_name), path(phenotypes_file)
   path qcovariates_file
   path covariates_file
 
@@ -13,7 +13,8 @@ process RUN_REML_LDMS {
   path "*.hsq", emit: reml_results
 
   script:
-  def out = phenotypes_file.baseName
+  def phenotype_slug = phenotype_name.replaceAll(/[^A-Za-z0-9._-]+/, '_')
+  def out = phenotype_slug
   def qcovar_param = qcovariates_file ? "--qcovar ${qcovariates_file}" : ''
   def covar_param = covariates_file ? "--covar ${covariates_file}" : ''
 

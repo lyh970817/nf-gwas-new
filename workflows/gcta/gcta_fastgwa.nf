@@ -24,7 +24,7 @@ include { GCTA_FASTGWA_ANALYSIS } from './gcta_fastgwa_analysis'
 workflow GCTA_FASTGWA {
     take:
     imputed_plink2_ch   // Channel with imputed PLINK2 files for GRM and association
-    phenotypes_file     // Path to phenotypes file
+    phenotype_meta_ch   // Channel: tuple(phenotype_name, phenotype_file, is_binary)
     covariates_file     // Path to covariates file (optional)
     nparts_gcta         // Number of parts for GCTA GRM calculation
     sparse_cutoff       // Cutoff for sparse GRM (default: 0.05)
@@ -47,7 +47,7 @@ workflow GCTA_FASTGWA {
     GCTA_FASTGWA_ANALYSIS(
         imputed_plink2_ch,
         GCTA_GRM.out.sparse_grm_files,
-        phenotypes_file,
+        phenotype_meta_ch,
         covariates_file,
     )
 

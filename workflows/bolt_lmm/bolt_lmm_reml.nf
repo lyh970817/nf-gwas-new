@@ -11,7 +11,7 @@ include { IMPUTED_TO_PLINK } from '../../modules/local/imputed_to_plink'
 workflow BOLT_LMM_REML {
     take:
     imputed_plink_ch   // Channel with imputed PLINK2 files (tuple with [prefix, pgen_files, psam_files, pvar_files])
-    phenotypes_file     // Path to phenotypes file
+    phenotype_meta_ch   // Channel: tuple(phenotype_name, phenotype_file, is_binary)
     covariates_file     // Path to covariates file (optional)
 
     main:
@@ -38,7 +38,7 @@ workflow BOLT_LMM_REML {
         bed_plink_files,
         bim_plink_files,
         fam_plink_file,
-        phenotypes_file,
+        phenotype_meta_ch.map { phenotype_name, phenotypes_file, _is_binary -> tuple(phenotype_name, phenotypes_file) },
         covariates_file
     )
 

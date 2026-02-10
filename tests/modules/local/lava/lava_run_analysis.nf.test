@@ -36,10 +36,21 @@ nextflow_process {
                 assert size() == 1
                 def univFile = path(get(0))
                 assert univFile.exists()
-                assert univFile.size() > 0
-                // Check header is present
-                def content = univFile.text
-                assert content.contains("locus") || content.contains("phen")
+                def univLines = univFile.readLines()
+                assert univLines.size() == 8
+                assert univLines[0] == "locus\tchr\tstart\tstop\tn.snps\tn.pcs\tphen\th2.obs\tp"
+                assert univLines[1].contains("\ttrait1\t0.0172847\t1.93274e-11")
+                assert univLines[2].contains("\ttrait2\t0.00624282\t0.00373374")
+            }
+
+            // Check bivariate results
+            with(process.out.bivar_results) {
+                assert size() == 1
+                def bivarFile = path(get(0))
+                assert bivarFile.exists()
+                def bivarLines = bivarFile.readLines()
+                assert bivarLines.size() == 4
+                assert bivarLines[1].contains("\ttrait1\ttrait2\t-0.130215")
             }
 
             // Check log file
@@ -84,7 +95,11 @@ nextflow_process {
             // Check univariate results exist
             with(process.out.univ_results) {
                 assert size() == 1
-                assert path(get(0)).exists()
+                def univFile = path(get(0))
+                assert univFile.exists()
+                def univLines = univFile.readLines()
+                assert univLines[0].startsWith("locus\tchr\tstart\tstop")
+                assert univLines.find { it.contains("\ttrait1\t") }
             }
 
             // Check log confirms completion
@@ -126,7 +141,11 @@ nextflow_process {
             // Univariate results should still be generated
             with(process.out.univ_results) {
                 assert size() == 1
-                assert path(get(0)).exists()
+                def univFile = path(get(0))
+                assert univFile.exists()
+                def univLines = univFile.readLines()
+                assert univLines[0].startsWith("locus\tchr\tstart\tstop")
+                assert univLines.size() > 1
             }
 
             // Bivariate results might be empty with strict threshold
