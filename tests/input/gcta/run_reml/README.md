@@ -23,10 +23,10 @@ These GRM files are required by GCTA for multi-component REML analysis:
 - `gcta_grm.mgrm` - Multi-GRM file listing GRM prefixes (input to process)
 
 ### Additional Input Files (from tests/input/)
-- Phenotype file: `tests/input/phenotypes_noheader.txt`
+- Phenotype file: `tests/input/gcta/run_reml/phenotype.noheader.txt`
 - Covariate files (optional):
-  - `tests/input/covariates_quant_noheader.txt` (quantitative)
-  - `tests/input/covariates_cat_noheader.txt` (categorical)
+  - `tests/input/gcta/run_reml/covariates.quant.noheader.txt` (quantitative)
+  - `tests/input/gcta/run_reml/covariates.cat.noheader.txt` (categorical)
 
 ### Output Files
 - `*.hsq` - Multi-component REML results with variance estimates per GRM

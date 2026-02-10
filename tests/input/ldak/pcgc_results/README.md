@@ -45,7 +45,6 @@ Liability_Her  -         -         -      -        -       0.312
 ### LDAK_PCGC Test
 ```groovy
 params {
-    phenotypes_columns = 'Y1'
     ldak_pcgc_prevalence = 0.2  // Required for liability scale
 }
 process {
@@ -60,7 +59,7 @@ process {
         file("filtered/ldak_grm_filtered.keep"),
         ...
     )
-    input[2] = file("phenotype_bin.txt")  // Binary phenotype
+    input[2] = tuple("Y1", file("phenotype_bin.txt"))  // Binary phenotype (one file per trait)
 }
 ```
 

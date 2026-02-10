@@ -25,8 +25,8 @@ This directory contains **both input files and output files** for testing FastGW
 | `gcta_grm_0_sp.grm.id` | Input | Sparse GRM sample IDs (500 samples) | 3.7 KB |
 | `gcta_grm_0_sp.grm.sp` | Input | Sparse GRM (row col value format) | 132 KB |
 
-**Note**: PLINK2 genotype files are shared from base test directory:
-- `tests/input/chr01.vcf.{pgen,psam,pvar}`
+**Note**: PLINK2 genotype files are shared via symlinks in this directory:
+- `tests/input/gcta/run_fastgwa_mlm/chr01.vcf.{pgen,psam,pvar}`
 
 ### Output Files
 
@@ -126,7 +126,7 @@ gcta \
 ## Data Provenance
 
 ### Input Files
-- **Genotypes**: Shared test data from base directory (`tests/input/chr01.vcf.*`)
+- **Genotypes**: Shared test data via `tests/input/gcta/run_fastgwa_mlm/chr01.vcf.*`
 - **Phenotypes/Covariates**: Created for GCTA testing with 500 samples, 2 phenotypes, 2 covariates
 - **Sparse GRM**: Created from test genotypes using MAKE_BK_SPARSE process (cutoff 0.05)
 

@@ -32,7 +32,7 @@ This directory contains LDAK kinship matrices calculated per chromosome, which a
 ## Data Generation
 
 Files generated from:
-- `tests/input/chr01.vcf.gz` and `tests/input/chr02.vcf.gz`
+- `tests/input/ldak/chr01.vcf.gz` and `tests/input/ldak/chr02.vcf.gz`
 - Using `CALC_KINS_UNIFORM` or similar LDAK kinship process
 - 500 samples, ~500 variants per chromosome
 

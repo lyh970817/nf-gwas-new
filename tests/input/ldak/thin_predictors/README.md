@@ -37,7 +37,7 @@ Weights reflect the inverse of LD tagging - SNPs in low-LD regions get higher we
 ## Data Generation
 
 Generated from:
-- Input: `tests/input/example.{bed,bim,fam}`
+- Input: `tests/input/ldak/thin_predictors/example.{bed,bim,fam}`
 - Using `THIN_PREDICTORS` process (for .thin.in)
 - Using `CREATE_THIN_WEIGHTS` process (for weights.thin)
 
