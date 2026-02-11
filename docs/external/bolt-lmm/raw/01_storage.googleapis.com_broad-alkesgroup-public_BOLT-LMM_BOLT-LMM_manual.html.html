@@ -1,0 +1,1911 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"  
+  "http://www.w3.org/TR/html4/loose.dtd">  
+<html > 
+<head><title>BOLT-LMM v2.5 User Manual</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"> 
+<meta name="generator" content="TeX4ht (https://tug.org/tex4ht/)"> 
+<meta name="originator" content="TeX4ht (https://tug.org/tex4ht/)"> 
+<!-- html --> 
+<meta name="src" content="BOLT-LMM_manual.tex"> 
+<link rel="stylesheet" type="text/css" href="BOLT-LMM_manual.css"> 
+</head><body 
+>
+<div class="maketitle">
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+
+<h2 class="titleHead">BOLT-LMM v2.5 User Manual</h2>
+<div class="author" ><span 
+class="ptmr7t-x-x-144">Po-Ru Loh</span></div><br />
+<div class="date" ><span 
+class="ptmr7t-x-x-144">June 21, 2025</span></div>
+</div>
+<h3 class="likesectionHead"><a 
+ id="x1-1000"></a>Contents</h3>
+<ul> <li>1 <a 
+href="#x1-20001" id="QQ2-1-2">Overview</a>  <ul> <li>1.1 <a 
+href="#x1-30001.1" id="QQ2-1-3">BOLT-LMM mixed model association testing</a>  <li>1.2 <a 
+href="#x1-40001.2" id="QQ2-1-4">BOLT-REML
+variance components analysis</a>  </ul><li>2 <a 
+href="#x1-50002" id="QQ2-1-5">Download and installation</a>  <ul> <li>2.1 <a 
+href="#x1-60002.1" id="QQ2-1-6">Change log</a>
+<li>2.2 <a 
+href="#x1-70002.2" id="QQ2-1-7">Installation</a>  <li>2.3 <a 
+href="#x1-100002.3" id="QQ2-1-10">Running BOLT-LMM and BOLT-REML</a>  <li>2.4 <a 
+href="#x1-110002.4" id="QQ2-1-11">Examples</a>
+<li>2.5 <a 
+href="#x1-120002.5" id="QQ2-1-12">Help</a>  </ul><li>3 <a 
+href="#x1-130003" id="QQ2-1-13">Computing requirements</a>  <ul> <li>3.1 <a 
+href="#x1-140003.1" id="QQ2-1-14">Operating system</a>  <li>3.2 <a 
+href="#x1-150003.2" id="QQ2-1-15">Memory</a>  <li>3.3
+<a 
+href="#x1-160003.3" id="QQ2-1-16">Running time</a>  </ul><li>4 <a 
+href="#x1-180004" id="QQ2-1-18">Input/output file naming conventions</a>  <ul> <li>4.1 <a 
+href="#x1-190004.1" id="QQ2-1-19">Automatic gzip
+[de]compression</a>  <li>4.2 <a 
+href="#x1-200004.2" id="QQ2-1-20">Arrays of input files and covariates</a>  </ul><li>5 <a 
+href="#x1-210005" id="QQ2-1-21">Input</a>  <ul> <li>5.1 <a 
+href="#x1-220005.1" id="QQ2-1-22">Genotypes</a>
+<li>5.2 <a 
+href="#x1-310005.2" id="QQ2-1-31">Phenotypes</a>  <li>5.3 <a 
+href="#x1-320005.3" id="QQ2-1-32">Covariates</a>  <li>5.4 <a 
+href="#x1-330005.4" id="QQ2-1-33">Missing data treatment</a>  <li>5.5 <a 
+href="#x1-340005.5" id="QQ2-1-34">Genotype QC</a>
+<li>5.6 <a 
+href="#x1-350005.6" id="QQ2-1-35">User-specified filters</a>  </ul><li>6 <a 
+href="#x1-360006" id="QQ2-1-36">Association analysis (BOLT-LMM)</a>  <ul> <li>6.1 <a 
+href="#x1-370006.1" id="QQ2-1-37">Mixed
+model association tests</a>  <li>6.2 <a 
+href="#x1-380006.2" id="QQ2-1-38">BOLT-LMM mixed model association options</a>  <li>6.3
+<a 
+href="#x1-410006.3" id="QQ2-1-41">Standard linear regression</a>  </ul><li>7 <a 
+href="#x1-420007" id="QQ2-1-42">Variance components analysis (BOLT-REML)</a>
+<ul> <li>7.1 <a 
+href="#x1-430007.1" id="QQ2-1-43">Multiple variance components</a>  <li>7.2 <a 
+href="#x1-440007.2" id="QQ2-1-44">Multiple traits</a>  <li>7.3 <a 
+href="#x1-450007.3" id="QQ2-1-45">Initial variance
+parameter guesses</a>  <li>7.4 <a 
+href="#x1-460007.4" id="QQ2-1-46">Trading a little accuracy for speed</a>  </ul><li>8 <a 
+href="#x1-470008" id="QQ2-1-47">Polygenic prediction</a>
+<li>9 <a 
+href="#x1-480009" id="QQ2-1-48">Output</a>  <ul> <li>9.1 <a 
+href="#x1-490009.1" id="QQ2-1-49">BOLT-LMM association test statistics</a>  <li>9.2 <a 
+href="#x1-510009.2" id="QQ2-1-51">BOLT-REML output
+and logging</a>  </ul><li>10 <a 
+href="#x1-5200010" id="QQ2-1-52">Recommendations for analyzing N=500K UK Biobank data</a>
+<ul> <li>10.1 <a 
+href="#x1-5300010.1" id="QQ2-1-53">UK Biobank v3 imputation release</a>  </ul><li>11 <a 
+href="#x1-5400011" id="QQ2-1-54">Association analysis of case-control
+traits</a>  <ul> <li>11.1 <a 
+href="#x1-5500011.1" id="QQ2-1-55">Guidelines for case-control balance</a>  <li>11.2 <a 
+href="#x1-5600011.2" id="QQ2-1-56">Estimation of odds
+ratios</a>  </ul><li>12 <a 
+href="#x1-5700012" id="QQ2-1-57">Frequently asked questions</a>  <li>13 <a 
+href="#x1-5800013" id="QQ2-1-58">Website and contact info</a>  <li>14 <a 
+href="#x1-5900014" id="QQ2-1-59">License</a>
+ </ul>
+<!--l. 60--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">1    </span> <a 
+ id="x1-20001"></a>Overview</h3>
+                                                                                         
+                                                                                         
+<!--l. 62--><p class="noindent" >The BOLT-LMM software package consists of two main algorithms, the BOLT-LMM algorithm for mixed
+model association testing, and the BOLT-REML algorithm for variance components analysis (i.e.,
+partitioning of SNP-heritability and estimation of genetic correlations).
+<!--l. 64--><p class="noindent" ><span 
+class="ptmb7t-x-x-120">We recommend BOLT-LMM for analyses of human genetic data sets containing more than 5,000</span>
+<span 
+class="ptmb7t-x-x-120">samples. </span>The algorithms used in BOLT-LMM rely on approximations that hold only at large sample sizes
+and have been tested only in human data sets. For analyses of fewer than 5,000 samples, we recommend
+the GCTA or GEMMA software.
+<!--l. 66--><p class="noindent" ><span 
+class="ptmb7t-x-x-120">We also note that BOLT-LMM association test statistics are valid for quantitative traits</span>
+<span 
+class="ptmb7t-x-x-120">and for (reasonably) balanced case-control traits. </span>For unbalanced case-control traits, we
+recommend the SAIGE, REGENIE, and LDAK-KVIK software packages (see section <a 
+href="#x1-5400011">11<!--tex4ht:ref: sec:CC --></a> for a full
+discussion).
+<!--l. 69--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">1.1    </span> <a 
+ id="x1-30001.1"></a>BOLT-LMM mixed model association testing</h4>
+<!--l. 71--><p class="noindent" >The BOLT-LMM algorithm computes statistics for testing association between phenotype and genotypes
+using a linear mixed model (LMM)<span class="cite">&#x00A0;[<a 
+href="#Xloh2015ng">1</a>]</span>. By default, BOLT-LMM assumes a Bayesian mixture-of-normals
+prior for the random effect attributed to SNPs other than the one being tested. This model generalizes the
+standard &#8220;infinitesimal&#8221; mixed model used by previous mixed model association methods (e.g.,
+EMMAX<span class="cite">&#x00A0;[<a 
+href="#Xkang2010ng">2</a>]</span>, FaST-LMM<span class="cite">&#x00A0;[<a 
+href="#Xlippert2011nmeth">3</a>,&#x00A0;<a 
+href="#Xlistgarten2012nmeth">4</a>,&#x00A0;<a 
+href="#Xlistgarten2013ng">5</a>,&#x00A0;<a 
+href="#Xlippert2013scirep">6</a>]</span>, GEMMA<span class="cite">&#x00A0;[<a 
+href="#Xzhou2012ng">7</a>]</span>, GRAMMAR-Gamma<span class="cite">&#x00A0;[<a 
+href="#Xsvishcheva2012ng">8</a>]</span>, GCTA-LOCO<span class="cite">&#x00A0;[<a 
+href="#Xyang2014ng">9</a>]</span>),
+providing an opportunity for increased power to detect associations while controlling false positives.
+Additionally, BOLT-LMM applies algorithmic advances to compute mixed model association statistics
+much faster than eigendecomposition-based methods, both when using the Bayesian mixture
+model and when specialized to standard mixed model association. BOLT-LMM is described in
+ref.<span class="cite">&#x00A0;[<a 
+href="#Xloh2015ng">1</a>]</span>:
+      <blockquote class="quote">
+      <!--l. 74--><p class="noindent" >Loh P-R, Tucker G, Bulik-Sullivan BK, Vilhjálmsson BJ, Finucane HK, Salem RM,
+      Chasman DI, Ridker PM, Neale BM, Berger B, Patterson N, and Price AL. Efficient
+      Bayesian mixed model analysis increases association power in large cohorts. <span 
+class="ptmri7t-x-x-120">Nature</span>
+      <span 
+class="ptmri7t-x-x-120">Genetics</span>, 2015.</blockquote>
+<!--l. 76--><p class="noindent" >Additionally, ref.<span class="cite">&#x00A0;[<a 
+href="#Xloh2018ng">10</a>]</span> explores the performance of BOLT-LMM on the full UK Biobank data
+set:
+      <blockquote class="quote">
+      <!--l. 78--><p class="noindent" >Loh P-R, Kichaev G, Gazal S, Schoech AP, and Price AL. Mixed model association
+      for biobank-scale data sets. <span 
+class="ptmri7t-x-x-120">Nature Genetics</span>, 2018.</blockquote>
+                                                                                         
+                                                                                         
+<!--l. 82--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">1.2    </span> <a 
+ id="x1-40001.2"></a>BOLT-REML variance components analysis</h4>
+<!--l. 84--><p class="noindent" >The BOLT-REML algorithm estimates heritability explained by genotyped SNPs and genetic correlations
+among multiple traits measured on the same set of individuals. Like the GCTA software<span class="cite">&#x00A0;[<a 
+href="#Xyang2011ajhg">11</a>]</span>,
+BOLT-REML applies variance components analysis to perform these tasks, supporting both
+multi-component modeling to partition SNP-heritability and multi-trait modeling to estimate correlations.
+BOLT-REML applies a Monte Carlo algorithm that is much faster than eigendecomposition-based
+methods for variance components analysis (e.g., GCTA) at large sample sizes. BOLT-REML is described
+in ref.<span class="cite">&#x00A0;[<a 
+href="#Xbolt_reml">12</a>]</span>:
+      <blockquote class="quote">
+      <!--l. 87--><p class="noindent" >Loh P-R, Bhatia G, Gusev A, Finucane HK, Bulik-Sullivan BK, Pollack SJ, PGC-SCZ
+      Working  Group,  de  Candia  TR,  Lee  SH,  Wray  NR,  Kendler  KS,  O&#8217;Donovan
+      MC,  Neale  BM,  Patterson  N,  and  Price  AL.  Contrasting  genetic  architectures  of
+      schizophrenia and other complex diseases using fast variance components analysis.
+      <span 
+class="ptmri7t-x-x-120">Nature Genetics</span>, 2015.</blockquote>
+<!--l. 91--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">2    </span> <a 
+ id="x1-50002"></a>Download and installation</h3>
+<!--l. 93--><p class="noindent" >You can download the latest version of the BOLT-LMM software at:
+      <blockquote class="quote">
+      <!--l. 95--><p class="noindent" ><a 
+href="http://data.broadinstitute.org/alkesgroup/BOLT-LMM/downloads/" class="url" ><span 
+class="pcrr7t-x-x-120">http://data.broadinstitute.org/alkesgroup/BOLT-LMM/downloads/</span></a></blockquote>
+<!--l. 97--><p class="noindent" >Previous versions are also available in the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">old/</span></span></span> subdirectory.
+<!--l. 99--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">2.1    </span> <a 
+ id="x1-60002.1"></a>Change log</h4>
+      <ul class="itemize1">
+      <li class="itemize">Version 2.5 (June 21, 2025):
+           <ul class="itemize2">
+           <li class="itemize">Modified  the  INFO  output  column  to  report  INFO*F_NONMISS:  i.e.,  the  product
+           of a variant&#8217;s INFO score (which is relevant for imputed variants with probabilistic
+           genotype dosages) and the fraction of samples with non-missing genotypes (which is
+           relevant for directly genotyped variants). The product of these quantities reflects the
+           extent to which a variant&#8217;s association strength (i.e., chi-square test statistic) is expected
+           to be reduced by imputation error and/or missingness.
+                                                                                         
+                                                                                         
+           </li>
+           <li class="itemize">Added &#8211;bgenVariantsToTest option that restricts analysis of BGEN files to a supplied
+           list of variants (CHR POS REF ALT). <span 
+class="ptmb7t-x-x-120">This provides a several-fold speedup when</span>
+           <span 
+class="ptmb7t-x-x-120">testing only a subset of variants (e.g., common variants) within a large BGEN file.</span>
+           </li>
+           <li class="itemize">Added &#8211;bgenRefFirst option to swap the allele used as the effect allele. By default, the
+           effect allele is the first allele; this flag changes the effect allele to the second allele in
+           BGEN files (such that the first allele is the reference allele in association tests).
+           </li>
+           <li class="itemize">Added   &#8211;bgenMinMAC   option   to   restrict   association   analysis   to   variants   with
+           the  specified  minimum  minor  allele  count.  This  filter  is  performed  within  the
+           subset  of  samples  used  in  association  tests  (in  contrast  to  the  &#8211;bgenMinMAF  and
+           &#8211;bgenMinINFO options, which for computational efficiency are applied at the level of
+           the full BGEN file before any sample exclusions).
+           </li>
+           <li class="itemize">Added support for BGEN files containing haploid male chrX genotypes. All BGEN
+           files formats used in the UK Biobank imp_v3, TOPMed, and GEL imputation as well
+           as the All of Us &#8220;ACAF&#8221; genotype call set are now supported.
+           </li>
+           <li class="itemize">Added support for fam files containing non-numeric data in the 6th column.
+           </li>
+           <li class="itemize">Updated the supplied 1000G LDSCORE file to use GRCh38 coordinates.
+           </li>
+           <li class="itemize">Fixed bug causing a segmentation fault when BOLT-LMM was run in linear regression
+           mode without the &#8211;verboseStats flag.</li></ul>
+      </li>
+      <li class="itemize">Version 2.4.1 (November 16, 2022):
+           <ul class="itemize2">
+           <li class="itemize">Added support for BGEN v1.3 files with Zstandard compression.</li></ul>
+      </li>
+      <li class="itemize">Version 2.4 (July 22, 2022):
+           <ul class="itemize2">
+           <li class="itemize">Fixed  slow  performance  on  UK  Biobank  Research  Analysis  Platform  (RAP)  when
+           analyzing BGEN input files mounted via dxfuse (in <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">/mnt/project</span></span></span>). (This issue was
+           caused by files not being properly closed, which does not impact performance on most
+           filesystems but caused problems with dxfuse.)
+           </li>
+           <li class="itemize">Added checks for file I/O errors.
+                                                                                         
+                                                                                         
+           </li>
+           <li class="itemize">Added support for phased BGEN files (using 8-bit encoding).
+           </li>
+           <li class="itemize">Added documentation of <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--predBetasFile</span></span></span> option for polygenic prediction.</li></ul>
+      </li>
+      <li class="itemize">Version 2.3.6 (October 29, 2021):
+           <ul class="itemize2">
+           <li class="itemize">Fixed  bug  in  scaling  of  BETA  and  SE  columns  in  linear  regression  output.  This
+           bug  only  affected  effect  sizes  computed  for  phenotypes  with  non-unit  variance  by
+           BOLT-LMM v2.3.5 in linear regression mode; effect sizes from linear mixed model
+           analysis (<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--lmm/--lmmInfOnly/--lmmForceNonInf</span></span></span>) were unaffected.</li></ul>
+      </li>
+      <li class="itemize">Version 2.3.5 (March 20, 2021):
+           <ul class="itemize2">
+           <li class="itemize">Improved efficiency of phenotype/covariate file handling (by only loading requested
+           columns).
+           </li>
+           <li class="itemize">Added BETA and SE columns to output when BOLT-LMM is run in linear regression
+           mode.</li></ul>
+      </li>
+      <li class="itemize">Version 2.3.4 (August 10, 2019):
+           <ul class="itemize2">
+           <li class="itemize">Prevented      environment      variable      <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">MKL_NUM_THREADS</span></span></span>  from      overriding
+           <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--numThreads</span></span></span> parameter.</li></ul>
+      </li>
+      <li class="itemize">Version 2.3.3 (August 3, 2019):
+           <ul class="itemize2">
+           <li class="itemize">Added support for missing values in BGEN v1.2 data.
+           </li>
+           <li class="itemize">Reduced  memory  usage  after  completion  of  the  model-fitting  step  (by  freeing
+           genotypes  no  longer  needed  during  calculation  of  association  tests  for  imputed
+           variants).
+           </li>
+           <li class="itemize">Updated BLAS library to Intel MKL 2019 Update 4 and modified <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bolt</span></span></span> executable
+           to   dynamically   link   Intel   threading   library   (libiomp5.so,   now   distributed   with
+           BOLT-LMM).
+                                                                                         
+                                                                                         
+           </li>
+           <li class="itemize">Improved error-reporting and documentation; added FAQ section of this manual.</li></ul>
+      </li>
+      <li class="itemize">Version 2.3.2 (March 10, 2018):
+           <ul class="itemize2">
+           <li class="itemize">Added support for imputed X chromosome variants in the UK Biobank v3 imputation
+           release (see section <a 
+href="#x1-5300010.1">10.1<!--tex4ht:ref: sec:UKB_imp_v3 --></a> for details).
+           </li>
+           <li class="itemize">Added  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenSampleFileList</span></span></span> option  to  allow  multiple  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bgen/sample</span></span></span> file
+           pairs with differing sample files.
+           </li>
+           <li class="itemize">Changed the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--allowX</span></span></span> option to always be set (so <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--allowX</span></span></span> is no longer needed
+           for X chromosome analysis).
+           </li>
+           <li class="itemize">Added <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--Nautosomes</span></span></span> option for non-human analyses.</li></ul>
+      </li>
+      <li class="itemize">Version 2.3.1 (December 19, 2017):
+           <ul class="itemize2">
+           <li class="itemize">Added  check  for  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--covarFile</span></span></span> when  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--covarCol</span></span></span> or  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--qCovarCol</span></span></span> are
+           specified. (Previously, these arguments were silently ignored if <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--covarFile</span></span></span> was
+           not specified.)
+           </li>
+           <li class="itemize">Added <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--allowX</span></span></span> option for X chromosome analysis.
+           </li>
+           <li class="itemize">Added section of documentation on analysis of case-control traits.
+           </li>
+           <li class="itemize">Updated BLAS library to Intel MKL 2018 Update 1.
+           </li>
+           <li class="itemize">Improved error-reporting and documentation.</li></ul>
+      </li>
+      <li class="itemize">Version 2.3 (August 1, 2017):
+           <ul class="itemize2">
+           <li class="itemize">Added  multi-threaded  support  for  BGEN  v1.2  imputed  file  format  used  by  UK
+           Biobank.
+           </li>
+           <li class="itemize">Added <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenMinINFO</span></span></span> parameter.
+                                                                                         
+                                                                                         
+           </li>
+           <li class="itemize">Fixed P-value output for extremely small P-values previously rounded to zero.
+           </li>
+           <li class="itemize">Fixed crash caused by very long BGEN allele names.
+           </li>
+           <li class="itemize">Fixed bug in <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--noBgenIDcheck</span></span></span> flag.
+           </li>
+           <li class="itemize">Improved error-reporting.
+           </li>
+           <li class="itemize">Added section at the end of this document providing recommendations for N=500K
+           UK Biobank analyses.</li></ul>
+      </li>
+      <li class="itemize">Version 2.2 (Nov 13, 2015):
+           <ul class="itemize2">
+           <li class="itemize">Added support for testing imputed SNPs in BGEN format.
+           </li>
+           <li class="itemize">Added option to look up LD scores by base pair coordinates rather than SNP name
+           (<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--LDscoresMatchBp</span></span></span>).
+           </li>
+           <li class="itemize">Fixed bug in hg19 genetic map interpolation.
+           </li>
+           <li class="itemize">Fixed bug in QC filter for per-sample missing rate.
+           </li>
+           <li class="itemize">Improved error-checking.</li></ul>
+      </li>
+      <li class="itemize">Version 2.1 (Apr 29, 2015):
+           <ul class="itemize2">
+           <li class="itemize">Improved handling of IMPUTE2 files (large speedup; <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">INFO</span></span></span> output column instead of
+           <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">F_MISS</span></span></span>; MAF filtering).
+           </li>
+           <li class="itemize">Fixed bug in per-sample missingness filter (<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--maxMissingPerIndiv</span></span></span>), which was
+           being ignored.
+           </li>
+           <li class="itemize">Implemented
+           minor changes to input parameters (removed <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--impute2CallThresh</span></span></span>, which had
+           no effect; added <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--impute2MinMAF</span></span></span> and <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--h2gGuess</span></span></span>).</li></ul>
+                                                                                         
+                                                                                         
+      </li>
+      <li class="itemize">Version 2.0 (Mar 13, 2015): Added BOLT-REML algorithm for estimating heritability parameters.
+      Fixed parameter-initialization bug that prevented BOLT-LMM from running on some systems.
+      Implemented various minor improvements to parameter-checking.
+      </li>
+      <li class="itemize">(Dec 8, 2014): Licensed source code under GPLv3.
+      </li>
+      <li class="itemize">Version 1.2 (Nov 4, 2014): Added support for testing imputed SNPs in 2-dosage format
+      (Ricopili/plink2 format=2). Fixed bug causing <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">nan</span></span></span> heritability estimates.
+      </li>
+      <li class="itemize">Version 1.1 (Oct 17, 2014): Added support for testing imputed SNPs with probabilistic
+      dosages.
+      </li>
+      <li class="itemize">Version 1.0 (Aug 8, 2014): Initial release.</li></ul>
+<!--l. 209--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">2.2    </span> <a 
+ id="x1-70002.2"></a>Installation</h4>
+<!--l. 211--><p class="noindent" >The <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">BOLT-LMM_vX.X.tar.gz</span></span></span> download package contains a precompiled 64-bit Linux
+executable, <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bolt</span></span></span>, which we have tested on several Linux systems. We recommend using
+this executable because it is well-optimized and no further installation is required. Note that
+beginning with BOLT-LMM v2.3.3, the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bolt</span></span></span> executable dynamically links the libiomp5.so Intel
+threading runtime library; this shared library is provided in the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">lib/</span></span></span> subdirectory of the
+BOLT-LMM package and will be automatically loaded by the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bolt</span></span></span> executable from that
+subdirectory.
+<!--l. 213--><p class="noindent" >If you wish to compile your own version of the BOLT-LMM software from the source code (in the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">src/</span></span></span>
+subdirectory), you will need to ensure that library dependencies are fulfilled and will need to make
+appropriate modifications to the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">Makefile</span></span></span>:
+      <ul class="itemize1">
+      <li class="itemize">Library dependencies:
+           <ul class="itemize2">
+           <li class="itemize">BLAS/LAPACK numerical libraries. The speed of the BOLT-LMM software depends
+           critically on the efficiency of the BLAS/LAPACK implementation it is linked against.
+           We recommend the Intel Math Kernel Library (MKL) if available (except on AMD
+           processors); otherwise, ATLAS may be a good alternative.
+           </li>
+           <li class="itemize">Boost C++ libraries. BOLT-LMM links against the Boost <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">program_options</span></span></span> and
+           <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">iostreams</span></span></span> libraries, which need to be installed after downloading and unzipping
+           Boost.
+                                                                                         
+                                                                                         
+           </li>
+           <li class="itemize">NLopt numerical optimization library<span class="cite">&#x00A0;[<a 
+href="#XjohnsonNLopt">13</a>]</span>.
+           </li>
+           <li class="itemize">Zstandard compression library.</li></ul>
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">Makefile</span></span></span>: Paths to libraries need to be modified appropriately. Note that the released version of
+      the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">Makefile</span></span></span> does not set the flag <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">-DUSE_MKL_MALLOC</span></span></span>. This flag turns on the Intel MKL&#8217;s fast
+      memory manager (replacing calls to <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">_mm_malloc</span></span></span> with <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">mkl_malloc</span></span></span>), which may
+      improve memory performance, but we have observed crashes on some systems when using
+      <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">mkl_malloc</span></span></span>.</li></ul>
+<!--l. 224--><p class="noindent" >For reference, the provided <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bolt</span></span></span> executable was built on the Harvard Medical School &#8220;Orchestra 2&#8221;
+research computing cluster using Intel <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">icpc</span></span></span> 16.0.2 (with MKL 2019 Update 4) and the Boost 1.58.0,
+NLopt 2.4.2, and Zstandard 1.5.2 libraries by invoking <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">make</span><span 
+class="pcrr7t-x-x-120">&#x00A0;linking=static-except-glibc</span></span></span>.
+<!--l. 226--><p class="noindent" ><span class="paragraphHead"><a 
+ id="x1-80002.2"></a><span 
+class="ptmb7t-x-x-120">Port to Windows.</span></span>
+Remi Daviet has created a version of BOLT-LMM that compiles in Windows:
+<a 
+href="http://remidaviet.com/software.php" class="url" ><span 
+class="pcrr7t-x-x-120">http://remidaviet.com/software.php</span></a>
+<!--l. 228--><p class="noindent" ><span class="paragraphHead"><a 
+ id="x1-90002.2"></a><span 
+class="ptmb7t-x-x-120">Port to FreeBSD.</span></span>
+BOLT-LMM can be installed on FreeBSD via the FreeBSD ports system (<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">pkg</span><span 
+class="pcrr7t-x-x-120">&#x00A0;install</span><span 
+class="pcrr7t-x-x-120">&#x00A0;bolt-lmm</span></span></span>).
+Note that this installation will use only highly-portable (and potentially less fast) optimizations.
+<!--l. 237--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">2.3    </span> <a 
+ id="x1-100002.3"></a>Running BOLT-LMM and BOLT-REML</h4>
+<!--l. 239--><p class="noindent" >To run the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bolt</span></span></span> executable, simply invoke <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">./bolt</span></span></span> on the Linux command line (within the BOLT-LMM
+install directory) with parameters in the format <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--optionName=optionValue</span></span></span>.
+<!--l. 241--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">2.4    </span> <a 
+ id="x1-110002.4"></a>Examples</h4>
+<!--l. 243--><p class="noindent" >The <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">example/</span></span></span> subdirectory contains a bash script <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">run_example.sh</span></span></span> that demonstrates basic use of
+BOLT-LMM on a small example data set. Likewise, <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">run_example_reml2.sh</span></span></span> demonstrates
+BOLT-REML.
+      <ul class="itemize1">
+      <li class="itemize">A minimal BOLT-LMM invocation looks like:
+                                                                                         
+                                                                                         
+           <blockquote class="quote">
+           <!--l. 248--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">./bolt</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--bfile=</span></span></span><span 
+class="ptmri7t-x-x-120">geno </span><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoFile=</span></span></span><span 
+class="ptmri7t-x-x-120">pheno.txt </span><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoCol=</span></span></span><span 
+class="ptmri7t-x-x-120">phenoName</span>
+           <br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--lmm</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--LDscoresFile=tables/LDSCORE.1000G_EUR.tab.gz</span></span></span>
+           <br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--statsFile=</span></span></span><span 
+class="ptmri7t-x-x-120">stats.tab</span></blockquote>
+      </li>
+      <li class="itemize">A minimal BOLT-REML invocation looks like:
+           <blockquote class="quote">
+           <!--l. 259--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">./bolt</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--bfile=</span></span></span><span 
+class="ptmri7t-x-x-120">geno                                          </span><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoFile=</span></span></span><span 
+class="ptmri7t-x-x-120">pheno.txt</span>
+           <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoCol=</span></span></span><span 
+class="ptmri7t-x-x-120">phenoName </span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--reml</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--modelSnps=</span></span></span><span 
+class="ptmri7t-x-x-120">modelSnps.txt</span></blockquote>
+      <!--l. 266--><p class="noindent" >To perform multi-trait BOLT-REML (i.e., estimate genetic correlations), provide multiple
+      <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoCol=</span></span></span><span 
+class="ptmri7t-x-x-120">phenoName </span>arguments.</li></ul>
+<!--l. 270--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">2.5    </span> <a 
+ id="x1-120002.5"></a>Help</h4>
+<!--l. 272--><p class="noindent" >To get a list of basic options, run:
+      <blockquote class="quote">
+      <!--l. 274--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">./bolt</span><span 
+class="pcrr7t-x-x-120">&#x00A0;-h</span></span></span></blockquote>
+<!--l. 276--><p class="noindent" >To get a complete list of basic and advanced options, run:
+      <blockquote class="quote">
+      <!--l. 278--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">./bolt</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--helpFull</span></span></span></blockquote>
+<!--l. 281--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">3    </span> <a 
+ id="x1-130003"></a>Computing requirements</h3>
+                                                                                         
+                                                                                         
+<!--l. 283--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">3.1    </span> <a 
+ id="x1-140003.1"></a>Operating system</h4>
+<!--l. 285--><p class="noindent" >At the current time we have only compiled and tested BOLT-LMM on Linux computing environments;
+however, the source code is available if you wish to try compiling BOLT-LMM for a different operating
+system.
+<!--l. 287--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">3.2    </span> <a 
+ id="x1-150003.2"></a>Memory</h4>
+<!--l. 289--><p class="noindent" >For typical data sets (M, N exceeding 10,000), BOLT-LMM and BOLT-REML use approximately MN/4
+bytes of memory, where M is the number of SNPs and N is the number of individuals. More
+precisely:
+      <ul class="itemize1">
+      <li class="itemize">M = # of SNPs in <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bim</span></span></span> file(s) that satisfy all of the conditions:
+           <ul class="itemize2">
+           <li class="itemize">not listed in any <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--exclude</span></span></span> file
+           </li>
+           <li class="itemize">passed QC filter for missingness
+           </li>
+           <li class="itemize">listed in <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--modelSnps</span></span></span> file(s), if specified</li></ul>
+      </li>
+      <li class="itemize">N = # of individuals in <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">fam</span></span></span> file and not listed in any <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--remove</span></span></span> file (but pre-QC; i.e., N includes
+      individuals filtered due to missing genotypes or covariates)</li></ul>
+<!--l. 301--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">3.3    </span> <a 
+ id="x1-160003.3"></a>Running time</h4>
+<!--l. 303--><p class="noindent" >In practice, BOLT-LMM and BOLT-REML have running times that scale roughly with MN<sup class="textsuperscript"><span 
+class="ptmr7t-x-x-109">1.5</span></sup>. Analyses
+of the full UK Biobank data set (M <span 
+class="cmsy-10x-x-120">~ </span>700K SNPs, N = 500K individuals) typically take a few days using
+8 threads of a single compute node; for more details, please see refs.<span class="cite">&#x00A0;[<a 
+href="#Xloh2015ng">1</a>,&#x00A0;<a 
+href="#Xloh2018ng">10</a>]</span>.
+<!--l. 305--><p class="noindent" >
+<h5 class="subsubsectionHead"><span class="titlemark">3.3.1    </span> <a 
+ id="x1-170003.3.1"></a>Multi-threading</h5>
+<!--l. 307--><p class="noindent" >On multi-core machines, running time can be reduced by invoking multi-threading using the
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--numThreads</span></span></span> option.
+                                                                                         
+                                                                                         
+<!--l. 309--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">4    </span> <a 
+ id="x1-180004"></a>Input/output file naming conventions</h3>
+<!--l. 311--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">4.1    </span> <a 
+ id="x1-190004.1"></a>Automatic gzip [de]compression</h4>
+<!--l. 313--><p class="noindent" >The BOLT-LMM software assumes that input files ending in <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">.gz</span></span></span> are gzip-compressed and automatically
+decompresses them on-the-fly (i.e., without creating a temporary file). Similarly, BOLT-LMM writes
+gzip-compressed output to any output file ending in <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">.gz</span></span></span>.
+<!--l. 315--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">4.2    </span> <a 
+ id="x1-200004.2"></a>Arrays of input files and covariates</h4>
+<!--l. 317--><p class="noindent" >Arrays of sequentially-numbered input files and covariates can be specified by the shorthand <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">{i:j}</span></span></span>. For
+example,
+      <blockquote class="quote">
+      <!--l. 319--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">data.chr{1:22}.bim</span></span></span></blockquote>
+<!--l. 321--><p class="noindent" >is interpreted as the list of files
+      <blockquote class="quote">
+      <!--l. 323--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">data.chr1.bim,</span><span 
+class="pcrr7t-x-x-120">&#x00A0;data.chr2.bim,</span><span 
+class="pcrr7t-x-x-120">&#x00A0;...,</span><span 
+class="pcrr7t-x-x-120">&#x00A0;data.chr22.bim</span></span></span></blockquote>
+<!--l. 326--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">5    </span> <a 
+ id="x1-210005"></a>Input</h3>
+<!--l. 328--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">5.1    </span> <a 
+ id="x1-220005.1"></a>Genotypes</h4>
+<!--l. 330--><p class="noindent" >The BOLT-LMM software takes genotype input in PLINK<span class="cite">&#x00A0;[<a 
+href="#Xpurcell2007ajhg">14</a>]</span> binary format (<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bed/bim/fam</span></span></span>). For
+file conversion and data manipulation in general, we highly recommend the PLINK/PLINK2
+software<span class="cite">&#x00A0;[<a 
+href="#Xchang2015gigascience">15</a>]</span>.
+<!--l. 332--><p class="noindent" >If all genotypes are contained in a single <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bed/bim/fam</span></span></span> file triple with the same file prefix, you may
+simply use the command line option <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bfile=prefix</span></span></span>. Genotypes may also be split into multiple <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bed</span></span></span>
+and <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bim</span></span></span> files containing consecutive sets of SNPs (e.g., one <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bed/bim</span></span></span> file pair per chromosome) either
+by using multiple <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bed</span></span></span> and <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bim</span></span></span> invocations or by using the file array shorthand described above
+(e.g., <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bim=data.chr{1:22}.bim</span></span></span>).
+                                                                                         
+                                                                                         
+<!--l. 334--><p class="noindent" >
+<h5 class="subsubsectionHead"><span class="titlemark">5.1.1    </span> <a 
+ id="x1-230005.1.1"></a>Reference genetic maps</h5>
+<!--l. 336--><p class="noindent" >The BOLT-LMM package includes reference maps that you can use to interpolate genetic map coordinates
+from SNP physical (base pair) positions in the event that your PLINK <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bim</span></span></span> file does not contain genetic
+coordinates (in units of Morgans). (The BOLT-LMM association testing algorithm uses genetic positions
+to prevent proximal contamination; BOLT-REML does not use this information.) To use a reference map,
+use the option
+      <blockquote class="quote">
+      <!--l. 338--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--geneticMapFile=tables/genetic_map_hg##.txt.gz</span></span></span></blockquote>
+<!--l. 340--><p class="noindent" >selecting the build (hg17, hg18, hg19, or hg38) corresponding to the physical coordinates of your <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bim</span></span></span>
+file. You may use the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--geneticMapFile</span></span></span> option even if your PLINK <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bim</span></span></span> file does contain genetic
+coordinates; in this case, the genetic coordinates in the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bim</span></span></span> file will be ignored, and interpolated
+coordinates will be used instead.
+<!--l. 347--><p class="noindent" >
+<h5 class="subsubsectionHead"><span class="titlemark">5.1.2    </span> <a 
+ id="x1-240005.1.2"></a>Imputed SNP dosages</h5>
+<!--l. 349--><p class="noindent" >The BOLT-LMM association testing algorithm supports computation of mixed model association statistics
+at an arbitrary number of imputed SNPs (with real-valued &#8220;dosages&#8221; rather than hard-called genotypes)
+<span 
+class="ptmb7t-x-x-120">using a mixed model built on a subset of hard-called, PLINK-format genotypes </span>(typically a subset of
+directly genotyped SNPs). (BOLT-REML variance components analysis does not support dosage
+input.)
+<!--l. 351--><p class="noindent" >When testing imputed SNPs, BOLT-LMM first performs its usual model-fitting on PLINK-format
+genotypes (supplied via <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bfile</span></span></span> or <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bed/bim/fam</span></span></span>) and then applies the model to scan any provided
+imputed SNPs. The second step requires only a modest amount of additional computation and no
+additional RAM, as the it simply performs a genome scan (as in GRAMMAR-Gamma<span class="cite">&#x00A0;[<a 
+href="#Xsvishcheva2012ng">8</a>]</span>) of real-valued
+dosage SNPs against the residual phenotypes that BOLT-LMM computes during model-fitting. We
+currently recommend performing model-fitting on ~500K hard-called genotypes; this approach should
+sacrifice almost no statistical power while retaining computational efficiency.
+<!--l. 353--><p class="noindent" >If you have only imputed SNP data on hand, you will need to pre-process your data set to create
+a subset of hard-called SNPs in PLINK format for BOLT-LMM. We suggest the following
+procedure.
+      <ol  class="enumerate1" >
+      <li 
+  class="enumerate" id="x1-24002x1">Determine a high-confidence set of SNPs (e.g., based on R<sup class="textsuperscript"><span 
+class="ptmr7t-x-x-109">2</span></sup>  or INFO score) at which to
+      create an initial hard-call set.
+      </li>
+      <li 
+  class="enumerate" id="x1-24004x2">Create hard-called genotypes at these SNPs in PLINK format.
+                                                                                         
+                                                                                         
+      </li>
+      <li 
+  class="enumerate" id="x1-24006x3">Use PLINK to LD prune to ~500K SNPs (via <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--indep-pairwise</span><span 
+class="pcrr7t-x-x-120">&#x00A0;50</span><span 
+class="pcrr7t-x-x-120">&#x00A0;5</span></span></span> <span 
+class="ptmri7t-x-x-120">r2thresh </span>for an
+      appropriate <span 
+class="ptmri7t-x-x-120">r2thresh</span>).
+      </li>
+      <li 
+  class="enumerate" id="x1-24008x4">Run BOLT-LMM using the final hard-called SNPs as the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bfile</span></span></span> (or <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bed/bim/fam</span></span></span>)
+      argument, specifying the imputed SNPs as additional association test SNPs using one of the
+      formats below.</li></ol>
+<!--l. 361--><p class="noindent" ><span class="paragraphHead"><a 
+ id="x1-250005.1.2"></a><span 
+class="ptmb7t-x-x-120">Imputed SNPs in dosage format.</span></span>
+This input format consists of one or more <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--dosageFile</span></span></span> parameters specifying files that contain
+real-valued genotype expectations at imputed SNPs. Each line of a <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--dosageFile</span></span></span> should be formatted
+as follows:
+      <blockquote class="quote">
+      <!--l. 364--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-109">rsID</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;chr</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;pos</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;allele1</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;allele0</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;[dosage</span><span 
+class="pcrr7t-x-x-109">&#x00A0;=</span><span 
+class="pcrr7t-x-x-109">&#x00A0;E[#allele1]]</span><span 
+class="pcrr7t-x-x-109">&#x00A0;x</span><span 
+class="pcrr7t-x-x-109">&#x00A0;N</span></span></span></blockquote>
+<!--l. 366--><p class="noindent" >Missing (i.e., uncalled) dosages can be specified with &#8211;9. You will also need to provide one additional
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--dosageFidIidFile</span></span></span> specifying the PLINK FIDs and IIDs of samples that the dosages correspond
+to. See the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">example/</span></span></span> subdirectory for an example.
+<!--l. 368--><p class="noindent" ><span class="paragraphHead"><a 
+ id="x1-260005.1.2"></a><span 
+class="ptmb7t-x-x-120">Imputed SNPs in IMPUTE2 format.</span></span>
+You may also specify imputed SNPs as output by the IMPUTE2 software<span class="cite">&#x00A0;[<a 
+href="#Xhowie2009pg">16</a>]</span>. The IMPUTE2 genotype
+file format is as follows:
+      <blockquote class="quote">
+      <!--l. 371--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-109">snpID</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;rsID</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;pos</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;allele1</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;allele0</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;[p(11)</span><span 
+class="pcrr7t-x-x-109">&#x00A0;p(10)</span><span 
+class="pcrr7t-x-x-109">&#x00A0;p(00)]</span><span 
+class="pcrr7t-x-x-109">&#x00A0;x</span><span 
+class="pcrr7t-x-x-109">&#x00A0;N</span></span></span></blockquote>
+<!--l. 373--><p class="noindent" >(BOLT-LMM ignores the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">snpID</span></span></span> field.) Here, instead of dosages, each genotype entry contains individual
+probabilities of the individual being homozygous for allele1, heterozygous, and homozygous for allele0.
+The three probabilities need not sum to 1, allowing for genotype uncertainty; if the sum of the
+probabilities is less than the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--impute2CallThresh</span></span></span> parameter, BOLT-LMM treats the genotype as
+missing.
+<!--l. 375--><p class="noindent" >To compute association statistics at a list of files containing IMPUTE2 SNPs, you may list the files within
+a <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--impute2FileList</span></span></span> file. Each line of this file should contain two entries: a chromosome number
+followed by an IMPUTE2 genotype file containing SNPs from that chromosome. You will also need to
+provide one additional <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--impute2FidIidFile</span></span></span> specifying the PLINK FIDs and IIDs of
+samples that the IMPUTE2 genotypes correspond to. See the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">example/</span></span></span> subdirectory for an
+example.
+                                                                                         
+                                                                                         
+<!--l. 377--><p class="noindent" ><span class="paragraphHead"><a 
+ id="x1-270005.1.2"></a><span 
+class="ptmb7t-x-x-120">Imputed SNPs in 2-dosage format.</span></span>
+You may also specify imputed SNPs as output by the Ricopili pipeline and <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">plink2</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--dosage</span><span 
+class="pcrr7t-x-x-120">&#x00A0;format=2</span></span></span>.
+This file format consists of file pairs: (1) PLINK <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">map</span></span></span> files containing information about SNP
+locations; and (2) genotype probability files in the 2-dosage format, which consists of a header
+line
+      <blockquote class="quote">
+      <!--l. 380--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-109">SNP</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;A1</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;A2</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;[FID</span><span 
+class="pcrr7t-x-x-109">&#x00A0;IID]</span><span 
+class="pcrr7t-x-x-109">&#x00A0;x</span><span 
+class="pcrr7t-x-x-109">&#x00A0;N</span></span></span></blockquote>
+<!--l. 382--><p class="noindent" >followed by one line per SNP in the format
+      <blockquote class="quote">
+      <!--l. 385--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-109">rsID</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;allele1</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;allele0</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;</span><span 
+class="pcrr7t-x-x-109">&#x00A0;[p(11)</span><span 
+class="pcrr7t-x-x-109">&#x00A0;p(10)]</span><span 
+class="pcrr7t-x-x-109">&#x00A0;x</span><span 
+class="pcrr7t-x-x-109">&#x00A0;N</span></span></span></blockquote>
+<!--l. 387--><p class="noindent" >The third genotype probability for each entry is assumed to be <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">p(00)=1-p(11)-p(10)</span></span></span> (unlike with
+the IMPUTE2 format).
+<!--l. 389--><p class="noindent" >To compute association statistics at SNPs in a list of 2-dosage files, you may list the files within a
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--dosage2FileList</span></span></span> file. Each line of this file should contain two entries: a PLINK <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">map</span></span></span> file followed
+by the corresponding genotype file containing probabilities for those SNPs. (As usual, if either file ends
+with <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">.gz</span></span></span>, it is automatically unzipped; otherwise it is assumed to be plain text.) See the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">example/</span></span></span>
+subdirectory for an example.
+<!--l. 391--><p class="noindent" ><span class="paragraphHead"><a 
+ id="x1-280005.1.2"></a><span 
+class="ptmb7t-x-x-120">Imputed SNPs in BGEN format.</span></span>
+To compute association statistics at variants in <span 
+class="ptmb7t-x-x-120">one or more </span>BGEN data files, specify the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">.bgen</span></span></span> file(s)
+with <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenFile</span></span></span> and the corresponding <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">.sample</span></span></span> file with <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--sampleFile</span></span></span>. You may
+alternatively specify a list of whitespace-separated <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">.bgen</span></span></span> / <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">.sample</span></span></span> file pairs using the
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenSampleFileList</span></span></span> option (instead of using the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenFile</span></span></span> and <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--sampleFile</span></span></span> options).
+This option enables analyses of data sets in which different BGEN files have different sample sets (e.g.,
+the UK Biobank v3 imputation release; section <a 
+href="#x1-5300010.1">10.1<!--tex4ht:ref: sec:UKB_imp_v3 --></a>).
+<!--l. 393--><p class="noindent" >The <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenRefFirst</span></span></span> option causes the second allele of each variant to be used as the effect allele. By
+default, the first allele is used as the effect allele.
+<!--l. 395--><p class="noindent" >The <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenVariantsToTest</span></span></span> option restricts analysis of BGEN files to a supplied list of variants
+(CHR POS REF ALT). This provides a several-fold speedup when testing only a subset of variants (e.g.,
+common variants) within a large BGEN file.
+<!--l. 397--><p class="noindent" >The <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenMinMAF</span></span></span> and <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenMinINFO</span></span></span> options allow limiting output to variants passing minimum
+allele frequency and INFO thresholds. Note that for computational efficiency, these filters are applied to
+the full BGEN file before any sample exclusions, whereas the MAF reported in BOLT-LMM&#8217;s output is
+computed in the subset of samples actually analyzed. Some variants may therefore pass the
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenMinMAF</span></span></span> filter but have lower reported MAF in the output file; if you wish to exclude such
+variants, you will need to post-process the results.
+                                                                                         
+                                                                                         
+<!--l. 399--><p class="noindent" >The <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenMinMAC</span></span></span> option limits output to variants with the specified minimum minor allele count.
+Unlike the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenMinMAF</span></span></span> and <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenMinINFO</span></span></span> options, this filter is performed within the subset of
+samples used in association tests.
+<!--l. 403--><p class="noindent" >Note that the BGEN format comprises a few sub-formats. We have only implemented support for the
+versions (and specific data layouts) used in the UK Biobank N=150K release, the UK Biobank N=500K
+releases (imp_v3, TOPMed, and GEL imputation), and the All of Us data set. In particular, BOLT-LMM
+only supports 8-bit encoding of genotype dosages in BGEN v1.2+ files, such that the UK Biobank
+DRAGEN WGS BGEN files need to be converted from 16-bit encoding to 8-bit encoding before
+analysis.
+<!--l. 405--><p class="noindent" ><span class="paragraphHead"><a 
+ id="x1-290005.1.2"></a><span 
+class="ptmb7t-x-x-120">Imputed SNPs in VCF format, exome-sequencing SNP calls in plink format, etc.</span></span>
+BOLT-LMM does not support imputed data formats not listed above, so we recommend converting other
+data formats to BGEN v1.2 using PLINK2. As noted above, you will need to use the same sub-format of
+BGEN v1.2 used by UK Biobank:
+      <ul class="itemize1">
+      <li class="itemize">Specify 8-bit encoding via: <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">plink2</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--export</span><span 
+class="pcrr7t-x-x-120">&#x00A0;bgen-1.2</span><span 
+class="pcrr7t-x-x-120">&#x00A0;bits=8</span></span></span>
+      </li>
+      <li class="itemize">If you wish to analyze X chromosome data, you will need to create a BGEN v1.2 file in
+      which all genotypes are coded as diploid. By default, plink2 will code males as haploid, but
+      you can force it to create diploid X chromosome data by setting the sex of all individuals to
+      female before converting.</li></ul>
+<!--l. 412--><p class="noindent" >
+<h5 class="subsubsectionHead"><span class="titlemark">5.1.3    </span> <a 
+ id="x1-300005.1.3"></a>X chromosome analysis</h5>
+<!--l. 415--><p class="noindent" >BOLT-LMM accepts X chromosome genotypes for both model-fitting (via <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bfile</span></span></span> or <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bed/bim/fam</span></span></span>
+PLINK-format input) and association testing on imputed variants (e.g., in BGEN files). Males should be
+coded as diploid (as PLINK does for chromosome code 23 = X non-PAR), such that male genotypes are
+coded as 0/2 and female genotypes are coded as 0/1/2 (corresponding to a model of random X
+inactivation). There is no need to separate chrX into PAR and non-PAR; for PLINK input, you
+should simply merge PAR and non-PAR SNPs into a single &#8220;chromosome 23&#8221; using PLINK
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--merge-x</span></span></span>.
+<!--l. 417--><p class="noindent" >Imputed X chromosome SNPs can also be included in BOLT-LMM association tests. Males can be coded
+as eigher haploid or diploid in 8-bit BGEN v1.2+ files (with haploid male genotypes being treated as
+homozygous diploid in association tests). Chromosomes named 23, X, XY, PAR1, and PAR2 are all
+acceptable.
+                                                                                         
+                                                                                         
+<!--l. 419--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">5.2    </span> <a 
+ id="x1-310005.2"></a>Phenotypes</h4>
+<!--l. 421--><p class="noindent" >Phenotypes may be specified in either of two ways:
+      <ul class="itemize1">
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoUseFam</span></span></span>: This option tells BOLT-LMM and BOLT-REML to use the last (6th)
+      column  of  the  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">fam</span></span></span> file  as  the  phenotypes.  This  column  must  be  numeric  when  using
+      <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoUseFam</span></span></span>, so case-control phenotypes should be <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">1,0</span></span></span> coded and missing values
+      should be indicated with <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">-9</span></span></span>.
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoFile</span></span></span> and  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoCol</span></span></span>:  Alternatively,  phenotypes  may  be  provided  in  a
+      separate  whitespace-delimited  file  (specified  with  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoFile</span></span></span>)  with  the  first  line
+      containing column headers and subsequent lines containing records, one per individual. The
+      first  two  columns  must  be  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">FID</span></span></span> and  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">IID</span></span></span> (the  PLINK  identifiers  of  an  individual).  Any
+      number of columns may follow; the column containing the phenotype to analyze is specified
+      with <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoCol</span></span></span>. Values of <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">-9</span></span></span> and <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">NA</span></span></span> are interpreted as missing data. All other values
+      in the column should be numeric. The records in lines following the header line need not
+      be in sorted order and need not match the individuals in the genotype data (i.e., <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">fam</span></span></span> file);
+      BOLT-LMM and BOLT-REML will analyze only the individuals in the intersection of the
+      genotype and phenotype files and will output a warning if these sets do not match.</li></ul>
+<!--l. 427--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">5.3    </span> <a 
+ id="x1-320005.3"></a>Covariates</h4>
+<!--l. 429--><p class="noindent" >Covariate data may be specified in a file (<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--covarFile</span></span></span>) with the same format as the alternate
+phenotype file described above. (If using the same file for both phenotypes and covariates;
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoFile</span></span></span> and <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--covarFile</span></span></span> must still both be specified.) Each covariate to be used must be
+specified using either a <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--covarCol</span></span></span> (for categorical covariates) or a <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--qCovarCol</span></span></span> (for
+quantitative covariates) option. Categorical covariate values are allowed to be any text strings not
+containing whitespace; each unique text string in a column corresponds to a category. (To guard
+against users accidentally specifying quantitative covariates with <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--covarCol</span></span></span> instead of
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--qCovarCol</span></span></span>, BOLT-LMM throws an error if a categorical covariate contains more than 10 distinct
+values; this upper bound can be modified with <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--covarMaxLevels</span></span></span>.) Quantitative covariate
+values must be numeric (with the exception of <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">NA</span></span></span>). In either case, values of <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">-9</span></span></span> and <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">NA</span></span></span> are
+interpreted as missing data. If groups of covariates of the same type are numbered sequentially,
+they may be specified using array shorthand (e.g., <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--qCovarCol=PC{1:10}</span></span></span> for columns
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">PC1,</span><span 
+class="pcrr7t-x-x-120">&#x00A0;PC2,</span><span 
+class="pcrr7t-x-x-120">&#x00A0;...,</span><span 
+class="pcrr7t-x-x-120">&#x00A0;PC10</span></span></span>).
+<!--l. 431--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">5.4    </span> <a 
+ id="x1-330005.4"></a>Missing data treatment</h4>
+                                                                                         
+                                                                                         
+<!--l. 433--><p class="noindent" >Individuals with missing phenotypes are ignored. By default, individuals with any missing
+covariates are also ignored; this approach is commonly used and referred to as &#8220;complete case
+analysis.&#8221; As an alternative, we have also implemented the &#8220;missing indicator method&#8221; (via the
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--covarUseMissingIndic</span></span></span> option), which adds indicator variables demarcating missing status as
+additional covariates.
+<!--l. 435--><p class="noindent" >Missing genotypes in plink data (<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bfile</span></span></span> or <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bed/bim/fam</span></span></span>) are replaced with per-SNP averages.
+Imputed genotypes should generally not contain missing data; standard imputation software always
+produces genotype probability estimates even if uncertainty is high.
+<!--l. 437--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">5.5    </span> <a 
+ id="x1-340005.5"></a>Genotype QC</h4>
+<!--l. 439--><p class="noindent" >BOLT-LMM and BOLT-REML automatically filter SNPs and individuals with missing rates exceeding
+thresholds of 0.1. These thresholds may be modified using <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--maxMissingPerSnp</span></span></span> and
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--maxMissingPerIndiv</span></span></span>. Note that filtering is <span 
+class="ptmb7t-x-x-120">not </span>performed based on minor allele frequency or
+deviation from Hardy-Weinberg equilibrium. Allele frequency and missingness of each SNP are included
+in the BOLT-LMM association test output, however, and we recommend checking these values and
+Hardy-Weinberg <span 
+class="ptmri7t-x-x-120">p</span>-values (which are easily computed using PLINK <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--hardy</span></span></span>) when following up on
+significant associations.
+<!--l. 443--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">5.6    </span> <a 
+ id="x1-350005.6"></a>User-specified filters</h4>
+<!--l. 445--><p class="noindent" >Individuals to remove from the analysis may be specified in one or more <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--remove</span></span></span> files listing <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">FID</span></span></span> and
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">IID</span></span></span>s (one individual per line). Similarly, SNPs to exclude from the analysis may be specified in one ore
+more <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--exclude</span></span></span> files listing SNP IDs (typically rs numbers).
+<!--l. 447--><p class="noindent" >Note that <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--exclude</span></span></span> filters are <span 
+class="ptmb7t-x-x-120">not </span>applied to imputed data. To restrict analyses to a subset of variants
+in a BGEN file, use the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenVariantsToTest</span></span></span> option described above.
+<!--l. 450--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">6    </span> <a 
+ id="x1-360006"></a>Association analysis (BOLT-LMM)</h3>
+<!--l. 452--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">6.1    </span> <a 
+ id="x1-370006.1"></a>Mixed model association tests</h4>
+<!--l. 454--><p class="noindent" >BOLT-LMM computes two association statistics, <span 
+class="cmmi-12">&#x03C7;</span><sup><span 
+class="cmr-8">2</span></sup><sub>
+<span 
+class="ptmr7t-x-x-80">BOLT-LMM</span></sub> and <span 
+class="cmmi-12">&#x03C7;</span><sup><span 
+class="cmr-8">2</span></sup><sub>
+<span 
+class="ptmr7t-x-x-80">BOLT-LMM-inf</span></sub>, described in detail in our
+manuscript<span class="cite">&#x00A0;[<a 
+href="#Xloh2015ng">1</a>]</span>.
+      <ul class="itemize1">
+      <li class="itemize"><span 
+class="ptmb7t-x-x-120">BOLT-LMM:   Association   test   on   residuals   from   Bayesian   modeling   using   a</span>
+                                                                                         
+                                                                                         
+      <span 
+class="ptmb7t-x-x-120">mixture-of-normals prior on SNP effect sizes. </span>This approach can fit &#8220;non-infinitesimal&#8221;
+      traits with loci having moderate to large effects, allowing increased association power.
+      </li>
+      <li class="itemize"><span 
+class="ptmb7t-x-x-120">BOLT-LMM-inf:   Standard   (infinitesimal)   mixed   model   association.   </span>This   statistic
+      approximates the standard approach used by eigendecomposition-based software.</li></ul>
+<!--l. 460--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">6.2    </span> <a 
+ id="x1-380006.2"></a>BOLT-LMM mixed model association options</h4>
+<!--l. 462--><p class="noindent" >The BOLT-LMM software offers the following options for mixed model analysis:
+      <ul class="itemize1">
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--lmm</span></span></span>:   Performs   default   BOLT-LMM   analysis,   which   consists   of   (1a)   estimating
+      heritability  parameters,  (1b)  computing  the  BOLT-LMM-inf  statistic,  (2a)  estimating
+      Gaussian  mixture  parameters,  and  (2b)  computing  the  BOLT-LMM  statistic  <span 
+class="ptmri7t-x-x-120">only  if  an</span>
+      <span 
+class="ptmri7t-x-x-120">increase in power is expected</span>. If BOLT-LMM determines based on cross-validation that the
+      non-infinitesimal model is likely to yield no increase in power, the BOLT-LMM (Bayesian)
+      mixed model statistic is not computed.
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--lmmInfOnly</span></span></span>:  Computes  only  infinitesimal  mixed  model  association  statistics  (i.e.,
+      steps 1a and 1b).
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--lmmForceNonInf</span></span></span>:  Computes  both  the  BOLT-LMM-inf  and  BOLT-LMM  statistics
+      <span 
+class="ptmri7t-x-x-120">regardless of whether or not an increase in power is expected </span>from the latter.</li></ul>
+<!--l. 469--><p class="noindent" >
+<h5 class="subsubsectionHead"><span class="titlemark">6.2.1    </span> <a 
+ id="x1-390006.2.1"></a>Reference LD score tables</h5>
+<!--l. 471--><p class="noindent" >A table of reference LD scores<span class="cite">&#x00A0;[<a 
+href="#Xbuliksullivan2015ng">17</a>]</span> is needed to calibrate the BOLT-LMM statistic. Reference LD scores
+appropriate for analyses of European-ancestry samples are provided in the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">tables/</span></span></span> subdirectory and
+can be specified using the option
+      <blockquote class="quote">
+      <!--l. 473--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--LDscoresFile=tables/LDSCORE.1000G_EUR.GRCh38.tab.gz</span></span></span></blockquote>
+<!--l. 475--><p class="noindent" >Starting with BOLT-LMM v2.5, the download package contains the file above in GRCh38 coordinates.
+The corresponding file in GRCh37 (hg19) coordinates (<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">tables/LDSCORE.1000G_EUR.tab.gz</span></span></span>)
+can be obtained from previous download packages. These coordinates are only used when
+matching variants from the plink bim file(s) to the table of LD scores using the non-default
+                                                                                         
+                                                                                         
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--LDscoresMatchBp</span></span></span> option; by default, variants from the plink bim(s) file are matched by
+rsID.
+<!--l. 477--><p class="noindent" >For analyses of non-European data, we recommend computing LD scores using the LDSC software on an
+ancestry-matched subset of the 1000 Genomes samples.
+<!--l. 479--><p class="noindent" >By default, LD scores in the table are matched to SNPs in the PLINK data by rsID. The
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--LDscoresMatchBp</span></span></span> option allows matching SNPs by base pair coordinate.
+<!--l. 481--><p class="noindent" >
+<h5 class="subsubsectionHead"><span class="titlemark">6.2.2    </span> <a 
+ id="x1-400006.2.2"></a>Restricting SNPs used in the mixed model</h5>
+<!--l. 483--><p class="noindent" >If millions of SNPs are available from imputation, we suggest including at most 1 million SNPs at a time
+in the mixed model (using the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--modelSnps</span></span></span> option) when performing association analysis. Using an
+LD pruned set of at most 1 million SNPs should achieve near-optimal power and correction for
+confounding while reducing computational cost and improving convergence. Note that even when a file of
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--modelSnps</span></span></span> is specified, all SNPs in the genotype data are still tested for association; only
+the random effects in the mixed model are restricted to the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--modelSnps</span></span></span>. Also note that
+BOLT-LMM automatically performs leave-one-chromosome-out (LOCO) analysis, leaving
+out SNPs from the chromosome containing the SNP being tested in order to avoid proximal
+contamination<span class="cite">&#x00A0;[<a 
+href="#Xlistgarten2012nmeth">4</a>,&#x00A0;<a 
+href="#Xyang2014ng">9</a>]</span>.
+<!--l. 485--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">6.3    </span> <a 
+ id="x1-410006.3"></a>Standard linear regression</h4>
+<!--l. 487--><p class="noindent" >Setting the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--verboseStats</span></span></span> flag will output standard linear regression chi-square statistics and
+<span 
+class="ptmri7t-x-x-120">p</span>-values in additional output columns <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">CHISQ_LINREG</span></span></span> and <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">P_LINREG</span></span></span>. Note that unlike
+mixed model association, linear regression is susceptible to population stratification, so you
+may wish to include principal components (computed using other software, e.g., PLINK2
+or FastPCA<span class="cite">&#x00A0;[<a 
+href="#Xgalinsky2016ajhg">18</a>]</span> in EIGENSOFT v6.0+) as covariates when performing linear regression.
+Including PCs as covariates will also speed up convergence of BOLT-LMM&#8217;s mixed model
+computations.
+<!--l. 490--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">7    </span> <a 
+ id="x1-420007"></a>Variance components analysis (BOLT-REML)</h3>
+<!--l. 492--><p class="noindent" >Using the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--reml</span></span></span> option invokes the BOLT-REML algorithm for estimating heritability parameters and
+genetic correlations.
+<!--l. 494--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">7.1    </span> <a 
+ id="x1-430007.1"></a>Multiple variance components</h4>
+                                                                                         
+                                                                                         
+<!--l. 496--><p class="noindent" >To assign SNPs to different variance components, specify a <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--modelSnps</span></span></span> file in which each
+whitespace-delimited line contains a SNP ID (typically an rs number) followed by the name of the
+variance component to which it belongs.
+<!--l. 498--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">7.2    </span> <a 
+ id="x1-440007.2"></a>Multiple traits</h4>
+<!--l. 500--><p class="noindent" >To perform multi-trait variance components analysis, specify multiple <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoCol</span></span></span> parameter-value
+flags (corresponding to different columns in the same <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--phenoFile</span></span></span>). BOLT-REML currently only
+supports multi-trait analysis of traits phenotyped on a single set of individuals, so any individuals with at
+least one missing phenotype will be ignored. For <span 
+class="ptmri7t-x-x-120">D </span>traits, BOLT-REML estimates <span 
+class="ptmri7t-x-x-120">D </span>heritability
+parameters per variance component and <span 
+class="ptmri7t-x-x-120">D(D-1)/2 </span>correlations per variance component (including the
+residual variance component).
+<!--l. 502--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">7.3    </span> <a 
+ id="x1-450007.3"></a>Initial variance parameter guesses</h4>
+<!--l. 504--><p class="noindent" >To specify a set of variance parameters at which to start REML iteration (which may save time
+compared to the default procedure used by BOLT-REML if you have good initial guesses), use
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--remlGuessStr="</span></span></span><span 
+class="ptmri7t-x-x-120">string</span><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">"</span></span></span> with the following format. For each variance component (starting with the
+residual term, which is automatically named <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">env/noise</span></span></span>), specify the name of the variance component
+followed by the initial guess. For instance, a model with two (non-residual) variance components named
+<span 
+class="ptmri7t-x-x-120">vc1 </span>and <span 
+class="ptmri7t-x-x-120">vc2 </span>(in the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--modelSnps</span></span></span> file) could have variance parameter guesses specified
+by:
+      <blockquote class="quote">
+      <!--l. 506--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--remlGuessStr="env/noise</span><span 
+class="pcrr7t-x-x-120">&#x00A0;0.5</span><span 
+class="pcrr7t-x-x-120">&#x00A0;vc1</span><span 
+class="pcrr7t-x-x-120">&#x00A0;0.2</span><span 
+class="pcrr7t-x-x-120">&#x00A0;vc2</span><span 
+class="pcrr7t-x-x-120">&#x00A0;0.3"</span></span></span></blockquote>
+<!--l. 508--><p class="noindent" >Note that the sum of the estimates must equal 1; BOLT-REML will automatically normalize the
+phenotype accordingly.
+<!--l. 510--><p class="noindent" >For multi-trait analysis of <span 
+class="ptmri7t-x-x-120">D </span>traits, the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--remlGuessStr</span></span></span> needs to specify both guesses of <span 
+class="ptmri7t-x-x-120">D </span>variance
+proportions and <span 
+class="ptmri7t-x-x-120">D(D-1)/2 </span>pairwise correlations per variance component. Viewing these values as entries
+of an upper-triangular matrix (with variance proportions on the diagonal and correlations above the
+diagonal), you should specify these <span 
+class="ptmri7t-x-x-120">D(D+1)/2 </span>values after each variance component name by reading
+them off left-to-right, top-to-bottom.
+<!--l. 512--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">7.4    </span> <a 
+ id="x1-460007.4"></a>Trading a little accuracy for speed</h4>
+                                                                                         
+                                                                                         
+<!--l. 514--><p class="noindent" >BOLT-REML uses a Monte Carlo algorithm to increase REML optimization speed<span class="cite">&#x00A0;[<a 
+href="#Xbolt_reml">12</a>]</span>. By default,
+BOLT-REML performs an initial optimization using 15 Monte Carlo trials and then refines parameter
+estimates using 100 Monte Carlo trials. If computational cost is a concern (or to perform exploratory
+analyses), you can skip the refinement step using the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--remlNoRefine</span></span></span> flag (in addition to the
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--reml</span></span></span> flag). This option typically gives 2&#8211;3x speedup at the cost of ~1.03x higher standard
+errors.
+<!--l. 517--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">8    </span> <a 
+ id="x1-470008"></a>Polygenic prediction</h3>
+<!--l. 519--><p class="noindent" >The BOLT-LMM software also has a <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--predBetasFile</span></span></span> option that computes SNP effect coefficients
+that can be used for polygenic prediction. The prediction model uses the same model selected for
+association testing (i.e., if the non-infinitesimal Gaussian mixture model is selected, it will also be used for
+prediction). Reported SNP effect coefficients (<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">BETA</span></span></span>) are per-allele, with <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">ALLELE1</span></span></span> indicating the effect
+allele.
+<!--l. 522--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">9    </span> <a 
+ id="x1-480009"></a>Output</h3>
+<!--l. 524--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">9.1    </span> <a 
+ id="x1-490009.1"></a>BOLT-LMM association test statistics</h4>
+<!--l. 526--><p class="noindent" >BOLT-LMM association statistics are output in a tab-delimited <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--statsFile</span></span></span> file with the following
+fields, one line per SNP:
+      <ul class="itemize1">
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">SNP</span></span></span>: rs number or ID string
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">CHR</span></span></span>: chromosome
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">BP</span></span></span>: physical (base pair) position
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">GENPOS</span></span></span>: genetic position either from <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bim</span></span></span> file or interpolated from genetic map
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">ALLELE1</span></span></span>: first allele in <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bim</span></span></span> file (usually the minor allele), used as the effect allele
+                                                                                         
+                                                                                         
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">ALLELE0</span></span></span>: second allele in <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">bim</span></span></span> file, used as the reference allele
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">A1FREQ</span></span></span>: frequency of first allele
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">F_MISS</span></span></span>: fraction of individuals with missing genotype at this SNP
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">BETA</span></span></span>: effect size from BOLT-LMM approximation to infinitesimal mixed model
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">SE</span></span></span>: standard error of effect size
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">P_BOLT_LMM_INF</span></span></span>: infinitesimal mixed model association test <span 
+class="ptmri7t-x-x-120">p</span>-value
+      </li>
+      <li class="itemize"><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">P_BOLT_LMM</span></span></span>: non-infinitesimal mixed model association test <span 
+class="ptmri7t-x-x-120">p</span>-value</li></ul>
+<!--l. 543--><p class="noindent" ><span class="paragraphHead"><a 
+ id="x1-500009.1"></a><span 
+class="ptmb7t-x-x-120">Optional additional output.</span></span>
+To output chi-square statistics for all association tests, set the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--verboseStats</span></span></span> flag.
+<!--l. 546--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">9.2    </span> <a 
+ id="x1-510009.2"></a>BOLT-REML output and logging</h4>
+<!--l. 548--><p class="noindent" >BOLT-REML output (i.e., variance parameter estimates and standard errors) is simply printed to the
+terminal (<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">stdout</span></span></span>) when analysis finishes. Both BOLT-LMM and BOLT-REML write output
+to (<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">stdout</span></span></span> and <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">stderr</span></span></span>) as analysis proceeds; we recommend saving this output. If you
+wish to save this output while simultaneously viewing it on the command line, you may do so
+using
+      <blockquote class="quote">
+      <!--l. 550--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">./bolt</span><span 
+class="pcrr7t-x-x-120">&#x00A0;[...</span><span 
+class="pcrr7t-x-x-120">&#x00A0;list</span><span 
+class="pcrr7t-x-x-120">&#x00A0;of</span><span 
+class="pcrr7t-x-x-120">&#x00A0;options</span><span 
+class="pcrr7t-x-x-120">&#x00A0;...]</span><span 
+class="pcrr7t-x-x-120">&#x00A0;2&gt;&amp;1</span><span 
+class="pcrr7t-x-x-120">&#x00A0;|</span><span 
+class="pcrr7t-x-x-120">&#x00A0;tee</span><span 
+class="pcrr7t-x-x-120">&#x00A0;output.log</span></span></span></blockquote>
+                                                                                         
+                                                                                         
+<!--l. 554--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">10    </span> <a 
+ id="x1-5200010"></a>Recommendations for analyzing N=500K UK Biobank data</h3>
+<!--l. 557--><p class="noindent" >Many users of BOLT-LMM wish to analyze UK Biobank data. Here are a few tips for computing
+association statistics on N=500K UK Biobank samples (see also ref.<span class="cite">&#x00A0;[<a 
+href="#Xloh2018ng">10</a>]</span>):
+      <ul class="itemize1">
+      <li class="itemize">Computing genome-wide association test statistics for a single phenotype should typically
+      take a few days to a week with multi-threading; we recommend using 8+ threads.
+      </li>
+      <li class="itemize">The computation will require up to 100GB of memory depending on the number of directly
+      genotyped SNPs included in the model (with <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bed/--bim/--fam</span></span></span>). If computational
+      cost is a concern, running time and RAM can be reduced by specifying a subset of SNPs
+      to use in the model with <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--modelSnps</span></span></span> (e.g., by filtering on MAF or missingness or by
+      LD-pruning).
+      </li>
+      <li class="itemize">The model-fitting step of the analysis can also be sped up by including principal components
+      as  covariates  (because  projecting  out  top  eigenvectors  improves  the  conditioning  of
+      the  kernel  matrix).  Note  that  in  order  to  achieve  this  speedup,  principal  components
+      must  be  computed  using  the  sets  of  samples  and  SNPs  used  in  the  model  (e.g.,  using
+      <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">plink2</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--pca</span><span 
+class="pcrr7t-x-x-120">&#x00A0;approx</span></span></span> or EIGENSOFT v6.0+ <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">fastmode</span></span></span>). Pre-computed principal
+      components computed on different sets of samples and/or SNPs (e.g., those provided by UK
+      Biobank) tend not to provide much speedup.
+      </li>
+      <li class="itemize">After  model-fitting,  BOLT-LMM  computes  association  statistics  on  imputed  SNPs.  This
+      computation is multi-threaded for BGEN v1.2+ data and should be fast enough to include
+      all chromosomes in a single job, but parallelizing analyses across jobs analyzing subsets
+      of chromosomes is of course allowable as well. Specifying a list of variants to test (e.g.,
+      only common and/or coding variants) using the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenVariantsToTest</span></span></span> option will
+      improve speed and reduce output file size. Setting <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenMinMAF/--bgenMinINFO</span></span></span>
+      will also improve speed, but not as much as using <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenVariantsToTest</span></span></span>.
+      </li>
+      <li class="itemize">You will need to <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--remove</span></span></span> any individuals in the plink data that are not in the imputed data.
+      (If thre is a mismatch, BOLT-LMM will generate a list of such individuals to <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--remove</span></span></span>.)
+      </li>
+      <li class="itemize">An example command line is below:
+           <blockquote class="quote">
+           <!--l. 566--><p class="noindent" ><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">./bolt</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--bed=ukb_cal_chr{1:22}_v2.bed</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--bim=ukb_snp_chr{1:22}_v2.bim</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--fam=ukb1404_cal_chr1_v2_CURRENT.fixCol6.fam</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--remove=bolt.in_plink_but_not_imputed.FID_IID.976.txt</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--remove=sampleQC/remove.nonWhite.FID_IID.txt</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--exclude=snpQC/autosome_maf_lt_0.001.txt</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--exclude=snpQC/autosome_missing_gt_0.1.txt</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--phenoFile=ukb4777.phenotypes.tab</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--phenoCol=height</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--covarFile=ukb4777.covars.tab.gz</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--covarCol=cov_ASSESS_CENTER</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--covarCol=cov_GENO_ARRAY</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--covarMaxLevels=30</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--qCovarCol=cov_AGE</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--qCovarCol=cov_AGE_SQ</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--qCovarCol=PC{1:20}</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--LDscoresFile=tables/LDSCORE.1000G_EUR.tab.gz</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--geneticMapFile=tables/genetic_map_hg19.txt.gz</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--lmmForceNonInf</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--numThreads=8</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--statsFile=bolt_460K_selfRepWhite.height.stats.gz</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--bgenFile=ukb_imp_chr{1:22}_v2.bgen</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--bgenMinMAF=1e-3</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--bgenMinINFO=0.3</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--sampleFile=ukb1404_imp_chr1_v2_s487406.sample</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--statsFileBgenSnps=bolt_460K_selfRepWhite.height.bgen.stats.gz</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span></span></span><span 
+class="cmsy-10x-x-120">\</span><br 
+class="newline" /><span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;</span><span 
+class="pcrr7t-x-x-120">&#x00A0;--verboseStats</span></span></span></blockquote>
+      </li></ul>
+<!--l. 597--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">10.1    </span> <a 
+ id="x1-5300010.1"></a>UK Biobank v3 imputation release</h4>
+<!--l. 600--><p class="noindent" >The BGEN files in the UK Biobank v3 imputation release (7th March 2018) have the same format as the
+previous v2 release but now include files for chromosomes X and XY (= PAR1 + PAR2). These files are
+coded in the same BGEN sub-format (8-bit encoding, males coded as diploid) as the rest;
+however, they contain slightly fewer samples than the autosomal files (corresponding to the
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">in.Phasing.Input.chrX</span></span></span> and <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">in.Phasing.Input.chrXY</span></span></span> fields of the sample QC
+file).
+<!--l. 602--><p class="noindent" >If you wish to analyze both the autosomal and X chromosome data, you may do either of the
+following:
+      <ol  class="enumerate1" >
+      <li 
+  class="enumerate" id="x1-53002x1">Run BOLT-LMM on all files at once by using the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--bgenSampleFileList</span></span></span> option to
+                                                                                         
+                                                                                         
+      specify  a  list  of  whitespace-separated  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">.bgen</span></span></span> /  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">.sample</span></span></span> file  pairs.  Note  that  you  will
+      need  to  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--remove</span></span></span> all  samples  not  present  in  <span 
+class="ptmb7t-x-x-120">any  </span>of  the  BGEN  files.  (If  BOLT-LMM
+      detects missing samples, it will report an error and write a list of such samples for you to
+      <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--remove</span></span></span>.)
+      </li>
+      <li 
+  class="enumerate" id="x1-53004x2">Analyze  the  autosomal  and  chrX  variants  in  two  separate  BOLT-LMM  runs  (using  all
+      autosomal and chrX typed variants in both runs as PLINK input for model-fitting).</li></ol>
+<!--l. 607--><p class="noindent" >The first approach is slightly more convenient than the second, at the expense of removing slightly more
+samples (<span 
+class="cmsy-10x-x-120">~</span>1000 additional samples) compared to the second.
+<!--l. 610--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">11    </span> <a 
+ id="x1-5400011"></a>Association analysis of case-control traits</h3>
+<!--l. 613--><p class="noindent" >While the mathematical derivations underlying BOLT-LMM are based on a quantitative trait model,
+BOLT-LMM can be also applied to analyze case-control traits (simply by treating the binary trait as a
+quantitative trait). However, an important caveat to be aware of is that BOLT-LMM test statistics can
+become miscalibrated for unbalanced case-control traits (resulting in false positive associations at rare
+SNPs), as noted in the SAIGE paper<span class="cite">&#x00A0;[<a 
+href="#Xzhou2018ng">19</a>]</span>.
+<!--l. 615--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">11.1    </span> <a 
+ id="x1-5500011.1"></a>Guidelines for case-control balance</h4>
+<!--l. 617--><p class="noindent" >The extent to which BOLT-LMM P-values can suffer miscalibration for binary traits is a function of three
+variables: <span 
+class="ptmb7t-x-x-120">sample size, minor allele frequency, and case-control ratio</span>. Specifically, miscalibration
+occurs when the minor allele count (MAC) multiplied by the case fraction is relatively small
+(corresponding to the conventional wisdom that chi-square test statistics break down when expected
+counts are small). (The same is true for P-values from any other regression-based chi-square statistic.) We
+also note that an analogous issue can arise when analyzing quantitative traits if a quantitative trait has
+extreme outliers.
+<!--l. 619--><p class="noindent" >In the revised version of our preprint exploring BOLT-LMM performance on UK Biobank N=500K
+data<span class="cite">&#x00A0;[<a 
+href="#Xloh2018ng">10</a>]</span>, we have included a suite of simulations that vary the three key parameters (sample size,
+minor allele frequency, and case fraction) that affect type I error control. <span 
+class="ptmb7t-x-x-120">For analyses of</span>
+<span 
+class="ptmb7t-x-x-120">the full UK Biobank data, we determined that for traits with a case fraction of at least</span>
+<span 
+class="ptmb7t-x-x-120">10%, BOLT-LMM test statistics are well-calibrated for SNPs with MAF</span><span 
+class="cmmi-12">&#x003E;</span><span 
+class="ptmb7t-x-x-120">0.1%. </span>More
+extreme case-control imbalances can also be tolerated if the minimum MAF is increased. Full
+results of these simulations are presented in Supplementary Table 8 of ref.<span class="cite">&#x00A0;[<a 
+href="#Xloh2018ng">10</a>]</span>, which we
+recommend consulting to decide whether BOLT-LMM is appropriate for a particular binary trait
+analysis.
+<!--l. 621--><p class="noindent" >For highly unbalanced case-control settings in which BOLT-LMM analysis is inappropriate, we
+recommend using SAIGE<span class="cite">&#x00A0;[<a 
+href="#Xzhou2018ng">19</a>]</span> (which overcomes the problem of deviation from asymptotic normality by
+using a saddlepoint approximation), REGENIE, or LDAK-KVIK.
+                                                                                         
+                                                                                         
+<!--l. 623--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">11.2    </span> <a 
+ id="x1-5600011.2"></a>Estimation of odds ratios</h4>
+<!--l. 625--><p class="noindent" >Because BOLT-LMM still uses a linear model (rather than a logistic model) when analyzing case-control
+traits, a transformation is required in order to convert SNP effect size estimates (&#8220;betas&#8221;) on the
+quantitative scale to traditional odds ratios. A reasonable approximation is:
+      <blockquote class="quote">
+      <!--l. 627--><p class="noindent" >log OR = <span 
+class="cmmi-12">&#x03B2; </span>/ <span 
+class="cmr-12">(</span><span 
+class="cmmi-12">&#x03BC; </span><span 
+class="cmsy-10x-x-120">* </span><span 
+class="cmr-12">(1 </span><span 
+class="cmsy-10x-x-120">- </span><span 
+class="cmmi-12">&#x03BC;</span><span 
+class="cmr-12">))</span>, where <span 
+class="cmmi-12">&#x03BC; </span>= case fraction.</blockquote>
+<!--l. 629--><p class="noindent" >Standard errors of SNP effect size estimates should also be divided by <span 
+class="cmr-12">(</span><span 
+class="cmmi-12">&#x03BC; </span><span 
+class="cmsy-10x-x-120">* </span><span 
+class="cmr-12">(1 </span><span 
+class="cmsy-10x-x-120">- </span><span 
+class="cmmi-12">&#x03BC;</span><span 
+class="cmr-12">)) </span>when applying the
+above transformation to obtain log odds ratios.
+<!--l. 631--><p class="noindent" >Alternatively, a more sophisticated transformation is described here: <a 
+href="http://cnsgenomics.com/shiny/LMOR/" class="url" ><span 
+class="pcrr7t-x-x-120">http://cnsgenomics.com/shiny/LMOR/</span></a>
+<!--l. 633--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">12    </span> <a 
+ id="x1-5700012"></a>Frequently asked questions</h3>
+<!--l. 635--><p class="noindent" >The most common question users ask is what to do when BOLT-LMM reports an error arising
+from a heritability estimate close to 0 or 1. Older versions of BOLT-LMM reported &#8220;ERROR:
+Invalid heritability estimate; cannot continue analysis&#8221;; newer versions attempt to clarify the
+issue:
+      <ul class="itemize1">
+      <li class="itemize"><span 
+class="ptmri7t-x-x-120">&#8220;ERROR: Heritability estimate is close to 0; LMM may not correct confounding. Instead,</span>
+      <span 
+class="ptmri7t-x-x-120">use PC-corrected linear/logistic regression on unrelateds.&#8221;</span><br 
+class="newline" />
+      <!--l. 640--><p class="noindent" >When a heritability estimate reaches 0, then linear mixed model association tests (including
+      BOLT-LMM and other methods) all degenerate to simple linear regression, hence the error
+      message. This situation is dangerous because the &#8220;mixed model&#8221; will no longer correct for
+      population stratification and relatedness.
+      <!--l. 642--><p class="noindent" >You can of course still run an association test under these circumstances, but you will need
+      to prune to an unrelated set of samples (if your sample set contains related individuals) and
+      include principal component covariates.
+      <!--l. 644--><p class="noindent" >You  can  perform  linear  regression  using  BOLT-LMM  by  running  it  without  the  <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--lmm</span></span></span>
+      option (and with the <span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">--verboseStats</span></span></span> option).
+      </li>
+      <li class="itemize"><span 
+class="ptmri7t-x-x-120">&#8220;ERROR: Heritability estimate is close to 1; algorithm may not converge. Analysis may be</span>
+      <span 
+class="ptmri7t-x-x-120">unsuitable due to low sample size or case ascertainment.&#8221;</span>
+                                                                                         
+                                                                                         
+      <!--l. 648--><p class="noindent" >This error most frequently arises when sample size is low, resulting in estimated heritability
+      having a very large standard error (perhaps even greater than 1) such that the estimate could
+      be anywhere in the range 0 to 1 and might hit one of the boundaries. BOLT-LMM is not
+      recommended for analyses of smaller samples; in this situation, we recommend trying other
+      software packages such as GEMMA or GCTA.
+      </li></ul>
+<!--l. 653--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">13    </span> <a 
+ id="x1-5800013"></a>Website and contact info</h3>
+<!--l. 655--><p class="noindent" >Software updates will be posted here and at the following website:
+      <blockquote class="quote">
+      <!--l. 657--><p class="noindent" ><a 
+href="http://www.hsph.harvard.edu/alkes-price/software/" class="url" ><span 
+class="pcrr7t-x-x-120">http://www.hsph.harvard.edu/alkes-price/software/</span></a></blockquote>
+<!--l. 659--><p class="noindent" >If you have comments or questions about the BOLT-LMM software, please contact Po-Ru Loh,
+<span class="obeylines-h"><span class="verb"><span 
+class="pcrr7t-x-x-120">poruloh@broadinstitute.org</span></span></span>.
+<!--l. 661--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">14    </span> <a 
+ id="x1-5900014"></a>License</h3>
+<!--l. 663--><p class="noindent" >BOLT-LMM is free software under the GNU General Public License v3.0 (GPLv3).
+<!--l. 665--><p class="noindent" >
+                                                                                         
+                                                                                         
+<h3 class="likesectionHead"><a 
+ id="x1-6000014"></a>References</h3>
+<!--l. 1--><p class="noindent" >
+      <div class="thebibliography">
+      <p class="bibitem" ><span class="biblabel">
+     1.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xloh2015ng"></a>Loh, P.-R. <span 
+class="ptmri7t-x-x-120">et</span><span 
+class="ptmri7t-x-x-120">&#x00A0;al.  </span>Efficient Bayesian mixed model analysis increases association power
+      in large cohorts. <span 
+class="ptmri7t-x-x-120">Nature Genetics </span><span 
+class="ptmb7t-x-x-120">47</span>, 284&#8211;290 (2015).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+     2.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xkang2010ng"></a>Kang,  H.&#x00A0;M.  <span 
+class="ptmri7t-x-x-120">et</span><span 
+class="ptmri7t-x-x-120">&#x00A0;al.    </span>Variance  component  model  to  account  for  sample  structure  in
+      genome-wide association studies. <span 
+class="ptmri7t-x-x-120">Nature Genetics </span><span 
+class="ptmb7t-x-x-120">42</span>, 348&#8211;354 (2010).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+     3.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xlippert2011nmeth"></a>Lippert,  C.  <span 
+class="ptmri7t-x-x-120">et</span><span 
+class="ptmri7t-x-x-120">&#x00A0;al.    </span>FaST  linear  mixed  models  for  genome-wide  association  studies.
+      <span 
+class="ptmri7t-x-x-120">Nature Methods </span><span 
+class="ptmb7t-x-x-120">8</span>, 833&#8211;835 (2011).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+     4.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xlistgarten2012nmeth"></a>Listgarten, J. <span 
+class="ptmri7t-x-x-120">et</span><span 
+class="ptmri7t-x-x-120">&#x00A0;al. </span>Improved linear mixed models for genome-wide association studies.
+      <span 
+class="ptmri7t-x-x-120">Nature Methods </span><span 
+class="ptmb7t-x-x-120">9</span>, 525&#8211;526 (2012).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+     5.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xlistgarten2013ng"></a>Listgarten,  J.,  Lippert,  C.  &amp;  Heckerman,  D.      FaST-LMM-Select  for  addressing
+      confounding from spatial structure and rare variants. <span 
+class="ptmri7t-x-x-120">Nature Genetics </span><span 
+class="ptmb7t-x-x-120">45</span>, 470&#8211;471 (2013).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+     6.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xlippert2013scirep"></a>Lippert, C. <span 
+class="ptmri7t-x-x-120">et</span><span 
+class="ptmri7t-x-x-120">&#x00A0;al.  </span>The benefits of selecting phenotype-specific variants for applications
+      of mixed models in genomics. <span 
+class="ptmri7t-x-x-120">Scientific Reports </span><span 
+class="ptmb7t-x-x-120">3 </span>(2013).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+     7.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xzhou2012ng"></a>Zhou, X. &amp; Stephens, M.  Genome-wide efficient mixed-model analysis for association
+      studies. <span 
+class="ptmri7t-x-x-120">Nature Genetics </span><span 
+class="ptmb7t-x-x-120">44</span>, 821&#8211;824 (2012).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+     8.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xsvishcheva2012ng"></a>Svishcheva,  G.&#x00A0;R.,  Axenovich,  T.&#x00A0;I.,  Belonogova,  N.&#x00A0;M.,  van  Duijn,  C.&#x00A0;M.  &amp;
+      Aulchenko, Y.&#x00A0;S. Rapid variance components-based method for whole-genome association
+      analysis. <span 
+class="ptmri7t-x-x-120">Nature Genetics </span><span 
+class="ptmb7t-x-x-120">44</span>, 1166&#8211;1170 (2012).
+                                                                                         
+                                                                                         
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+     9.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xyang2014ng"></a>Yang, J., Zaitlen, N.&#x00A0;A., Goddard, M.&#x00A0;E., Visscher, P.&#x00A0;M. &amp; Price, A.&#x00A0;L.  Advantages
+      and pitfalls in the application of mixed-model association methods.   <span 
+class="ptmri7t-x-x-120">Nature Genetics </span><span 
+class="ptmb7t-x-x-120">46</span>,
+      100&#8211;106 (2014).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+   10.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xloh2018ng"></a>Loh,  P.-R.,  Kichaev,  G.,  Gazal,  S.,  Schoech,  A.&#x00A0;P.  &amp;  Price,  A.&#x00A0;L.    Mixed-model
+      association for biobank-scale datasets. <span 
+class="ptmri7t-x-x-120">Nature Genetics </span><span 
+class="ptmb7t-x-x-120">50</span>, 906&#8211;908 (2018).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+   11.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xyang2011ajhg"></a>Yang, J., Lee, S.&#x00A0;H., Goddard, M.&#x00A0;E. &amp; Visscher, P.&#x00A0;M. GCTA: a tool for genome-wide
+      complex trait analysis. <span 
+class="ptmri7t-x-x-120">American Journal of Human Genetics </span><span 
+class="ptmb7t-x-x-120">88</span>, 76&#8211;82 (2011).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+   12.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xbolt_reml"></a>Loh, P.-R. <span 
+class="ptmri7t-x-x-120">et</span><span 
+class="ptmri7t-x-x-120">&#x00A0;al.  </span>Contrasting genetic architectures of schizophrenia and other complex
+      diseases using fast variance components analysis. <span 
+class="ptmri7t-x-x-120">Nature Genetics </span><span 
+class="ptmb7t-x-x-120">47</span>, 1385&#8211;1392 (2015).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+   13.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="XjohnsonNLopt"></a>Johnson,    S.&#x00A0;G.            The    NLopt    nonlinear-optimization    package.            URL
+      <a 
+href="http://ab-initio.mit.edu/nlopt" class="url" ><span 
+class="pcrr7t-x-x-120">http://ab-initio.mit.edu/nlopt</span></a>.
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+   14.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xpurcell2007ajhg"></a>Purcell, S. <span 
+class="ptmri7t-x-x-120">et</span><span 
+class="ptmri7t-x-x-120">&#x00A0;al. </span>PLINK: a tool set for whole-genome association and population-based
+      linkage analyses. <span 
+class="ptmri7t-x-x-120">American Journal of Human Genetics </span><span 
+class="ptmb7t-x-x-120">81</span>, 559&#8211;575 (2007).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+   15.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xchang2015gigascience"></a>Chang, C.&#x00A0;C. <span 
+class="ptmri7t-x-x-120">et</span><span 
+class="ptmri7t-x-x-120">&#x00A0;al.   </span>Second-generation PLINK: rising to the challenge of larger and
+      richer datasets. <span 
+class="ptmri7t-x-x-120">GigaScience </span><span 
+class="ptmb7t-x-x-120">4</span>, 1&#8211;16 (2015).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+   16.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xhowie2009pg"></a>Howie, B.&#x00A0;N., Donnelly, P. &amp; Marchini, J. A flexible and accurate genotype imputation
+      method  for  the  next  generation  of  genome-wide  association  studies.   <span 
+class="ptmri7t-x-x-120">PLOS  Genetics  </span><span 
+class="ptmb7t-x-x-120">5</span>,
+      e1000529 (2009).
+                                                                                         
+                                                                                         
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+   17.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xbuliksullivan2015ng"></a>Bulik-Sullivan,  B.  <span 
+class="ptmri7t-x-x-120">et</span><span 
+class="ptmri7t-x-x-120">&#x00A0;al.      </span>LD  Score  regression  distinguishes  confounding  from
+      polygenicity in genome-wide association studies. <span 
+class="ptmri7t-x-x-120">Nature Genetics </span><span 
+class="ptmb7t-x-x-120">47</span>, 291&#8211;295 (2015).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+   18.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xgalinsky2016ajhg"></a>Galinsky, K.&#x00A0;J. <span 
+class="ptmri7t-x-x-120">et</span><span 
+class="ptmri7t-x-x-120">&#x00A0;al.  </span>Fast principal-component analysis reveals convergent evolution
+      of <span 
+class="ptmri7t-x-x-120">ADH1B </span>in Europe and East Asia.  <span 
+class="ptmri7t-x-x-120">American Journal of Human Genetics </span><span 
+class="ptmb7t-x-x-120">98</span>, 456&#8211;472
+      (2016).
+      </p>
+      <p class="bibitem" ><span class="biblabel">
+   19.<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
+ id="Xzhou2018ng"></a>Zhou,  W.  <span 
+class="ptmri7t-x-x-120">et</span><span 
+class="ptmri7t-x-x-120">&#x00A0;al.      </span>Efficiently  controlling  for  case-control  imbalance  and  sample
+      relatedness  in  large-scale  genetic  association  studies.    <span 
+class="ptmri7t-x-x-120">Nature  Genetics  </span><span 
+class="ptmb7t-x-x-120">50</span>,  1335&#8211;1341
+      (2018).
+</p>
+      </div>
+ 
+</body></html> 
+
+                                                                                         
+
+
