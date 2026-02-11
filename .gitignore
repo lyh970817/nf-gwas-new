@@ -34,4 +34,4 @@ workflows/**/.spec-workflow/
 *.sif
 
 # Documentation (project-specific AI context)
-CLAUDE.md
+AGENTS.md
