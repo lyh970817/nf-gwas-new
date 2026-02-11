@@ -68,11 +68,13 @@
         },
         "max_cpus": {
           "type": "integer",
-          "default": 10
+          "default": 10,
+          "description": "Global upper bound for CPU allocation per process; resource labels cap requests to this value."
         },
         "max_memory": {
           "type": "string",
-          "default": "16.GB"
+          "default": "16.GB",
+          "description": "Global upper bound for memory allocation per process (for example `16.GB`); resource labels cap requests to this value."
         }
       }
     },
@@ -81,54 +83,193 @@
       "type": "object",
       "description": "Enable one or more workflows directly; methods are no longer mutually exclusive selectors.",
       "properties": {
-        "run_assoc_regenie": { "type": "boolean", "default": true },
-        "run_assoc_fastgwa": { "type": "boolean", "default": false },
-        "run_assoc_kvik": { "type": "boolean", "default": false },
-
-        "run_h2_gcta_grm": { "type": "boolean", "default": false },
-        "run_h2_ldak_grm": { "type": "boolean", "default": false },
-        "run_h2_gcta_greml": { "type": "boolean", "default": false },
-        "run_h2_gcta_greml_ldms": { "type": "boolean", "default": false },
-        "run_h2_bolt_lmm_reml": { "type": "boolean", "default": false },
-        "run_h2_ldak_reml": { "type": "boolean", "default": false },
-        "run_h2_ldak_he": { "type": "boolean", "default": false },
-        "run_h2_ldak_pcgc": { "type": "boolean", "default": false },
-        "run_h2_ldak_qc": { "type": "boolean", "default": false },
-        "run_h2_ldak_sumher": { "type": "boolean", "default": false },
-        "run_h2_ldsc_h2": { "type": "boolean", "default": false },
-
-        "run_rg_ldak_sumcors": { "type": "boolean", "default": false },
-        "run_rg_ldsc_rg": { "type": "boolean", "default": false },
-        "run_rg_gcta_bivariate_greml": { "type": "boolean", "default": false },
-        "run_rg_gcta_bivariate_greml_ldms": { "type": "boolean", "default": false },
-
-        "run_magma_gene_based": { "type": "boolean", "default": false },
-        "run_magma_gene_set": { "type": "boolean", "default": false },
-
-        "run_lava_local_rg": { "type": "boolean", "default": false },
-        "run_lcv_causal": { "type": "boolean", "default": false },
-
-        "run_munge_sumstats": { "type": "boolean", "default": false }
+        "run_assoc_regenie": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable association testing with REGENIE (step 1 prediction plus step 2 GWAS)."
+        },
+        "run_assoc_fastgwa": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable association testing with GCTA FastGWA mixed linear model."
+        },
+        "run_assoc_kvik": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable association testing with LDAK-KVIK."
+        },
+        "run_h2_gcta_grm": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable generation of a GCTA genetic relationship matrix (GRM)."
+        },
+        "run_h2_ldak_grm": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable generation of an LDAK kinship matrix (GRM)."
+        },
+        "run_h2_gcta_greml": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable SNP-heritability estimation with GCTA GREML."
+        },
+        "run_h2_gcta_greml_ldms": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable partitioned SNP-heritability estimation with GCTA GREML-LDMS."
+        },
+        "run_h2_bolt_lmm_reml": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable heritability estimation with BOLT-LMM REML."
+        },
+        "run_h2_ldak_reml": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable SNP-heritability estimation with LDAK REML."
+        },
+        "run_h2_ldak_he": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable SNP-heritability estimation with LDAK Haseman-Elston regression."
+        },
+        "run_h2_ldak_pcgc": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable SNP-heritability estimation with LDAK PCGC regression."
+        },
+        "run_h2_ldak_qc": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable LDAK QC and inflation diagnostics workflow."
+        },
+        "run_h2_ldak_sumher": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable SNP-heritability estimation from summary statistics with LDAK SumHer."
+        },
+        "run_h2_ldsc_h2": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable SNP-heritability estimation from summary statistics with LDSC."
+        },
+        "run_rg_ldak_sumcors": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable genetic correlation estimation with LDAK SumCors."
+        },
+        "run_rg_ldsc_rg": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable genetic correlation estimation with LDSC."
+        },
+        "run_rg_gcta_bivariate_greml": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable bivariate genetic correlation estimation with GCTA GREML."
+        },
+        "run_rg_gcta_bivariate_greml_ldms": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable bivariate genetic correlation estimation with GCTA GREML-LDMS."
+        },
+        "run_magma_gene_based": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable gene-based association analysis with MAGMA."
+        },
+        "run_magma_gene_set": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable gene-set enrichment analysis with MAGMA."
+        },
+        "run_lava_local_rg": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable local genetic correlation analysis with LAVA."
+        },
+        "run_lcv_causal": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable latent causal variable analysis with LCV."
+        },
+        "run_munge_sumstats": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run the summary-statistics standardization utility on REGENIE merged outputs."
+        }
       }
     },
     "association": {
       "title": "GWAS Association",
       "type": "object",
       "properties": {
-        "regenie_skip_predictions": { "type": "boolean", "default": false },
-        "phenotypes_apply_rint": { "type": "boolean", "default": false },
-        "regenie_test": { "type": "string", "default": "additive" },
-        "regenie_force_step1": { "type": "boolean", "default": false },
-        "regenie_low_mem": { "type": "boolean", "default": false },
-        "regenie_firth": { "type": "boolean", "default": false },
-        "regenie_firth_approx": { "type": "boolean", "default": false },
-        "regenie_bsize_step1": { "type": "integer", "default": 1000 },
-        "regenie_bsize_step2": { "type": "integer", "default": 200 },
-        "regenie_step1_optional": { "type": "string" },
-        "regenie_step2_optional": { "type": "string" },
-        "kvik_step1_optional": { "type": "string" },
-        "kvik_step2_optional": { "type": "string" },
-        "genotypes_prediction_chunks": { "type": "integer", "default": 0 }
+        "regenie_skip_predictions": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip REGENIE step 1 predictions and run step 2 with `--ignore-pred`."
+        },
+        "phenotypes_apply_rint": {
+          "type": "boolean",
+          "default": false,
+          "description": "Apply rank-based inverse normal transformation to phenotypes in REGENIE (`--apply-rint`)."
+        },
+        "regenie_test": {
+          "type": "string",
+          "default": "additive",
+          "description": "Association test model passed to REGENIE step 2 `--test` (for example `additive`)."
+        },
+        "regenie_force_step1": {
+          "type": "boolean",
+          "default": false,
+          "description": "Add REGENIE `--force-step1` to overwrite existing step 1 outputs."
+        },
+        "regenie_low_mem": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run REGENIE step 1 in low-memory mode (`--lowmem --lowmem-prefix`)."
+        },
+        "regenie_firth": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Firth logistic correction in REGENIE step 2 (`--firth`) for binary traits."
+        },
+        "regenie_firth_approx": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use REGENIE approximate Firth mode (`--approx`) when Firth correction is enabled."
+        },
+        "regenie_bsize_step1": {
+          "type": "integer",
+          "default": 1000,
+          "description": "Block size passed to REGENIE step 1 via `--bsize`."
+        },
+        "regenie_bsize_step2": {
+          "type": "integer",
+          "default": 200,
+          "description": "Block size passed to REGENIE step 2 via `--bsize`."
+        },
+        "regenie_step1_optional": {
+          "type": "string",
+          "description": "Additional CLI options appended verbatim to REGENIE step 1 commands."
+        },
+        "regenie_step2_optional": {
+          "type": "string",
+          "description": "Additional CLI options appended verbatim to REGENIE step 2 commands."
+        },
+        "kvik_step1_optional": {
+          "type": "string",
+          "description": "Additional CLI options appended verbatim to LDAK-KVIK step 1 (`--kvik-step1`)."
+        },
+        "kvik_step2_optional": {
+          "type": "string",
+          "description": "Additional CLI options appended verbatim to LDAK-KVIK step 2 (`--kvik-step2`)."
+        },
+        "genotypes_prediction_chunks": {
+          "type": "integer",
+          "default": 0,
+          "description": "Number of chunks for split REGENIE step 1 prediction generation; `0` disables chunked mode."
+        }
       }
     },
     "sumstats_shared": {
@@ -136,142 +277,440 @@
       "type": "object",
       "description": "Shared summary-statistics column definitions reused by MAGMA and LDSC.",
       "properties": {
-        "sumstats_snp_col": { "type": "string", "default": "Predictor" },
-        "sumstats_a1_col": { "type": "string", "default": "A1" },
-        "sumstats_a2_col": { "type": "string", "default": "A2" },
-        "sumstats_p_col": { "type": "string", "default": "P" },
-        "sumstats_log10p_col": { "type": "string" },
-        "sumstats_n_col": { "type": "string", "default": "n" },
-        "sumstats_n": { "type": "number" },
-        "ldsc_munge_signed_sumstats": { "type": "string" }
+        "sumstats_snp_col": {
+          "type": "string",
+          "default": "Predictor",
+          "description": "Column name containing SNP identifiers in summary-statistics input files."
+        },
+        "sumstats_a1_col": {
+          "type": "string",
+          "default": "A1",
+          "description": "Column name containing effect allele (A1) in summary-statistics input files."
+        },
+        "sumstats_a2_col": {
+          "type": "string",
+          "default": "A2",
+          "description": "Column name containing non-effect allele (A2) in summary-statistics input files."
+        },
+        "sumstats_p_col": {
+          "type": "string",
+          "default": "P",
+          "description": "Column name containing p-values in summary-statistics input files."
+        },
+        "sumstats_log10p_col": {
+          "type": "string",
+          "description": "Optional column name containing -log10(p) values to convert into p-values when needed."
+        },
+        "sumstats_n_col": {
+          "type": "string",
+          "default": "n",
+          "description": "Column name containing per-variant sample size in summary-statistics input files."
+        },
+        "sumstats_n": {
+          "type": "number",
+          "description": "Optional constant sample size to use when per-variant sample size column is unavailable."
+        },
+        "ldsc_munge_signed_sumstats": {
+          "type": "string",
+          "description": "Argument for `munge_sumstats.py --signed-sumstats` (for example `Z,0`)."
+        }
       }
     },
     "heritability_individual": {
       "title": "Heritability (Individual Level)",
       "type": "object",
       "properties": {
-        "heritability_model": { "type": "string", "default": "human_default" },
-        "nparts_gcta": { "type": "integer", "default": 15 },
-        "gcta_create_sparse_grm": { "type": "boolean", "default": false },
-        "gcta_sparse_cutoff": { "type": "number", "default": 0.05 },
-        "ldak_adjust_grm": { "type": "boolean", "default": false },
-
-        "gcta_grm_prefix": { "type": "string", "default": "${projectDir}/grm/gcta_grm/gcta_grm_0_adj_unrel05" },
-        "gcta_mgrm_file": { "type": "string", "format": "file-path", "default": "${projectDir}/grm/gcta_grm_ldms/gcta_grm_ldms.mgrm" },
-        "gcta_sparse_grm_prefix": { "type": "string", "default": "${projectDir}/grm/gcta_grm_sparse/gcta_grm_0_adj_unrel05_sp" },
-        "ldak_grm_prefix": { "type": "string", "default": "${projectDir}/grm/ldak_grm/ldak_grm" },
-        "ldak_adjusted_grm_prefix": { "type": "string", "default": "${projectDir}/grm/ldak_grm_adjusted/ldak_grm_adj" },
-
-        "ldak_he_subset_prefix": { "type": "string" },
-        "ldak_he_subset_number": { "type": "integer" },
-        "ldak_reml_prevalence": { "type": "number", "minimum": 0, "maximum": 1 },
-        "ldak_pcgc_prevalence": { "type": "number", "minimum": 0, "maximum": 1 },
-        "batch_subset_prefix": { "type": "string" },
-        "batch_subset_number": { "type": "integer" }
+        "heritability_model": {
+          "type": "string",
+          "default": "human_default",
+          "description": "LDAK heritability model used for kinship and downstream REML, HE, and PCGC analyses (for example `human_default`)."
+        },
+        "nparts_gcta": {
+          "type": "integer",
+          "default": 15,
+          "description": "Number of partitions for GCTA `--make-grm-part` during GRM computation."
+        },
+        "gcta_create_sparse_grm": {
+          "type": "boolean",
+          "default": false,
+          "description": "Also create a sparse GCTA GRM for FastGWA (`--make-bK-sparse`)."
+        },
+        "gcta_sparse_cutoff": {
+          "type": "number",
+          "default": 0.05,
+          "description": "Relatedness cutoff used when constructing and filtering sparse GCTA GRMs for FastGWA."
+        },
+        "ldak_adjust_grm": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable LDAK kinship adjustment (`--adjust-grm`) before downstream analyses."
+        },
+        "gcta_grm_prefix": {
+          "type": "string",
+          "default": "${projectDir}/grm/gcta_grm/gcta_grm_0_adj_unrel05",
+          "description": "Prefix of an existing GCTA GRM (`.grm.bin/.grm.N.bin/.grm.id`) to reuse instead of recomputing."
+        },
+        "gcta_mgrm_file": {
+          "type": "string",
+          "format": "file-path",
+          "default": "${projectDir}/grm/gcta_grm_ldms/gcta_grm_ldms.mgrm",
+          "description": "Path to a GCTA `.mgrm` file listing multiple GRMs for LDMS analyses."
+        },
+        "gcta_sparse_grm_prefix": {
+          "type": "string",
+          "default": "${projectDir}/grm/gcta_grm_sparse/gcta_grm_0_adj_unrel05_sp",
+          "description": "Prefix of an existing sparse GCTA GRM (`.grm.sp/.grm.id`) for FastGWA."
+        },
+        "ldak_grm_prefix": {
+          "type": "string",
+          "default": "${projectDir}/grm/ldak_grm/ldak_grm",
+          "description": "Prefix of an existing LDAK GRM or kinship matrix to reuse."
+        },
+        "ldak_adjusted_grm_prefix": {
+          "type": "string",
+          "default": "${projectDir}/grm/ldak_grm_adjusted/ldak_grm_adj",
+          "description": "Prefix of an existing adjusted LDAK GRM to reuse."
+        },
+        "ldak_he_subset_prefix": {
+          "type": "string",
+          "description": "Prefix of subset files used by LDAK HE and genotype-error post-processing."
+        },
+        "ldak_he_subset_number": {
+          "type": "integer",
+          "description": "Number of subset files associated with `ldak_he_subset_prefix` for HE or genotype-error post-processing."
+        },
+        "ldak_reml_prevalence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Optional disease prevalence (0-1) passed to LDAK REML for binary traits."
+        },
+        "ldak_pcgc_prevalence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Disease prevalence (0-1) passed to LDAK PCGC `--prevalence` (required for case-control traits)."
+        },
+        "batch_subset_prefix": {
+          "type": "string",
+          "description": "Prefix of batch subset files used by LDAK QC genotype-error calculation."
+        },
+        "batch_subset_number": {
+          "type": "integer",
+          "description": "Number of batch subset files associated with `batch_subset_prefix`."
+        }
       }
     },
     "heritability_sumstats": {
       "title": "Heritability (Sumstats)",
       "type": "object",
       "properties": {
-        "ldak_sumher_tagfile": { "type": "string", "format": "file-path" },
-        "ldak_sumher_check_sums": { "type": "boolean", "default": false },
-        "ldak_sumher_prevalence": { "type": "number", "minimum": 0, "maximum": 1 },
-        "ldak_sumher_prevalence_map": { "type": "string", "format": "file-path" },
-        "ldak_sumher_ascertainment": { "type": "number", "minimum": 0, "maximum": 1 },
-        "ldak_sumher_ascertainment_map": { "type": "string", "format": "file-path" },
-        "ldak_sumher_cutoff": { "type": "number" },
-
-        "ldak_sumstats_liftover": { "type": "boolean", "default": false },
-        "ldak_sumstats_target_build": { "type": "string", "default": "GRCh37" },
-        "ldak_sumstats_source_build": { "type": "string", "default": "auto" },
-        "ldak_sumstats_frq_filter": { "type": "number", "default": 0.01 },
-
-        "ldsc_ref_ld_chr": { "type": "string" },
-        "ldsc_w_ld_chr": { "type": "string" },
-        "ldsc_h2_extra_args": { "type": "string" },
-        "ldsc_munge_extra_args": { "type": "string" }
+        "ldak_sumher_tagfile": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Tagging file required by LDAK SumHer."
+        },
+        "ldak_sumher_check_sums": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, keep LDAK SumHer checksum validation; if false, pass `--check-sums NO`."
+        },
+        "ldak_sumher_prevalence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Global disease prevalence (0-1) passed to LDAK SumHer for case-control traits."
+        },
+        "ldak_sumher_prevalence_map": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Optional file mapping summary-statistics filename to prevalence for SumHer."
+        },
+        "ldak_sumher_ascertainment": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Global ascertainment proportion (0-1) passed to LDAK SumHer for case-control traits."
+        },
+        "ldak_sumher_ascertainment_map": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Optional file mapping summary-statistics filename to ascertainment proportion for SumHer."
+        },
+        "ldak_sumher_cutoff": {
+          "type": "number",
+          "description": "Optional cutoff passed to LDAK SumHer `--cutoff`."
+        },
+        "ldak_sumstats_liftover": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable liftover and harmonization of summary statistics before LDAK SumHer or SumCors."
+        },
+        "ldak_sumstats_target_build": {
+          "type": "string",
+          "default": "GRCh37",
+          "description": "Target genome build for summary-statistics liftover."
+        },
+        "ldak_sumstats_source_build": {
+          "type": "string",
+          "default": "auto",
+          "description": "Source genome build for summary-statistics liftover (`auto` attempts detection)."
+        },
+        "ldak_sumstats_frq_filter": {
+          "type": "number",
+          "default": 0.01,
+          "description": "Minimum allele-frequency threshold applied during optional summary-statistics liftover and harmonization."
+        },
+        "ldsc_ref_ld_chr": {
+          "type": "string",
+          "description": "Prefix to chromosome-split reference LD scores passed to LDSC `--ref-ld-chr`."
+        },
+        "ldsc_w_ld_chr": {
+          "type": "string",
+          "description": "Prefix to chromosome-split regression-weight LD scores passed to LDSC `--w-ld-chr`."
+        },
+        "ldsc_h2_extra_args": {
+          "type": "string",
+          "description": "Additional CLI options appended to LDSC heritability command (`ldsc.py --h2`)."
+        },
+        "ldsc_munge_extra_args": {
+          "type": "string",
+          "description": "Additional CLI options appended to LDSC munging command (`munge_sumstats.py`)."
+        }
       }
     },
     "genetic_correlation": {
       "title": "Genetic Correlation",
       "type": "object",
       "properties": {
-        "ldak_sumcors_tagfile": { "type": "string", "format": "file-path" },
-        "ldak_sumcors_check_sums": { "type": "boolean", "default": false },
-        "ldak_sumcors_summary_stats1": { "type": "string", "format": "file-path" },
-        "ldak_sumcors_summary_stats2": { "type": "string", "format": "file-path" },
-        "ldsc_rg_extra_args": { "type": "string" },
-        "gcta_bivariate_phenotype1": { "type": "string" },
-        "gcta_bivariate_phenotype2": { "type": "string" }
+        "ldak_sumcors_tagfile": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Tagging file required by LDAK SumCors."
+        },
+        "ldak_sumcors_check_sums": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, keep LDAK SumCors checksum validation; if false, pass `--check-sums NO`."
+        },
+        "ldak_sumcors_summary_stats1": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Summary-statistics file for trait 1 in LDAK SumCors."
+        },
+        "ldak_sumcors_summary_stats2": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Summary-statistics file for trait 2 in LDAK SumCors."
+        },
+        "ldsc_rg_extra_args": {
+          "type": "string",
+          "description": "Additional CLI options appended to LDSC genetic-correlation command (`ldsc.py --rg`)."
+        },
+        "gcta_bivariate_phenotype1": {
+          "type": "string",
+          "description": "Phenotype column name used as trait 1 in GCTA bivariate workflows."
+        },
+        "gcta_bivariate_phenotype2": {
+          "type": "string",
+          "description": "Phenotype column name used as trait 2 in GCTA bivariate workflows."
+        }
       }
     },
     "magma": {
       "title": "Gene-Based Associations (MAGMA)",
       "type": "object",
       "properties": {
-        "magma_reference_plink": { "type": "string" },
-        "magma_gene_annot": { "type": "string", "format": "file-path" },
-        "magma_gene_loc": { "type": "string", "format": "file-path" },
-        "magma_set_annot": { "type": "string", "format": "file-path" },
-        "magma_gene_results_dir": { "type": "string", "format": "directory-path" },
-
+        "magma_reference_plink": {
+          "type": "string",
+          "description": "Reference PLINK prefix used as MAGMA `--bfile` input."
+        },
+        "magma_gene_annot": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Precomputed MAGMA gene annotation file (`--gene-annot`)."
+        },
+        "magma_gene_loc": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Gene location file used by MAGMA annotation step (`--gene-loc`)."
+        },
+        "magma_set_annot": {
+          "type": "string",
+          "format": "file-path",
+          "description": "MAGMA gene-set annotation file (`--set-annot`)."
+        },
+        "magma_gene_results_dir": {
+          "type": "string",
+          "format": "directory-path",
+          "description": "Directory containing precomputed `*.genes.raw` files for MAGMA gene-set analysis."
+        },
         "magma_gene_input_mode": {
           "type": "string",
           "default": "sumstats",
-          "enum": ["sumstats", "raw"]
+          "enum": [
+            "sumstats",
+            "raw"
+          ],
+          "description": "Input mode for MAGMA gene analysis: `sumstats` (pipeline summary stats) or `raw` (precomputed raw results)."
         },
-        "magma_raw_extra_args": { "type": "string" },
-
-        "magma_window_up_kb": { "type": "integer", "default": 35 },
-        "magma_window_down_kb": { "type": "integer", "default": 10 },
-        "magma_gene_model": { "type": "string" },
-        "magma_gene_extra_args": { "type": "string" },
-        "magma_set_model": { "type": "string" },
-        "magma_set_extra_args": { "type": "string" }
+        "magma_raw_extra_args": {
+          "type": "string",
+          "description": "Additional CLI options appended to MAGMA raw gene-analysis command."
+        },
+        "magma_window_up_kb": {
+          "type": "integer",
+          "default": 35,
+          "description": "Upstream gene window size in kilobases for MAGMA annotation (`--window`)."
+        },
+        "magma_window_down_kb": {
+          "type": "integer",
+          "default": 10,
+          "description": "Downstream gene window size in kilobases for MAGMA annotation (`--window`)."
+        },
+        "magma_gene_model": {
+          "type": "string",
+          "description": "Model specification passed to MAGMA gene analysis via `--model`."
+        },
+        "magma_gene_extra_args": {
+          "type": "string",
+          "description": "Additional CLI options appended to MAGMA gene-analysis commands."
+        },
+        "magma_set_model": {
+          "type": "string",
+          "description": "Model specification passed to MAGMA gene-set analysis via `--model`."
+        },
+        "magma_set_extra_args": {
+          "type": "string",
+          "description": "Additional CLI options appended to MAGMA gene-set analysis command."
+        }
       }
     },
     "other_workflows": {
       "title": "Other Workflows",
       "type": "object",
       "properties": {
-        "lava_analysis_id": { "type": "string", "default": "lava_local_rg" },
-        "lava_ref_plink": { "type": "string" },
-        "lava_loci_file": { "type": "string", "format": "file-path" },
-        "lava_sample_overlap_file": { "type": "string", "format": "file-path" },
-        "lava_univ_threshold": { "type": "number", "default": 0.05 },
-
-        "lcv_analysis_id": { "type": "string", "default": "lcv_causal" },
-        "lcv_ldscores_file": { "type": "string", "format": "file-path" },
-        "lcv_sumstats_trait1": { "type": "string", "format": "file-path" },
-        "lcv_sumstats_trait2": { "type": "string", "format": "file-path" },
-        "lcv_trait1_name": { "type": "string" },
-        "lcv_trait2_name": { "type": "string" },
-        "lcv_no_blocks": { "type": "integer", "default": 100 },
-        "lcv_sig_threshold": { "type": "number", "default": 30 },
-        "lcv_crosstrait_intercept": { "type": "number", "default": 1 },
-        "lcv_ldsc_intercept": { "type": "number", "default": 1 }
+        "lava_analysis_id": {
+          "type": "string",
+          "default": "lava_local_rg",
+          "description": "Output prefix for LAVA result and log files."
+        },
+        "lava_ref_plink": {
+          "type": "string",
+          "description": "PLINK file pattern or prefix for LAVA reference LD data."
+        },
+        "lava_loci_file": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Path to LAVA loci-definition file."
+        },
+        "lava_sample_overlap_file": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Optional sample-overlap file supplied to LAVA."
+        },
+        "lava_univ_threshold": {
+          "type": "number",
+          "default": 0.05,
+          "description": "Univariate p-value threshold used by LAVA to select loci for bivariate tests."
+        },
+        "lcv_analysis_id": {
+          "type": "string",
+          "default": "lcv_causal",
+          "description": "Output prefix for LCV result and log files."
+        },
+        "lcv_ldscores_file": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Path to LD-score file used by LCV."
+        },
+        "lcv_sumstats_trait1": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Summary-statistics file for trait 1 in LCV."
+        },
+        "lcv_sumstats_trait2": {
+          "type": "string",
+          "format": "file-path",
+          "description": "Summary-statistics file for trait 2 in LCV."
+        },
+        "lcv_trait1_name": {
+          "type": "string",
+          "description": "Label or name for trait 1 in LCV outputs."
+        },
+        "lcv_trait2_name": {
+          "type": "string",
+          "description": "Label or name for trait 2 in LCV outputs."
+        },
+        "lcv_no_blocks": {
+          "type": "integer",
+          "default": 100,
+          "description": "Number of jackknife blocks used by LCV."
+        },
+        "lcv_sig_threshold": {
+          "type": "number",
+          "default": 30,
+          "description": "Significance threshold used for reporting LCV causal evidence."
+        },
+        "lcv_crosstrait_intercept": {
+          "type": "number",
+          "default": 1,
+          "description": "Cross-trait LDSC intercept value used by the LCV estimator."
+        },
+        "lcv_ldsc_intercept": {
+          "type": "number",
+          "default": 1,
+          "description": "Single-trait LDSC intercept value used by the LCV estimator."
+        }
       }
     },
     "utilities": {
       "title": "Utilities",
       "type": "object",
       "properties": {
-        "munge_genome_build": { "type": "string", "default": "GRCh38" },
-        "munge_dbsnp_version": { "type": "integer", "default": 0 }
+        "munge_genome_build": {
+          "type": "string",
+          "default": "GRCh38",
+          "description": "Genome build label passed to the summary-statistics munging utility (for example `GRCh38`)."
+        },
+        "munge_dbsnp_version": {
+          "type": "integer",
+          "default": 0,
+          "description": "dbSNP version passed to the munging utility (`0` disables dbSNP-based harmonization)."
+        }
       }
     }
   },
   "allOf": [
-    { "$ref": "#/$defs/common_inputs" },
-    { "$ref": "#/$defs/workflow_toggles" },
-    { "$ref": "#/$defs/association" },
-    { "$ref": "#/$defs/sumstats_shared" },
-    { "$ref": "#/$defs/heritability_individual" },
-    { "$ref": "#/$defs/heritability_sumstats" },
-    { "$ref": "#/$defs/genetic_correlation" },
-    { "$ref": "#/$defs/magma" },
-    { "$ref": "#/$defs/other_workflows" },
-    { "$ref": "#/$defs/utilities" }
+    {
+      "$ref": "#/$defs/common_inputs"
+    },
+    {
+      "$ref": "#/$defs/workflow_toggles"
+    },
+    {
+      "$ref": "#/$defs/association"
+    },
+    {
+      "$ref": "#/$defs/sumstats_shared"
+    },
+    {
+      "$ref": "#/$defs/heritability_individual"
+    },
+    {
+      "$ref": "#/$defs/heritability_sumstats"
+    },
+    {
+      "$ref": "#/$defs/genetic_correlation"
+    },
+    {
+      "$ref": "#/$defs/magma"
+    },
+    {
+      "$ref": "#/$defs/other_workflows"
+    },
+    {
+      "$ref": "#/$defs/utilities"
+    }
   ]
 }
