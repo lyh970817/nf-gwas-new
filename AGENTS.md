@@ -76,6 +76,7 @@ workflow {
 ## Workflow Review & Test Checklist
 - Review new/changed workflows and their modules for input/output correctness (including optional input handling).
 - If any implementation detail is unclear, pull upstream docs and save them under `docs/` (prefer `docs/external/<tool>/`) before proceeding.
+- If a program the pipeline should call has no documentation in `./docs`, search for official documentation online and download the implementation-relevant sections into `docs/` (prefer `docs/external/<tool>/`) before proceeding.
 - Run development test runs for the workflow(s) to capture expected outputs.
 - Write/update nf-test workflow and module tests based on the observed output content (avoid file-existence-only assertions).
 - Verify the new/updated tests with `nf-test test ... --profile test,singularity`.
@@ -90,6 +91,7 @@ workflow {
 - Tune resources in `conf/base.config` via labels (`process_low`, `process_medium`, `process_high`).
 - Prefer containerized runs (Singularity/Docker) for reproducibility.
 - Share logs or reports only after scrubbing sensitive data.
+- Never delete files that are untracked by git.
 
 ## Container Policy for New Programs
 - When implementing a new feature that introduces a new program/tool dependency, always add that program to container definitions (`nf-gwas.def`, `Dockerfile`, and/or `environment.yml` as appropriate).
